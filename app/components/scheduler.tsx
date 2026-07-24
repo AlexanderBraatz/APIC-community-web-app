@@ -184,16 +184,77 @@ function rangeFromInputs(startValue: string, endValue: string) {
 	return { startDate, days };
 }
 
+function normalizeSearchText(value: string) {
+	return value.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+/** Case-insensitive fuzzy match: each query word must appear as a subsequence in the name. */
+function fuzzyMatch(query: string, name: string) {
+	const normalizedQuery = normalizeSearchText(query);
+	if (!normalizedQuery) {
+		return false;
+	}
+
+	const normalizedName = normalizeSearchText(name);
+	const words = normalizedQuery.split(' ');
+
+	return words.every(word => {
+		if (normalizedName.includes(word)) {
+			return true;
+		}
+
+		let nameIndex = 0;
+		for (const char of word) {
+			nameIndex = normalizedName.indexOf(char, nameIndex);
+			if (nameIndex === -1) {
+				return false;
+			}
+			nameIndex += 1;
+		}
+		return true;
+	});
+}
+
 const Scheduler = () => {
-	const [resourceRows] = useState(resources);
 	const [eventRows] = useState(events);
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
+	const [query, setQuery] = useState('');
+	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
 	const range = rangeFromInputs(startValue, endValue);
 	const startDate = 'startDate' in range ? range.startDate : defaultStart;
 	const days = 'days' in range ? range.days : defaultDays;
 	const error = 'error' in range ? range.error : null;
+
+	const selectedResources = resources.filter(
+		resource => resource.id != null && selectedIds.includes(String(resource.id))
+	);
+
+	const suggestions = normalizeSearchText(query)
+		? resources
+				.filter(
+					resource =>
+						resource.id != null &&
+						!selectedIds.includes(String(resource.id)) &&
+						fuzzyMatch(query, resource.name ?? '')
+				)
+				.slice(0, 8)
+		: [];
+
+	const visibleResources =
+		selectedIds.length === 0 ? resources : selectedResources;
+
+	const addSelected = (id: string) => {
+		setSelectedIds(current =>
+			current.includes(id) ? current : [...current, id]
+		);
+		setQuery('');
+	};
+
+	const removeSelected = (id: string) => {
+		setSelectedIds(current => current.filter(selectedId => selectedId !== id));
+	};
 
 	const config: DayPilot.SchedulerConfig = {
 		timeHeaders: [{ groupBy: 'Month' }, { groupBy: 'Day', format: 'd' }],
@@ -241,10 +302,114 @@ const Scheduler = () => {
 					</p>
 				) : null}
 			</div>
+
+			<div
+				style={{
+					display: 'flex',
+					flexWrap: 'wrap',
+					gap: '0.5rem',
+					alignItems: 'center',
+					marginBottom: '1rem'
+				}}
+			>
+				<div style={{ position: 'relative', minWidth: '16rem' }}>
+					<label style={{ display: 'grid', gap: '0.35rem' }}>
+						<span>Search people</span>
+						<input
+							type="search"
+							value={query}
+							placeholder="Type a name…"
+							onChange={event => setQuery(event.target.value)}
+							autoComplete="off"
+						/>
+					</label>
+					{suggestions.length > 0 ? (
+						<ul
+							style={{
+								position: 'absolute',
+								zIndex: 20,
+								left: 0,
+								right: 0,
+								top: '100%',
+								margin: '0.25rem 0 0',
+								padding: 0,
+								listStyle: 'none',
+								background: '#fff',
+								border: '1px solid #c8c0b4',
+								borderRadius: '4px',
+								boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
+								maxHeight: '14rem',
+								overflowY: 'auto'
+							}}
+						>
+							{suggestions.map(resource => {
+								const id = String(resource.id);
+								return (
+									<li key={id}>
+										<button
+											type="button"
+											onClick={() => addSelected(id)}
+											style={{
+												display: 'block',
+												width: '100%',
+												textAlign: 'left',
+												padding: '0.5rem 0.75rem',
+												border: 'none',
+												background: 'transparent',
+												cursor: 'pointer'
+											}}
+										>
+											{resource.name}
+										</button>
+									</li>
+								);
+							})}
+						</ul>
+					) : null}
+				</div>
+
+				{selectedResources.map(resource => {
+					const id = String(resource.id);
+					return (
+						<span
+							key={id}
+							style={{
+								display: 'inline-flex',
+								alignItems: 'center',
+								gap: '0.35rem',
+								padding: '0.25rem 0.5rem',
+								borderRadius: '4px',
+								background: '#3d8b5a',
+								color: '#fff',
+								fontSize: '0.875rem'
+							}}
+						>
+							{resource.name}
+							<button
+								type="button"
+								aria-label={`Remove ${resource.name}`}
+								onClick={() => removeSelected(id)}
+								style={{
+									border: 'none',
+									background: 'transparent',
+									color: 'inherit',
+									cursor: 'pointer',
+									padding: 0,
+									lineHeight: 1,
+									fontSize: '1rem'
+								}}
+							>
+								×
+							</button>
+						</span>
+					);
+				})}
+			</div>
+
 			<DayPilotScheduler
 				{...config}
 				theme="brown_theme"
-				resources={resourceRows}
+				resources={visibleResources}
 				events={eventRows}
 			/>
 		</div>
