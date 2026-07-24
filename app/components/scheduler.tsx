@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import '../styles/brown_theme.css';
+import '../styles/selection-separator.css';
 
 const resources: DayPilot.ResourceData[] = [
 	{ id: 'R1', name: 'Emma Clarke' },
@@ -215,20 +216,118 @@ function fuzzyMatch(query: string, name: string) {
 	});
 }
 
+const SELECTION_SEPARATOR_ID = '__selection_separator__';
+const SELECTION_SEPARATOR_COLOR = '#6b512b';
+const SELECTION_SEPARATOR_HEIGHT = 8;
+
+const selectionSeparator: DayPilot.ResourceData = {
+	id: SELECTION_SEPARATOR_ID,
+	name: '',
+	cssClass: 'selection-separator',
+	html: ''
+};
+
+function isSelectionSeparator(resourceId: DayPilot.ResourceId | undefined) {
+	return String(resourceId) === SELECTION_SEPARATOR_ID;
+}
+
+type SchedulerRowInternal = {
+	id: DayPilot.ResourceId;
+	height: number;
+	top: number;
+	index: number;
+	getHeight: () => number;
+};
+
+type SchedulerCellElement = HTMLElement & {
+	coords?: { x: number; y: number };
+};
+
+/** Lite always uses eventHeight for rows; patch the separator so layout collapses to 8px. */
+function shrinkSelectionSeparatorRow(control: DayPilot.Scheduler) {
+	const scheduler = control as DayPilot.Scheduler & {
+		rowlist?: SchedulerRowInternal[];
+		elements?: {
+			cells?: SchedulerCellElement[];
+		};
+		jf?: () => void;
+		mf?: () => void;
+		Cf?: () => void;
+	};
+
+	const rowlist = scheduler.rowlist;
+	if (!rowlist?.length) {
+		return;
+	}
+
+	const separator = rowlist.find(row => isSelectionSeparator(row.id));
+	if (!separator) {
+		return;
+	}
+
+	const alreadyShrunk =
+		separator.height === SELECTION_SEPARATOR_HEIGHT &&
+		separator.getHeight() === SELECTION_SEPARATOR_HEIGHT;
+
+	if (alreadyShrunk) {
+		return;
+	}
+
+	separator.height = SELECTION_SEPARATOR_HEIGHT;
+	separator.getHeight = () => SELECTION_SEPARATOR_HEIGHT;
+
+	if (typeof scheduler.jf === 'function') {
+		scheduler.jf();
+	} else {
+		let top = 0;
+		for (const row of rowlist) {
+			row.top = top;
+			top += row.height;
+		}
+	}
+
+	// Update existing DOM in place — do NOT call of()/na() (they clear progressive cells).
+	scheduler.mf?.();
+	scheduler.Cf?.();
+
+	for (const cell of scheduler.elements?.cells ?? []) {
+		const rowIndex = cell.coords?.y;
+		if (rowIndex == null) {
+			continue;
+		}
+		const row = rowlist[rowIndex];
+		if (!row) {
+			continue;
+		}
+		cell.style.top = `${row.top}px`;
+		cell.style.height = `${row.height}px`;
+	}
+}
+
 const Scheduler = () => {
 	const [eventRows] = useState(events);
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	const schedulerRef = useRef<DayPilot.Scheduler | null>(null);
 
-	const range = rangeFromInputs(startValue, endValue);
+	const range = useMemo(
+		() => rangeFromInputs(startValue, endValue),
+		[startValue, endValue]
+	);
 	const startDate = 'startDate' in range ? range.startDate : defaultStart;
 	const days = 'days' in range ? range.days : defaultDays;
 	const error = 'error' in range ? range.error : null;
 
-	const selectedResources = resources.filter(
-		resource => resource.id != null && selectedIds.includes(String(resource.id))
+	const selectedResources = useMemo(
+		() =>
+			selectedIds
+				.map(id => resources.find(resource => String(resource.id) === id))
+				.filter(
+					(resource): resource is DayPilot.ResourceData => resource != null
+				),
+		[selectedIds]
 	);
 
 	const suggestions = normalizeSearchText(query)
@@ -242,8 +341,37 @@ const Scheduler = () => {
 				.slice(0, 8)
 		: [];
 
-	const visibleResources =
-		selectedIds.length === 0 ? resources : selectedResources;
+	const orderedResources = useMemo(() => {
+		if (selectedIds.length === 0) {
+			return resources;
+		}
+		const selected = selectedIds
+			.map(id => resources.find(resource => String(resource.id) === id))
+			.filter(
+				(resource): resource is DayPilot.ResourceData => resource != null
+			);
+		return [
+			...selected,
+			selectionSeparator,
+			...resources.filter(
+				resource =>
+					resource.id != null && !selectedIds.includes(String(resource.id))
+			)
+		];
+	}, [selectedIds]);
+
+	useEffect(() => {
+		const control = schedulerRef.current;
+		if (!control || selectedIds.length === 0) {
+			return;
+		}
+		const frame = requestAnimationFrame(() => {
+			if (schedulerRef.current) {
+				shrinkSelectionSeparatorRow(schedulerRef.current);
+			}
+		});
+		return () => cancelAnimationFrame(frame);
+	}, [selectedIds, startDate, days]);
 
 	const addSelected = (id: string) => {
 		setSelectedIds(current =>
@@ -256,14 +384,54 @@ const Scheduler = () => {
 		setSelectedIds(current => current.filter(selectedId => selectedId !== id));
 	};
 
-	const config: DayPilot.SchedulerConfig = {
-		timeHeaders: [{ groupBy: 'Month' }, { groupBy: 'Day', format: 'd' }],
-		scale: 'Day',
-		startDate,
-		days,
-		cellWidth: 50,
-		rowHeaderWidth: 180
+	const onBeforeRowHeaderRender = (
+		args: DayPilot.SchedulerBeforeRowHeaderRenderArgs
+	) => {
+		if (!isSelectionSeparator(args.row.id)) {
+			return;
+		}
+		args.row.html = '';
+		args.row.text = '';
+		args.row.cssClass = 'selection-separator';
+		args.row.backColor = SELECTION_SEPARATOR_COLOR;
 	};
+
+	const onBeforeCellRender = (args: DayPilot.SchedulerBeforeCellRenderArgs) => {
+		if (!isSelectionSeparator(args.cell.resource)) {
+			return;
+		}
+		args.cell.properties.backColor = SELECTION_SEPARATOR_COLOR;
+		args.cell.properties.cssClass = 'selection-separator-cell';
+		args.cell.properties.html = '';
+		args.cell.properties.text = '';
+	};
+
+	const onTimeRangeSelected = (
+		args: DayPilot.SchedulerTimeRangeSelectedArgs
+	) => {
+		if (isSelectionSeparator(args.resource)) {
+			args.control.clearSelection();
+		}
+	};
+
+	const onAfterUpdate = () => {
+		if (!schedulerRef.current || selectedIds.length === 0) {
+			return;
+		}
+		shrinkSelectionSeparatorRow(schedulerRef.current);
+	};
+
+	const config: DayPilot.SchedulerConfig = useMemo(
+		() => ({
+			timeHeaders: [{ groupBy: 'Month' }, { groupBy: 'Day', format: 'd' }],
+			scale: 'Day',
+			startDate,
+			days,
+			cellWidth: 50,
+			rowHeaderWidth: 180
+		}),
+		[startDate, days]
+	);
 
 	return (
 		<div>
@@ -409,8 +577,15 @@ const Scheduler = () => {
 			<DayPilotScheduler
 				{...config}
 				theme="brown_theme"
-				resources={visibleResources}
+				resources={orderedResources}
 				events={eventRows}
+				controlRef={(control: DayPilot.Scheduler) => {
+					schedulerRef.current = control;
+				}}
+				onBeforeRowHeaderRender={onBeforeRowHeaderRender}
+				onBeforeCellRender={onBeforeCellRender}
+				onTimeRangeSelected={onTimeRangeSelected}
+				onAfterUpdate={onAfterUpdate}
 			/>
 		</div>
 	);
