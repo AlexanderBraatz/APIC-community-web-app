@@ -1,41 +1,33 @@
-/* Thin bar between selected people and everyone else on the scheduler.
-   Height is also forced in JS (Lite ignores per-row height otherwise). */
-.brown_theme_rowheader.selection-separator,
-.brown_theme_rowheader.selection-separator .brown_theme_rowheader_inner,
-.selection-separator.brown_theme_rowheader,
-.selection-separator .brown_theme_rowheader_inner {
-	height: 8px !important;
-	min-height: 8px !important;
-	max-height: 8px !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	overflow: hidden !important;
-	background: #6b512b !important;
-	border: none !important;
-	border-bottom: none !important;
-	line-height: 0 !important;
-	font-size: 0 !important;
-	color: transparent !important;
-	box-sizing: border-box !important;
+/* Clickable resource name cells + selected-row styling */
+.brown_theme_rowheader.resource-name-cell {
+	cursor: pointer;
 }
 
-.brown_theme_cell.selection-separator-cell,
-.selection-separator-cell {
-	height: 8px !important;
-	min-height: 8px !important;
-	max-height: 8px !important;
-	padding: 0 !important;
-	margin: 0 !important;
-	background: #6b512b !important;
-	background-color: #6b512b !important;
-	border: none !important;
-	border-color: #6b512b !important;
-	box-sizing: border-box !important;
-	overflow: hidden !important;
+.brown_theme_rowheader.resource-name-cell:hover,
+.brown_theme_rowheader.resource-name-cell:hover .brown_theme_rowheader_inner {
+	filter: brightness(1.1);
 }
 
-/* Hide grid lines that would look like a black strip under the bar */
-.brown_theme_matrix_horizontal_line:has(+ .selection-separator-cell),
-.selection-separator-cell + .brown_theme_matrix_horizontal_line {
-	display: none !important;
+.brown_theme_rowheader.resource-name-cell-selected,
+.brown_theme_rowheader.resource-name-cell-selected .brown_theme_rowheader_inner {
+	background: #3d8b5a !important;
+	color: #fff !important;
+}
+
+.brown_theme_rowheader.resource-name-cell-selected:hover,
+.brown_theme_rowheader.resource-name-cell-selected:hover
+	.brown_theme_rowheader_inner {
+	background: #347a4e !important;
+	filter: none;
+}
+
+.brown_theme_rowheader.resource-name-cell-selected .brown_theme_rowheader_inner {
+	padding-right: 22px;
+}
+
+.resource-deselect-mark {
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1;
+	pointer-events: none;
 }

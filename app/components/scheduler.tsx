@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
@@ -216,101 +216,12 @@ function fuzzyMatch(query: string, name: string) {
 	});
 }
 
-const SELECTION_SEPARATOR_ID = '__selection_separator__';
-const SELECTION_SEPARATOR_COLOR = '#6b512b';
-const SELECTION_SEPARATOR_HEIGHT = 8;
-
-const selectionSeparator: DayPilot.ResourceData = {
-	id: SELECTION_SEPARATOR_ID,
-	name: '',
-	cssClass: 'selection-separator',
-	html: ''
-};
-
-function isSelectionSeparator(resourceId: DayPilot.ResourceId | undefined) {
-	return String(resourceId) === SELECTION_SEPARATOR_ID;
-}
-
-type SchedulerRowInternal = {
-	id: DayPilot.ResourceId;
-	height: number;
-	top: number;
-	index: number;
-	getHeight: () => number;
-};
-
-type SchedulerCellElement = HTMLElement & {
-	coords?: { x: number; y: number };
-};
-
-/** Lite always uses eventHeight for rows; patch the separator so layout collapses to 8px. */
-function shrinkSelectionSeparatorRow(control: DayPilot.Scheduler) {
-	const scheduler = control as DayPilot.Scheduler & {
-		rowlist?: SchedulerRowInternal[];
-		elements?: {
-			cells?: SchedulerCellElement[];
-		};
-		jf?: () => void;
-		mf?: () => void;
-		Cf?: () => void;
-	};
-
-	const rowlist = scheduler.rowlist;
-	if (!rowlist?.length) {
-		return;
-	}
-
-	const separator = rowlist.find(row => isSelectionSeparator(row.id));
-	if (!separator) {
-		return;
-	}
-
-	const alreadyShrunk =
-		separator.height === SELECTION_SEPARATOR_HEIGHT &&
-		separator.getHeight() === SELECTION_SEPARATOR_HEIGHT;
-
-	if (alreadyShrunk) {
-		return;
-	}
-
-	separator.height = SELECTION_SEPARATOR_HEIGHT;
-	separator.getHeight = () => SELECTION_SEPARATOR_HEIGHT;
-
-	if (typeof scheduler.jf === 'function') {
-		scheduler.jf();
-	} else {
-		let top = 0;
-		for (const row of rowlist) {
-			row.top = top;
-			top += row.height;
-		}
-	}
-
-	// Update existing DOM in place — do NOT call of()/na() (they clear progressive cells).
-	scheduler.mf?.();
-	scheduler.Cf?.();
-
-	for (const cell of scheduler.elements?.cells ?? []) {
-		const rowIndex = cell.coords?.y;
-		if (rowIndex == null) {
-			continue;
-		}
-		const row = rowlist[rowIndex];
-		if (!row) {
-			continue;
-		}
-		cell.style.top = `${row.top}px`;
-		cell.style.height = `${row.height}px`;
-	}
-}
-
 const Scheduler = () => {
 	const [eventRows] = useState(events);
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
-	const schedulerRef = useRef<DayPilot.Scheduler | null>(null);
 
 	const range = useMemo(
 		() => rangeFromInputs(startValue, endValue),
@@ -319,16 +230,6 @@ const Scheduler = () => {
 	const startDate = 'startDate' in range ? range.startDate : defaultStart;
 	const days = 'days' in range ? range.days : defaultDays;
 	const error = 'error' in range ? range.error : null;
-
-	const selectedResources = useMemo(
-		() =>
-			selectedIds
-				.map(id => resources.find(resource => String(resource.id) === id))
-				.filter(
-					(resource): resource is DayPilot.ResourceData => resource != null
-				),
-		[selectedIds]
-	);
 
 	const suggestions = normalizeSearchText(query)
 		? resources
@@ -352,26 +253,12 @@ const Scheduler = () => {
 			);
 		return [
 			...selected,
-			selectionSeparator,
 			...resources.filter(
 				resource =>
 					resource.id != null && !selectedIds.includes(String(resource.id))
 			)
 		];
 	}, [selectedIds]);
-
-	useEffect(() => {
-		const control = schedulerRef.current;
-		if (!control || selectedIds.length === 0) {
-			return;
-		}
-		const frame = requestAnimationFrame(() => {
-			if (schedulerRef.current) {
-				shrinkSelectionSeparatorRow(schedulerRef.current);
-			}
-		});
-		return () => cancelAnimationFrame(frame);
-	}, [selectedIds, startDate, days]);
 
 	const addSelected = (id: string) => {
 		setSelectedIds(current =>
@@ -380,45 +267,59 @@ const Scheduler = () => {
 		setQuery('');
 	};
 
-	const removeSelected = (id: string) => {
-		setSelectedIds(current => current.filter(selectedId => selectedId !== id));
+	const toggleSelected = (id: string) => {
+		setSelectedIds(current =>
+			current.includes(id)
+				? current.filter(selectedId => selectedId !== id)
+				: [...current, id]
+		);
+		setQuery('');
 	};
 
 	const onBeforeRowHeaderRender = (
 		args: DayPilot.SchedulerBeforeRowHeaderRenderArgs
 	) => {
-		if (!isSelectionSeparator(args.row.id)) {
-			return;
+		const id = String(args.row.id);
+		const isSelected = selectedIds.includes(id);
+
+		args.row.cssClass = isSelected
+			? 'resource-name-cell resource-name-cell-selected'
+			: 'resource-name-cell';
+		if (isSelected) {
+			args.row.backColor = '#3d8b5a';
 		}
-		args.row.html = '';
-		args.row.text = '';
-		args.row.cssClass = 'selection-separator';
-		args.row.backColor = SELECTION_SEPARATOR_COLOR;
+
+		args.row.areas = isSelected
+			? [
+					{
+						right: 4,
+						top: 0,
+						bottom: 0,
+						width: 18,
+						html: '×',
+						cssClass: 'resource-deselect-mark',
+						fontColor: '#ffffff',
+						verticalAlignment: 'center',
+						horizontalAlignment: 'center',
+						toolTip: 'Deselect',
+						action: 'None'
+					}
+				]
+			: [];
 	};
 
 	const onBeforeCellRender = (args: DayPilot.SchedulerBeforeCellRenderArgs) => {
-		if (!isSelectionSeparator(args.cell.resource)) {
+		if (!selectedIds.includes(String(args.cell.resource))) {
 			return;
 		}
-		args.cell.properties.backColor = SELECTION_SEPARATOR_COLOR;
-		args.cell.properties.cssClass = 'selection-separator-cell';
-		args.cell.properties.html = '';
-		args.cell.properties.text = '';
+		// Keep weekends (non-business) a touch lighter than weekdays
+		args.cell.properties.backColor = args.cell.properties.business
+			? '#e5f2e9'
+			: '#f3faf6';
 	};
 
-	const onTimeRangeSelected = (
-		args: DayPilot.SchedulerTimeRangeSelectedArgs
-	) => {
-		if (isSelectionSeparator(args.resource)) {
-			args.control.clearSelection();
-		}
-	};
-
-	const onAfterUpdate = () => {
-		if (!schedulerRef.current || selectedIds.length === 0) {
-			return;
-		}
-		shrinkSelectionSeparatorRow(schedulerRef.current);
+	const onRowClick = (args: DayPilot.SchedulerRowClickArgs) => {
+		toggleSelected(String(args.row.id));
 	};
 
 	const config: DayPilot.SchedulerConfig = useMemo(
@@ -428,7 +329,8 @@ const Scheduler = () => {
 			startDate,
 			days,
 			cellWidth: 50,
-			rowHeaderWidth: 180
+			rowHeaderWidth: 180,
+			rowClickHandling: 'Enabled'
 		}),
 		[startDate, days]
 	);
@@ -535,43 +437,6 @@ const Scheduler = () => {
 						</ul>
 					) : null}
 				</div>
-
-				{selectedResources.map(resource => {
-					const id = String(resource.id);
-					return (
-						<span
-							key={id}
-							style={{
-								display: 'inline-flex',
-								alignItems: 'center',
-								gap: '0.35rem',
-								padding: '0.25rem 0.5rem',
-								borderRadius: '4px',
-								background: '#3d8b5a',
-								color: '#fff',
-								fontSize: '0.875rem'
-							}}
-						>
-							{resource.name}
-							<button
-								type="button"
-								aria-label={`Remove ${resource.name}`}
-								onClick={() => removeSelected(id)}
-								style={{
-									border: 'none',
-									background: 'transparent',
-									color: 'inherit',
-									cursor: 'pointer',
-									padding: 0,
-									lineHeight: 1,
-									fontSize: '1rem'
-								}}
-							>
-								×
-							</button>
-						</span>
-					);
-				})}
 			</div>
 
 			<DayPilotScheduler
@@ -579,13 +444,9 @@ const Scheduler = () => {
 				theme="brown_theme"
 				resources={orderedResources}
 				events={eventRows}
-				controlRef={(control: DayPilot.Scheduler) => {
-					schedulerRef.current = control;
-				}}
 				onBeforeRowHeaderRender={onBeforeRowHeaderRender}
 				onBeforeCellRender={onBeforeCellRender}
-				onTimeRangeSelected={onTimeRangeSelected}
-				onAfterUpdate={onAfterUpdate}
+				onRowClick={onRowClick}
 			/>
 		</div>
 	);
