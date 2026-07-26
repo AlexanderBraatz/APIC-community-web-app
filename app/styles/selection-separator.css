@@ -73,3 +73,86 @@
 .scheduler-event-delete-mark:hover {
 	opacity: 0.9;
 }
+
+.brown_theme_event.scheduler-event-readonly {
+	cursor: default;
+}
+
+.brown_theme_event.scheduler-event-readonly .brown_theme_event_inner {
+	cursor: default;
+}
+
+.save-overlay-spinner {
+	width: 2rem;
+	height: 2rem;
+	margin: 0 auto 1rem;
+	border: 3px solid #e3e1d3;
+	border-top-color: #6b512b;
+	border-radius: 50%;
+	animation: save-overlay-spin 0.75s linear infinite;
+}
+
+@keyframes save-overlay-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.edit-status-chip {
+	display: inline-flex;
+	align-items: center;
+	padding: 0.35rem 0.7rem;
+	border-radius: 999px;
+	border: 1px solid transparent;
+	font-size: 0.8125rem;
+	font-weight: 600;
+	line-height: 1.2;
+	user-select: none;
+}
+
+.edit-status-chip-ready {
+	border-color: #c8c0b4;
+	background: #f7f5f0;
+	color: #5c5348;
+}
+
+.edit-status-chip-unsaved {
+	border-color: #d4a017;
+	background: #fff6dc;
+	color: #8a5a12;
+}
+
+.edit-status-chip-saved {
+	border-color: #3d8b5a;
+	background: #e5f2e9;
+	color: #2f6b45;
+}
+
+.edit-status-chip-on-event {
+	padding: 0.1rem 0.35rem;
+	font-size: 9px;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	flex-shrink: 0;
+	pointer-events: none;
+}
+
+.brown_theme_event.scheduler-event-unsaved .brown_theme_event_inner {
+	border: 2px dashed #e6a800 !important;
+	background: linear-gradient(to bottom, #fff8d1 0%, #ffe99a 100%) !important;
+	box-shadow: 0 0 0 1px rgba(230, 168, 0, 0.25);
+}
+
+.brown_theme_event.scheduler-event-unsaved:hover .brown_theme_event_inner {
+	background: linear-gradient(to bottom, #fff4b8 0%, #ffdf7a 100%) !important;
+}
+
+.edit-status-chip-delete {
+	border-color: #8a1f1f;
+	background: #f8e4e4;
+	color: #8a1f1f;
+}
+
+.brown_theme_event.scheduler-event-marked-delete {
+	opacity: 0.5;
+}

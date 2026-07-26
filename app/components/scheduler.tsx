@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
@@ -158,7 +158,8 @@ const seedEvents: DayPilot.EventData[] = stays.map((stay, index) => ({
 	start: `${stay.start}T00:00:00`,
 	end: `${stay.end}T00:00:00`,
 	text:
-		seedResources.find(resource => resource.id === stay.resource)?.name ?? ''
+		seedResources.find(resource => resource.id === stay.resource)?.name ?? '',
+	tags: { saveStatus: 'ready' }
 }));
 
 const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
@@ -276,6 +277,106 @@ function escapeHtml(value: string) {
 		.replaceAll('"', '&quot;');
 }
 
+const MOCK_SAVE_DELAY_MS = 1200;
+
+type MockSavePayload = {
+	role: 'admin' | 'user';
+	userId: string;
+	/** Events to commit (already excluding soft-deletes). */
+	events: DayPilot.EventData[];
+	/** Current mock database contents used as the merge base. */
+	baselineEvents: DayPilot.EventData[];
+};
+
+function stripDraftTags(event: DayPilot.EventData): DayPilot.EventData {
+	const restTags = { ...(event.tags ?? {}) };
+	delete restTags.markedForDeletion;
+	return {
+		...event,
+		tags: {
+			...restTags,
+			saveStatus: 'ready'
+		}
+	};
+}
+
+/** Mock remote write: delay, then commit. Returns the next DB snapshot. */
+async function mockDatabaseWrite(
+	payload: MockSavePayload
+): Promise<DayPilot.EventData[]> {
+	await new Promise<void>(resolve => {
+		setTimeout(resolve, MOCK_SAVE_DELAY_MS);
+	});
+
+	const committed = payload.events.map(stripDraftTags);
+	if (payload.role === 'admin') {
+		return committed;
+	}
+
+	return [
+		...payload.baselineEvents
+			.filter(event => String(event.resource) !== payload.userId)
+			.map(stripDraftTags),
+		...committed
+	];
+}
+
+type SaveUiState = 'idle' | 'loading' | 'success' | 'error';
+type EditStatus = 'ready' | 'unsaved' | 'saved';
+
+const EDIT_STATUS_LABELS: Record<EditStatus, string> = {
+	ready: 'Drag to edit',
+	unsaved: 'Unsaved changes',
+	saved: 'Saved'
+};
+
+const EVENT_STATUS_LABELS: Record<EditStatus, string> = {
+	ready: 'Drag to edit',
+	unsaved: 'Unsaved',
+	saved: 'Saved'
+};
+
+function getEventSaveStatus(event: DayPilot.EventData): EditStatus {
+	const status = event.tags?.saveStatus;
+	if (status === 'ready' || status === 'unsaved' || status === 'saved') {
+		return status;
+	}
+	return 'ready';
+}
+
+function isMarkedForDeletion(event: DayPilot.EventData): boolean {
+	return event.tags?.markedForDeletion === true;
+}
+
+function withEventSaveStatus(
+	event: DayPilot.EventData,
+	saveStatus: EditStatus
+): DayPilot.EventData {
+	return {
+		...event,
+		tags: {
+			...event.tags,
+			saveStatus
+		}
+	};
+}
+
+function withMarkedForDeletion(
+	event: DayPilot.EventData,
+	markedForDeletion: boolean
+): DayPilot.EventData {
+	return {
+		...event,
+		tags: {
+			...event.tags,
+			markedForDeletion,
+			saveStatus: markedForDeletion
+				? 'unsaved'
+				: (event.tags?.saveStatus ?? 'unsaved')
+		}
+	};
+}
+
 /** Case-insensitive fuzzy match: each query word must appear as a subsequence in the name. */
 function fuzzyMatch(query: string, name: string) {
 	const normalizedQuery = normalizeSearchText(query);
@@ -308,16 +409,156 @@ const Scheduler = () => {
 		RESOURCES_STORAGE_KEY,
 		seedResources
 	);
-	const [eventRows, setEventRows] = useLocalStorageState(
+	/** Mock database: localStorage, written only on successful Save. */
+	const [dbEvents, setDbEvents] = useLocalStorageState(
 		EVENTS_STORAGE_KEY,
 		seedEvents
 	);
+	/**
+	 * Working calendar with unsaved edits. `null` means "show the DB as-is"
+	 * (SSR-safe and resets cleanly on discard).
+	 */
+	const [draftEvents, setDraftEvents] = useState<DayPilot.EventData[] | null>(
+		null
+	);
+	const eventRows = draftEvents ?? dbEvents;
+	const setEventRows = (
+		update:
+			| DayPilot.EventData[]
+			| ((prev: DayPilot.EventData[]) => DayPilot.EventData[])
+	) => {
+		setDraftEvents(prev => {
+			const current = prev ?? dbEvents;
+			return typeof update === 'function' ? update(current) : update;
+		});
+	};
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 	// Temp stand-in for auth: user id === resource id
 	const [tempLoggedInID] = useState('R6');
+	const [tempIsAdmin, setTempIsAdmin] = useState(false);
+	const [saveUiState, setSaveUiState] = useState<SaveUiState>('idle');
+	const [savedThisSession, setSavedThisSession] = useState(false);
+	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+	const unsavedHistoryPushedRef = useRef(false);
+	const allowLeaveRef = useRef(false);
+
+	const canEditResource = (resourceId: string) =>
+		tempIsAdmin || resourceId === tempLoggedInID;
+
+	const hasUnsavedChanges = useMemo(
+		() =>
+			eventRows.some(event => {
+				const resourceId = String(event.resource ?? '');
+				if (!(tempIsAdmin || resourceId === tempLoggedInID)) {
+					return false;
+				}
+				return (
+					getEventSaveStatus(event) === 'unsaved' ||
+					isMarkedForDeletion(event)
+				);
+			}),
+		[eventRows, tempIsAdmin, tempLoggedInID]
+	);
+
+	const editStatus: EditStatus = hasUnsavedChanges
+		? 'unsaved'
+		: savedThisSession
+			? 'saved'
+			: 'ready';
+
+	const saveChanges = async () => {
+		if (saveUiState === 'loading' || !hasUnsavedChanges) {
+			return;
+		}
+
+		const ownedEvents = tempIsAdmin
+			? eventRows
+			: eventRows.filter(
+					event => String(event.resource) === tempLoggedInID
+				);
+		const eventsToSave = ownedEvents.filter(
+			event => !isMarkedForDeletion(event)
+		);
+		const unsavedIds = new Set(
+			eventsToSave
+				.filter(event => getEventSaveStatus(event) === 'unsaved')
+				.map(event => String(event.id))
+		);
+
+		setSaveUiState('loading');
+		try {
+			const nextDb = await mockDatabaseWrite({
+				role: tempIsAdmin ? 'admin' : 'user',
+				userId: tempLoggedInID,
+				events: eventsToSave,
+				baselineEvents: dbEvents
+			});
+			setDbEvents(nextDb);
+			setDraftEvents(
+				nextDb.map(event =>
+					unsavedIds.has(String(event.id))
+						? withEventSaveStatus(event, 'saved')
+						: event
+				)
+			);
+			setSavedThisSession(true);
+			unsavedHistoryPushedRef.current = false;
+			setSaveUiState('success');
+		} catch {
+			setSaveUiState('error');
+		}
+	};
+
+	const dismissSaveOverlay = () => {
+		setSaveUiState('idle');
+	};
+
+	const stayOnPage = () => {
+		setLeaveDialogOpen(false);
+	};
+
+	const leaveWithoutSaving = () => {
+		allowLeaveRef.current = true;
+		setLeaveDialogOpen(false);
+		setDraftEvents(null);
+		setSavedThisSession(false);
+		unsavedHistoryPushedRef.current = false;
+		history.back();
+	};
+
+	useEffect(() => {
+		if (!hasUnsavedChanges) {
+			return;
+		}
+		if (!unsavedHistoryPushedRef.current) {
+			history.pushState({ schedulerUnsavedGuard: true }, '');
+			unsavedHistoryPushedRef.current = true;
+		}
+
+		const onBeforeUnload = (event: BeforeUnloadEvent) => {
+			event.preventDefault();
+			event.returnValue = '';
+		};
+
+		const onPopState = () => {
+			if (allowLeaveRef.current) {
+				allowLeaveRef.current = false;
+				return;
+			}
+			history.pushState({ schedulerUnsavedGuard: true }, '');
+			setLeaveDialogOpen(true);
+		};
+
+		window.addEventListener('beforeunload', onBeforeUnload);
+		window.addEventListener('popstate', onPopState);
+		return () => {
+			window.removeEventListener('beforeunload', onBeforeUnload);
+			window.removeEventListener('popstate', onPopState);
+		};
+	}, [hasUnsavedChanges]);
 
 	const range = useMemo(
 		() => rangeFromInputs(startValue, endValue),
@@ -440,31 +681,60 @@ const Scheduler = () => {
 	) => {
 		setEventRows(current =>
 			current.map(event =>
-				String(event.id) === String(id) ? { ...event, ...patch } : event
-			)
-		);
-	};
-
-	const onEventMoved = (args: DayPilot.SchedulerEventMovedArgs) => {
-		const resourceName =
-			resources.find(resource => String(resource.id) === String(args.newResource))
-				?.name ?? '';
-		setEventRows(current =>
-			current.map(event =>
-				String(event.id) === String(args.e.id())
-					? {
-							...event,
-							start: args.newStart.toString(),
-							end: args.newEnd.toString(),
-							resource: args.newResource,
-							text: resourceName
-						}
+				String(event.id) === String(id)
+					? withEventSaveStatus({ ...event, ...patch }, 'unsaved')
 					: event
 			)
 		);
+		setSavedThisSession(false);
+	};
+
+	const onEventMove = (args: DayPilot.SchedulerEventMoveArgs) => {
+		const fromResource = String(args.e.resource());
+		const toResource = String(args.newResource);
+		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
+			args.preventDefault();
+		}
+	};
+
+	const onEventMoved = (args: DayPilot.SchedulerEventMovedArgs) => {
+		const fromResource = String(args.e.resource());
+		const toResource = String(args.newResource);
+		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
+			return;
+		}
+		const resourceName =
+			resources.find(resource => String(resource.id) === toResource)?.name ??
+			'';
+		setEventRows(current =>
+			current.map(event =>
+				String(event.id) === String(args.e.id())
+					? withEventSaveStatus(
+							{
+								...event,
+								start: args.newStart.toString(),
+								end: args.newEnd.toString(),
+								resource: args.newResource,
+								text: resourceName
+							},
+							'unsaved'
+						)
+					: event
+			)
+		);
+		setSavedThisSession(false);
+	};
+
+	const onEventResize = (args: DayPilot.SchedulerEventResizeArgs) => {
+		if (!canEditResource(String(args.e.resource()))) {
+			args.preventDefault();
+		}
 	};
 
 	const onEventResized = (args: DayPilot.SchedulerEventResizedArgs) => {
+		if (!canEditResource(String(args.e.resource()))) {
+			return;
+		}
 		persistEventChange(args.e.id(), {
 			start: args.newStart.toString(),
 			end: args.newEnd.toString()
@@ -473,31 +743,95 @@ const Scheduler = () => {
 
 	const deleteEvent = (id: DayPilot.EventId) => {
 		setEventRows(current =>
-			current.filter(event => String(event.id) !== String(id))
+			current.map(event => {
+				if (String(event.id) !== String(id)) {
+					return event;
+				}
+				return withMarkedForDeletion(
+					event,
+					!isMarkedForDeletion(event)
+				);
+			})
 		);
+		setSavedThisSession(false);
 	};
 
 	const onBeforeEventRender = (
 		args: DayPilot.SchedulerBeforeEventRenderArgs
 	) => {
+		const editable = canEditResource(String(args.data.resource ?? ''));
+		const saveStatus = getEventSaveStatus(args.data);
+		const markedForDeletion = isMarkedForDeletion(args.data);
+		const eventData = args.data as DayPilot.EventData & {
+			moveDisabled?: boolean;
+			resizeDisabled?: boolean;
+		};
+		eventData.moveDisabled = !editable || markedForDeletion;
+		eventData.resizeDisabled = !editable || markedForDeletion;
+
+		const classNames = [
+			editable ? 'scheduler-event-editable' : 'scheduler-event-readonly',
+			editable && saveStatus === 'unsaved' && !markedForDeletion
+				? 'scheduler-event-unsaved'
+				: '',
+			editable && markedForDeletion ? 'scheduler-event-marked-delete' : ''
+		]
+			.filter(Boolean)
+			.join(' ');
+		args.data.cssClass = classNames;
+
+		if (editable && saveStatus === 'unsaved' && !markedForDeletion) {
+			args.data.backColor = '#fff3b0';
+			args.data.borderColor = '#e6a800';
+			args.data.fontColor = '#5c3d00';
+		}
+
 		const name = escapeHtml(String(args.data.text ?? ''));
-		args.data.html = `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span><span class="scheduler-event-delete-mark" title="Delete" onmousedown="event.stopPropagation()">×</span></span>`;
+		const chipLabel = markedForDeletion
+			? 'To delete'
+			: EVENT_STATUS_LABELS[saveStatus];
+		const chipClass = markedForDeletion
+			? 'edit-status-chip-delete'
+			: `edit-status-chip-${saveStatus}`;
+		const statusChip = editable
+			? `<span class="edit-status-chip ${chipClass} edit-status-chip-on-event">${chipLabel}</span>`
+			: '';
+		const deleteTitle = markedForDeletion
+			? 'Undo delete'
+			: 'Mark for deletion';
+		args.data.html = editable
+			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${statusChip}<span class="scheduler-event-delete-mark" title="${deleteTitle}" onmousedown="event.stopPropagation()">×</span></span>`
+			: `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span></span>`;
 	};
 
 	const onEventClick = (args: DayPilot.SchedulerEventClickArgs) => {
 		const target = args.originalEvent.target;
 		if (
-			target instanceof Element &&
-			target.closest('.scheduler-event-delete-mark')
+			!(target instanceof Element) ||
+			!target.closest('.scheduler-event-delete-mark')
 		) {
+			return;
+		}
+		args.preventDefault();
+		if (!canEditResource(String(args.e.resource()))) {
+			return;
+		}
+		deleteEvent(args.e.id());
+	};
+
+	const onTimeRangeSelect = (args: DayPilot.SchedulerTimeRangeSelectArgs) => {
+		if (!canEditResource(String(args.resource))) {
 			args.preventDefault();
-			deleteEvent(args.e.id());
 		}
 	};
 
 	const onTimeRangeSelected = (
 		args: DayPilot.SchedulerTimeRangeSelectedArgs
 	) => {
+		if (!canEditResource(String(args.resource))) {
+			args.control.clearSelection();
+			return;
+		}
 		const resourceName =
 			resources.find(resource => String(resource.id) === String(args.resource))
 				?.name ?? '';
@@ -509,15 +843,19 @@ const Scheduler = () => {
 				}, 0) + 1;
 			return [
 				...current,
-				{
-					id: nextId,
-					resource: args.resource,
-					start: args.start.toString(),
-					end: args.end.toString(),
-					text: resourceName
-				}
+				withEventSaveStatus(
+					{
+						id: nextId,
+						resource: args.resource,
+						start: args.start.toString(),
+						end: args.end.toString(),
+						text: resourceName
+					},
+					'unsaved'
+				)
 			];
 		});
+		setSavedThisSession(false);
 		args.control.clearSelection();
 	};
 
@@ -575,6 +913,30 @@ const Scheduler = () => {
 						{error}
 					</p>
 				) : null}
+				<label
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '0.5rem',
+						marginLeft: 'auto',
+						padding: '0.35rem 0.6rem',
+						border: '1px dashed #968a80',
+						borderRadius: '4px',
+						fontSize: '0.875rem',
+						cursor: 'pointer',
+						userSelect: 'none'
+					}}
+					title="Testing only — switch permission role"
+				>
+					<input
+						type="checkbox"
+						checked={tempIsAdmin}
+						onChange={event => setTempIsAdmin(event.target.checked)}
+					/>
+					<span>
+						{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)
+					</span>
+				</label>
 			</div>
 
 			<div
@@ -582,7 +944,7 @@ const Scheduler = () => {
 					display: 'flex',
 					flexWrap: 'wrap',
 					gap: '0.5rem',
-					alignItems: 'center',
+					alignItems: 'end',
 					marginBottom: '1rem'
 				}}
 			>
@@ -641,7 +1003,231 @@ const Scheduler = () => {
 						</ul>
 					) : null}
 				</div>
+				<button
+					type="button"
+					onClick={() => {
+						void saveChanges();
+					}}
+					disabled={
+						!hasUnsavedChanges || saveUiState === 'loading'
+					}
+					style={{
+						padding: '0.45rem 0.9rem',
+						border: '1px solid #6b512b',
+						borderRadius: '4px',
+						background: '#6b512b',
+						color: '#fff',
+						cursor:
+							!hasUnsavedChanges || saveUiState === 'loading'
+								? 'not-allowed'
+								: 'pointer',
+						opacity:
+							!hasUnsavedChanges || saveUiState === 'loading'
+								? 0.55
+								: 1
+					}}
+				>
+					Save changes
+				</button>
+				{editStatus === 'unsaved' || editStatus === 'saved' ? (
+					<span
+						className={`edit-status-chip edit-status-chip-${editStatus}`}
+						aria-live="polite"
+					>
+						{EDIT_STATUS_LABELS[editStatus]}
+					</span>
+				) : null}
 			</div>
+
+			{saveUiState !== 'idle' ? (
+				<div
+					role="dialog"
+					aria-modal="true"
+					aria-live="polite"
+					style={{
+						position: 'fixed',
+						inset: 0,
+						zIndex: 1000,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						background: 'rgba(40, 32, 24, 0.45)'
+					}}
+				>
+					<div
+						style={{
+							minWidth: '16rem',
+							maxWidth: '22rem',
+							padding: '1.5rem 1.75rem',
+							borderRadius: '8px',
+							background: '#fff',
+							boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
+							textAlign: 'center'
+						}}
+					>
+						{saveUiState === 'loading' ? (
+							<>
+								<div
+									className="save-overlay-spinner"
+									aria-hidden="true"
+								/>
+								<p style={{ margin: '0 0 0.75rem', fontWeight: 600 }}>
+									Saving changes…
+								</p>
+								<p style={{ margin: 0, color: '#5c5348' }}>
+									{tempIsAdmin
+										? 'Writing all events to the database.'
+										: 'Writing your events to the database.'}
+								</p>
+							</>
+						) : null}
+						{saveUiState === 'success' ? (
+							<>
+								<p
+									style={{
+										margin: '0 0 0.75rem',
+										fontWeight: 600,
+										color: '#2f6b45'
+									}}
+								>
+									Changes saved
+								</p>
+								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
+									{tempIsAdmin
+										? 'All event updates were written successfully.'
+										: 'Your event updates were written successfully.'}
+								</p>
+								<button
+									type="button"
+									onClick={dismissSaveOverlay}
+									style={{
+										padding: '0.4rem 1rem',
+										border: '1px solid #6b512b',
+										borderRadius: '4px',
+										background: '#6b512b',
+										color: '#fff',
+										cursor: 'pointer'
+									}}
+								>
+									OK
+								</button>
+							</>
+						) : null}
+						{saveUiState === 'error' ? (
+							<>
+								<p
+									style={{
+										margin: '0 0 0.75rem',
+										fontWeight: 600,
+										color: '#8a1f1f'
+									}}
+								>
+									Save failed
+								</p>
+								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
+									The database write did not succeed. Your local
+									edits are still here — try again.
+								</p>
+								<button
+									type="button"
+									onClick={dismissSaveOverlay}
+									style={{
+										padding: '0.4rem 1rem',
+										border: '1px solid #8a1f1f',
+										borderRadius: '4px',
+										background: '#8a1f1f',
+										color: '#fff',
+										cursor: 'pointer'
+									}}
+								>
+									OK
+								</button>
+							</>
+						) : null}
+					</div>
+				</div>
+			) : null}
+
+			{leaveDialogOpen ? (
+				<div
+					role="dialog"
+					aria-modal="true"
+					aria-live="polite"
+					style={{
+						position: 'fixed',
+						inset: 0,
+						zIndex: 1000,
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						background: 'rgba(40, 32, 24, 0.45)'
+					}}
+				>
+					<div
+						style={{
+							minWidth: '16rem',
+							maxWidth: '22rem',
+							padding: '1.5rem 1.75rem',
+							borderRadius: '8px',
+							background: '#fff',
+							boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
+							textAlign: 'center'
+						}}
+					>
+						<p
+							style={{
+								margin: '0 0 0.75rem',
+								fontWeight: 600,
+								color: '#8a5a12'
+							}}
+						>
+							You have unsaved changes
+						</p>
+						<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
+							Leave this page without saving? Your local edits will
+							still be in this browser, but they are not saved to
+							the database yet.
+						</p>
+						<div
+							style={{
+								display: 'flex',
+								gap: '0.5rem',
+								justifyContent: 'center',
+								flexWrap: 'wrap'
+							}}
+						>
+							<button
+								type="button"
+								onClick={stayOnPage}
+								style={{
+									padding: '0.4rem 1rem',
+									border: '1px solid #6b512b',
+									borderRadius: '4px',
+									background: '#6b512b',
+									color: '#fff',
+									cursor: 'pointer'
+								}}
+							>
+								Stay
+							</button>
+							<button
+								type="button"
+								onClick={leaveWithoutSaving}
+								style={{
+									padding: '0.4rem 1rem',
+									border: '1px solid #8a1f1f',
+									borderRadius: '4px',
+									background: '#fff',
+									color: '#8a1f1f',
+									cursor: 'pointer'
+								}}
+							>
+								Leave without saving
+							</button>
+						</div>
+					</div>
+				</div>
+			) : null}
 
 			<DayPilotScheduler
 				{...config}
@@ -653,8 +1239,11 @@ const Scheduler = () => {
 				onBeforeEventRender={onBeforeEventRender}
 				onRowClick={onRowClick}
 				onEventClick={onEventClick}
+				onEventMove={onEventMove}
 				onEventMoved={onEventMoved}
+				onEventResize={onEventResize}
 				onEventResized={onEventResized}
+				onTimeRangeSelect={onTimeRangeSelect}
 				onTimeRangeSelected={onTimeRangeSelected}
 			/>
 		</div>
