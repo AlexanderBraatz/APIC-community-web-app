@@ -8,6 +8,10 @@ import {
 	useSyncExternalStore
 } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
 
@@ -889,107 +893,47 @@ const Scheduler = () => {
 	);
 
 	return (
-		<div>
-			<div
-				style={{
-					display: 'flex',
-					flexWrap: 'wrap',
-					gap: '1rem',
-					alignItems: 'end',
-					marginBottom: '1rem'
-				}}
-			>
-				<label style={{ display: 'grid', gap: '0.35rem' }}>
-					<span>Start date</span>
-					<input
+		<div className="p-4">
+			<div className="mb-4 flex flex-wrap items-end gap-x-3 gap-y-3">
+				<div className="grid gap-1.5">
+					<Label htmlFor="scheduler-start-date">Start date</Label>
+					<Input
+						id="scheduler-start-date"
 						type="date"
 						value={startValue}
 						max={endValue || undefined}
 						onChange={event => setStartValue(event.target.value)}
 						required
+						className="w-46 bg-muted"
 					/>
-				</label>
-				<label style={{ display: 'grid', gap: '0.35rem' }}>
-					<span>End date</span>
-					<input
+				</div>
+				<div className="grid gap-1.5">
+					<Label htmlFor="scheduler-end-date">End date</Label>
+					<Input
+						id="scheduler-end-date"
 						type="date"
 						value={endValue}
 						min={startValue || undefined}
 						onChange={event => setEndValue(event.target.value)}
 						required
+						className="w-46 bg-muted"
 					/>
-				</label>
-				{error ? (
-					<p
-						style={{ color: '#8a1f1f', margin: 0 }}
-						role="alert"
-					>
-						{error}
-					</p>
-				) : null}
-				<label
-					style={{
-						display: 'flex',
-						alignItems: 'center',
-						gap: '0.5rem',
-						marginLeft: 'auto',
-						padding: '0.35rem 0.6rem',
-						border: '1px dashed #968a80',
-						borderRadius: '4px',
-						fontSize: '0.875rem',
-						cursor: 'pointer',
-						userSelect: 'none'
-					}}
-					title="Testing only — switch permission role"
-				>
-					<input
-						type="checkbox"
-						checked={tempIsAdmin}
-						onChange={event => setTempIsAdmin(event.target.checked)}
-					/>
-					<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
-				</label>
-			</div>
-
-			<div
-				style={{
-					display: 'flex',
-					flexWrap: 'wrap',
-					gap: '0.5rem',
-					alignItems: 'end',
-					marginBottom: '1rem'
-				}}
-			>
-				<div style={{ position: 'relative', minWidth: '16rem' }}>
-					<label style={{ display: 'grid', gap: '0.35rem' }}>
-						<span>Search people</span>
-						<input
+				</div>
+				<div className="relative min-w-64 flex-1 basis-64 max-w-sm">
+					<div className="grid gap-1.5">
+						<Label htmlFor="scheduler-search-people">Search people</Label>
+						<Input
+							id="scheduler-search-people"
 							type="search"
 							value={query}
 							placeholder="Type a name…"
 							onChange={event => setQuery(event.target.value)}
 							autoComplete="off"
+							className="bg-muted"
 						/>
-					</label>
+					</div>
 					{suggestions.length > 0 ? (
-						<ul
-							style={{
-								position: 'absolute',
-								zIndex: 20,
-								left: 0,
-								right: 0,
-								top: '100%',
-								margin: '0.25rem 0 0',
-								padding: 0,
-								listStyle: 'none',
-								background: '#fff',
-								border: '1px solid #c8c0b4',
-								borderRadius: '4px',
-								boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)',
-								maxHeight: '14rem',
-								overflowY: 'auto'
-							}}
-						>
+						<ul className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md">
 							{suggestions.map(resource => {
 								const id = String(resource.id);
 								return (
@@ -997,15 +941,11 @@ const Scheduler = () => {
 										<button
 											type="button"
 											onClick={() => addSelected(id)}
-											style={{
-												display: 'block',
-												width: '100%',
-												textAlign: 'left',
-												padding: '0.5rem 0.75rem',
-												border: 'none',
-												background: 'transparent',
-												cursor: 'pointer'
-											}}
+											className={cn(
+												'block w-full cursor-pointer px-3 py-2 text-left text-sm',
+												'hover:bg-accent hover:text-accent-foreground',
+												'focus-visible:bg-accent focus-visible:outline-none'
+											)}
 										>
 											{resource.name}
 										</button>
@@ -1015,34 +955,33 @@ const Scheduler = () => {
 						</ul>
 					) : null}
 				</div>
-				<button
-					type="button"
-					onClick={() => {
-						void saveChanges();
-					}}
-					disabled={!hasUnsavedChanges || saveUiState === 'loading'}
-					style={{
-						padding: '0.45rem 0.9rem',
-						border: '1px solid #6b512b',
-						borderRadius: '4px',
-						background: '#6b512b',
-						color: '#fff',
-						cursor:
-							!hasUnsavedChanges || saveUiState === 'loading'
-								? 'not-allowed'
-								: 'pointer',
-						opacity: !hasUnsavedChanges || saveUiState === 'loading' ? 0.55 : 1
-					}}
-				>
-					Save changes
-				</button>
-				{editStatus === 'unsaved' || editStatus === 'saved' ? (
-					<span
-						className={`edit-status-chip edit-status-chip-${editStatus}`}
-						aria-live="polite"
+				<div className="ml-auto flex flex-wrap items-end gap-3">
+					{editStatus === 'unsaved' || editStatus === 'saved' ? (
+						<span
+							className={`edit-status-chip edit-status-chip-${editStatus}`}
+							aria-live="polite"
+						>
+							{EDIT_STATUS_LABELS[editStatus]}
+						</span>
+					) : null}
+					<Button
+						type="button"
+						size="lg"
+						onClick={() => {
+							void saveChanges();
+						}}
+						disabled={!hasUnsavedChanges || saveUiState === 'loading'}
 					>
-						{EDIT_STATUS_LABELS[editStatus]}
-					</span>
+						Save changes
+					</Button>
+				</div>
+				{error ? (
+					<p
+						className="basis-full text-sm text-destructive"
+						role="alert"
+					>
+						{error}
+					</p>
 				) : null}
 			</div>
 
@@ -1271,6 +1210,20 @@ const Scheduler = () => {
 					onTimeRangeSelected={onTimeRangeSelected}
 				/>
 			</div>
+			<Label
+				htmlFor="scheduler-admin-toggle"
+				title="Testing only — switch permission role"
+				className="mt-3 w-fit cursor-pointer rounded-lg border border-dashed border-[#968a80] px-3 py-2 text-muted-foreground"
+			>
+				<input
+					id="scheduler-admin-toggle"
+					type="checkbox"
+					checked={tempIsAdmin}
+					onChange={event => setTempIsAdmin(event.target.checked)}
+					className="size-3.5 accent-primary"
+				/>
+				<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
+			</Label>
 		</div>
 	);
 };
