@@ -606,6 +606,7 @@ const Scheduler = () => {
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
+	const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 	// Temp stand-in for auth: user id === resource id
 	const [tempLoggedInID] = useState('R6');
@@ -852,6 +853,11 @@ const Scheduler = () => {
 				)
 				.slice(0, 8)
 		: [];
+	const highlightedSuggestionIndex =
+		suggestions.length === 0
+			? 0
+			: Math.min(activeSuggestionIndex, suggestions.length - 1);
+	const highlightedSuggestion = suggestions[highlightedSuggestionIndex];
 
 	const orderedResources = useMemo(() => {
 		const loggedIn = resources.find(
@@ -877,6 +883,7 @@ const Scheduler = () => {
 			current.includes(id) ? current : [...current, id]
 		);
 		setQuery('');
+		setActiveSuggestionIndex(0);
 	};
 
 	const toggleSelected = (id: string) => {
@@ -886,6 +893,7 @@ const Scheduler = () => {
 				: [...current, id]
 		);
 		setQuery('');
+		setActiveSuggestionIndex(0);
 	};
 
 	const onBeforeRowHeaderRender = (
@@ -1180,25 +1188,67 @@ const Scheduler = () => {
 								value={query}
 								placeholder="Find people to compare availability"
 								aria-label="Find people to compare availability"
-								onChange={event => setQuery(event.target.value)}
+								aria-autocomplete="list"
+								aria-controls={
+									suggestions.length > 0
+										? 'scheduler-search-suggestions'
+										: undefined
+								}
+								aria-activedescendant={
+									highlightedSuggestion?.id != null
+										? `scheduler-search-option-${String(highlightedSuggestion.id)}`
+										: undefined
+								}
+								onChange={event => {
+									setQuery(event.target.value);
+									setActiveSuggestionIndex(0);
+								}}
+								onKeyDown={event => {
+									if (event.key !== 'Enter') {
+										return;
+									}
+									if (highlightedSuggestion?.id == null) {
+										return;
+									}
+									event.preventDefault();
+									addSelected(String(highlightedSuggestion.id));
+								}}
 								autoComplete="off"
 								className="bg-muted pl-8"
 							/>
 						</div>
 					</div>
 					{suggestions.length > 0 ? (
-						<ul className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md">
-							{suggestions.map(resource => {
+						<ul
+							id="scheduler-search-suggestions"
+							role="listbox"
+							className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md"
+							onMouseLeave={() => setActiveSuggestionIndex(0)}
+						>
+							{suggestions.map((resource, index) => {
 								const id = String(resource.id);
+								const isHighlighted =
+									index === highlightedSuggestionIndex;
 								return (
-									<li key={id}>
+									<li
+										key={id}
+										id={`scheduler-search-option-${id}`}
+										role="option"
+										aria-selected={isHighlighted}
+										onMouseEnter={() =>
+											setActiveSuggestionIndex(index)
+										}
+									>
 										<button
 											type="button"
+											tabIndex={-1}
 											onClick={() => addSelected(id)}
 											className={cn(
 												'block w-full cursor-pointer px-3 py-2 text-left text-sm',
-												'hover:bg-accent hover:text-accent-foreground',
-												'focus-visible:bg-accent focus-visible:outline-none'
+												'focus-visible:outline-none',
+												isHighlighted
+													? 'bg-accent text-accent-foreground'
+													: null
 											)}
 										>
 											{resource.name}
