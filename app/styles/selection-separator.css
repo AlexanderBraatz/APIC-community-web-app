@@ -21,7 +21,22 @@
 	filter: none;
 }
 
-.brown_theme_rowheader.resource-name-cell-selected .brown_theme_rowheader_inner {
+.brown_theme_rowheader.resource-name-cell-logged-in,
+.brown_theme_rowheader.resource-name-cell-logged-in .brown_theme_rowheader_inner {
+	background: #c9a227 !important;
+	color: #3b2f0a !important;
+}
+
+.brown_theme_rowheader.resource-name-cell-logged-in:hover,
+.brown_theme_rowheader.resource-name-cell-logged-in:hover
+	.brown_theme_rowheader_inner {
+	background: #b8911e !important;
+	filter: none;
+}
+
+.brown_theme_rowheader.resource-name-cell-selected .brown_theme_rowheader_inner,
+.brown_theme_rowheader.resource-name-cell-has-deselect
+	.brown_theme_rowheader_inner {
 	padding-right: 22px;
 }
 

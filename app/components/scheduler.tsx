@@ -222,6 +222,8 @@ const Scheduler = () => {
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
+	// Temp stand-in for auth: user id === resource id
+	const [tempLoggedInID] = useState('R6');
 
 	const range = useMemo(
 		() => rangeFromInputs(startValue, endValue),
@@ -243,22 +245,23 @@ const Scheduler = () => {
 		: [];
 
 	const orderedResources = useMemo(() => {
-		if (selectedIds.length === 0) {
-			return resources;
-		}
+		const loggedIn = resources.find(
+			resource => String(resource.id) === tempLoggedInID
+		);
 		const selected = selectedIds
+			.filter(id => id !== tempLoggedInID)
 			.map(id => resources.find(resource => String(resource.id) === id))
 			.filter(
 				(resource): resource is DayPilot.ResourceData => resource != null
 			);
-		return [
-			...selected,
-			...resources.filter(
-				resource =>
-					resource.id != null && !selectedIds.includes(String(resource.id))
-			)
-		];
-	}, [selectedIds]);
+		const rest = resources.filter(
+			resource =>
+				resource.id != null &&
+				String(resource.id) !== tempLoggedInID &&
+				!selectedIds.includes(String(resource.id))
+		);
+		return [...(loggedIn ? [loggedIn] : []), ...selected, ...rest];
+	}, [selectedIds, tempLoggedInID]);
 
 	const addSelected = (id: string) => {
 		setSelectedIds(current =>
@@ -280,13 +283,20 @@ const Scheduler = () => {
 		args: DayPilot.SchedulerBeforeRowHeaderRenderArgs
 	) => {
 		const id = String(args.row.id);
+		const isLoggedIn = id === tempLoggedInID;
 		const isSelected = selectedIds.includes(id);
 
-		args.row.cssClass = isSelected
-			? 'resource-name-cell resource-name-cell-selected'
-			: 'resource-name-cell';
-		if (isSelected) {
+		if (isLoggedIn) {
+			args.row.cssClass = isSelected
+				? 'resource-name-cell resource-name-cell-logged-in resource-name-cell-has-deselect'
+				: 'resource-name-cell resource-name-cell-logged-in';
+			args.row.backColor = '#c9a227';
+		} else if (isSelected) {
+			args.row.cssClass =
+				'resource-name-cell resource-name-cell-selected';
 			args.row.backColor = '#3d8b5a';
+		} else {
+			args.row.cssClass = 'resource-name-cell';
 		}
 
 		args.row.areas = isSelected
@@ -298,7 +308,7 @@ const Scheduler = () => {
 						width: 18,
 						html: '×',
 						cssClass: 'resource-deselect-mark',
-						fontColor: '#ffffff',
+						fontColor: isLoggedIn ? '#3b2f0a' : '#ffffff',
 						verticalAlignment: 'center',
 						horizontalAlignment: 'center',
 						toolTip: 'Deselect',
@@ -309,7 +319,15 @@ const Scheduler = () => {
 	};
 
 	const onBeforeCellRender = (args: DayPilot.SchedulerBeforeCellRenderArgs) => {
-		if (!selectedIds.includes(String(args.cell.resource))) {
+		const resourceId = String(args.cell.resource);
+		if (resourceId === tempLoggedInID) {
+			// Yellow tint for the logged-in row; weekends a touch lighter
+			args.cell.properties.backColor = args.cell.properties.business
+				? '#fef6d9'
+				: '#fffbec';
+			return;
+		}
+		if (!selectedIds.includes(resourceId)) {
 			return;
 		}
 		// Keep weekends (non-business) a touch lighter than weekdays
