@@ -157,7 +157,7 @@ const events: DayPilot.EventData[] = stays.map((stay, index) => ({
 	text: resources.find(resource => resource.id === stay.resource)?.name ?? ''
 }));
 
-const defaultStart = new DayPilot.Date('2026-03-01');
+const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
 const defaultEnd = new DayPilot.Date('2027-01-10');
 const defaultDays = new DayPilot.Duration(
 	defaultStart,
@@ -328,7 +328,7 @@ const Scheduler = () => {
 			scale: 'Day',
 			startDate,
 			days,
-			cellWidth: 50,
+			cellWidth: 28,
 			rowHeaderWidth: 180,
 			rowClickHandling: 'Enabled'
 		}),
