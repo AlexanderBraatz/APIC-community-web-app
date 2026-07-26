@@ -159,6 +159,9 @@ Theme Designer Version: 2026.04.01.75862
 	padding: var(--dp-scheduler-rowheader-padding);
 	display: flex;
 	align-items: var(--dp-scheduler-rowheader-vertical-align);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 .brown_theme_timeheadergroup_inner,
 .brown_theme_timeheadercol_inner {

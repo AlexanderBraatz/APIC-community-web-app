@@ -1,6 +1,12 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useSyncExternalStore
+} from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
@@ -235,13 +241,23 @@ function useLocalStorageState<T>(
 	const setValue = (update: T | ((prev: T) => T)) => {
 		const prev = getLocalStorageSnapshot(key, seed);
 		const next =
-			typeof update === 'function'
-				? (update as (prev: T) => T)(prev)
-				: update;
+			typeof update === 'function' ? (update as (prev: T) => T)(prev) : update;
 		writeLocalStorage(key, next);
 	};
 
 	return [value, setValue];
+}
+
+function useIsNarrowScreen(breakpointPx = 640) {
+	return useSyncExternalStore(
+		onStoreChange => {
+			const mq = window.matchMedia(`(max-width: ${breakpointPx}px)`);
+			mq.addEventListener('change', onStoreChange);
+			return () => mq.removeEventListener('change', onStoreChange);
+		},
+		() => window.matchMedia(`(max-width: ${breakpointPx}px)`).matches,
+		() => false
+	);
 }
 
 function toInputDate(date: DayPilot.Date) {
@@ -444,6 +460,8 @@ const Scheduler = () => {
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 	const unsavedHistoryPushedRef = useRef(false);
 	const allowLeaveRef = useRef(false);
+	const isNarrow = useIsNarrowScreen();
+	const [namesCollapsed, setNamesCollapsed] = useState(true);
 
 	const canEditResource = (resourceId: string) =>
 		tempIsAdmin || resourceId === tempLoggedInID;
@@ -456,8 +474,7 @@ const Scheduler = () => {
 					return false;
 				}
 				return (
-					getEventSaveStatus(event) === 'unsaved' ||
-					isMarkedForDeletion(event)
+					getEventSaveStatus(event) === 'unsaved' || isMarkedForDeletion(event)
 				);
 			}),
 		[eventRows, tempIsAdmin, tempLoggedInID]
@@ -476,9 +493,7 @@ const Scheduler = () => {
 
 		const ownedEvents = tempIsAdmin
 			? eventRows
-			: eventRows.filter(
-					event => String(event.resource) === tempLoggedInID
-				);
+			: eventRows.filter(event => String(event.resource) === tempLoggedInID);
 		const eventsToSave = ownedEvents.filter(
 			event => !isMarkedForDeletion(event)
 		);
@@ -627,8 +642,7 @@ const Scheduler = () => {
 				: 'resource-name-cell resource-name-cell-logged-in';
 			args.row.backColor = '#c9a227';
 		} else if (isSelected) {
-			args.row.cssClass =
-				'resource-name-cell resource-name-cell-selected';
+			args.row.cssClass = 'resource-name-cell resource-name-cell-selected';
 			args.row.backColor = '#3d8b5a';
 		} else {
 			args.row.cssClass = 'resource-name-cell';
@@ -747,10 +761,7 @@ const Scheduler = () => {
 				if (String(event.id) !== String(id)) {
 					return event;
 				}
-				return withMarkedForDeletion(
-					event,
-					!isMarkedForDeletion(event)
-				);
+				return withMarkedForDeletion(event, !isMarkedForDeletion(event));
 			})
 		);
 		setSavedThisSession(false);
@@ -796,9 +807,7 @@ const Scheduler = () => {
 		const statusChip = editable
 			? `<span class="edit-status-chip ${chipClass} edit-status-chip-on-event">${chipLabel}</span>`
 			: '';
-		const deleteTitle = markedForDeletion
-			? 'Undo delete'
-			: 'Mark for deletion';
+		const deleteTitle = markedForDeletion ? 'Undo delete' : 'Mark for deletion';
 		args.data.html = editable
 			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${statusChip}<span class="scheduler-event-delete-mark" title="${deleteTitle}" onmousedown="event.stopPropagation()">×</span></span>`
 			: `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span></span>`;
@@ -859,6 +868,8 @@ const Scheduler = () => {
 		args.control.clearSelection();
 	};
 
+	const rowHeaderWidth = !isNarrow ? 180 : namesCollapsed ? 2 : 100;
+
 	const config: DayPilot.SchedulerConfig = useMemo(
 		() => ({
 			timeHeaders: [{ groupBy: 'Month' }, { groupBy: 'Day', format: 'd' }],
@@ -866,7 +877,7 @@ const Scheduler = () => {
 			startDate,
 			days,
 			cellWidth: 28,
-			rowHeaderWidth: 180,
+			rowHeaderWidth,
 			rowClickHandling: 'Enabled',
 			eventMoveHandling: 'Update',
 			eventResizeHandling: 'Update',
@@ -874,7 +885,7 @@ const Scheduler = () => {
 			eventDeleteHandling: 'Disabled',
 			timeRangeSelectedHandling: 'Enabled'
 		}),
-		[startDate, days]
+		[startDate, days, rowHeaderWidth]
 	);
 
 	return (
@@ -909,7 +920,10 @@ const Scheduler = () => {
 					/>
 				</label>
 				{error ? (
-					<p style={{ color: '#8a1f1f', margin: 0 }} role="alert">
+					<p
+						style={{ color: '#8a1f1f', margin: 0 }}
+						role="alert"
+					>
 						{error}
 					</p>
 				) : null}
@@ -933,9 +947,7 @@ const Scheduler = () => {
 						checked={tempIsAdmin}
 						onChange={event => setTempIsAdmin(event.target.checked)}
 					/>
-					<span>
-						{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)
-					</span>
+					<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
 				</label>
 			</div>
 
@@ -1008,9 +1020,7 @@ const Scheduler = () => {
 					onClick={() => {
 						void saveChanges();
 					}}
-					disabled={
-						!hasUnsavedChanges || saveUiState === 'loading'
-					}
+					disabled={!hasUnsavedChanges || saveUiState === 'loading'}
 					style={{
 						padding: '0.45rem 0.9rem',
 						border: '1px solid #6b512b',
@@ -1021,10 +1031,7 @@ const Scheduler = () => {
 							!hasUnsavedChanges || saveUiState === 'loading'
 								? 'not-allowed'
 								: 'pointer',
-						opacity:
-							!hasUnsavedChanges || saveUiState === 'loading'
-								? 0.55
-								: 1
+						opacity: !hasUnsavedChanges || saveUiState === 'loading' ? 0.55 : 1
 					}}
 				>
 					Save changes
@@ -1125,8 +1132,8 @@ const Scheduler = () => {
 									Save failed
 								</p>
 								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-									The database write did not succeed. Your local
-									edits are still here — try again.
+									The database write did not succeed. Your local edits are still
+									here — try again.
 								</p>
 								<button
 									type="button"
@@ -1184,9 +1191,8 @@ const Scheduler = () => {
 							You have unsaved changes
 						</p>
 						<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-							Leave this page without saving? Your local edits will
-							still be in this browser, but they are not saved to
-							the database yet.
+							Leave this page without saving? Your local edits will still be in
+							this browser, but they are not saved to the database yet.
 						</p>
 						<div
 							style={{
@@ -1229,23 +1235,42 @@ const Scheduler = () => {
 				</div>
 			) : null}
 
-			<DayPilotScheduler
-				{...config}
-				theme="brown_theme"
-				resources={orderedResources}
-				events={eventRows}
-				onBeforeRowHeaderRender={onBeforeRowHeaderRender}
-				onBeforeCellRender={onBeforeCellRender}
-				onBeforeEventRender={onBeforeEventRender}
-				onRowClick={onRowClick}
-				onEventClick={onEventClick}
-				onEventMove={onEventMove}
-				onEventMoved={onEventMoved}
-				onEventResize={onEventResize}
-				onEventResized={onEventResized}
-				onTimeRangeSelect={onTimeRangeSelect}
-				onTimeRangeSelected={onTimeRangeSelected}
-			/>
+			<div className="scheduler-frame">
+				{isNarrow ? (
+					<button
+						type="button"
+						className={
+							namesCollapsed
+								? 'scheduler-names-chip'
+								: 'scheduler-names-chip scheduler-names-chip-expanded'
+						}
+						aria-label={
+							namesCollapsed ? 'Show resource names' : 'Hide resource names'
+						}
+						aria-pressed={!namesCollapsed}
+						onClick={() => setNamesCollapsed(collapsed => !collapsed)}
+					>
+						<span aria-hidden="true">{namesCollapsed ? '›' : '‹'}</span>
+					</button>
+				) : null}
+				<DayPilotScheduler
+					{...config}
+					theme="brown_theme"
+					resources={orderedResources}
+					events={eventRows}
+					onBeforeRowHeaderRender={onBeforeRowHeaderRender}
+					onBeforeCellRender={onBeforeCellRender}
+					onBeforeEventRender={onBeforeEventRender}
+					onRowClick={onRowClick}
+					onEventClick={onEventClick}
+					onEventMove={onEventMove}
+					onEventMoved={onEventMoved}
+					onEventResize={onEventResize}
+					onEventResized={onEventResized}
+					onTimeRangeSelect={onTimeRangeSelect}
+					onTimeRangeSelected={onTimeRangeSelected}
+				/>
+			</div>
 		</div>
 	);
 };
