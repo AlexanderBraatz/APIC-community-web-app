@@ -1,11 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
 
-const resources: DayPilot.ResourceData[] = [
+const RESOURCES_STORAGE_KEY = 'scheduler-resources';
+const EVENTS_STORAGE_KEY = 'scheduler-events';
+
+const seedResources: DayPilot.ResourceData[] = [
 	{ id: 'R1', name: 'Emma Clarke' },
 	{ id: 'R2', name: 'James Patel' },
 	{ id: 'R3', name: 'Sofia Rossi' },
@@ -149,12 +152,13 @@ const stays: { resource: string; start: string; end: string }[] = [
 	{ resource: 'R40', start: '2026-12-26', end: '2027-01-06' }
 ];
 
-const events: DayPilot.EventData[] = stays.map((stay, index) => ({
+const seedEvents: DayPilot.EventData[] = stays.map((stay, index) => ({
 	id: index + 1,
 	resource: stay.resource,
 	start: `${stay.start}T00:00:00`,
 	end: `${stay.end}T00:00:00`,
-	text: resources.find(resource => resource.id === stay.resource)?.name ?? ''
+	text:
+		seedResources.find(resource => resource.id === stay.resource)?.name ?? ''
 }));
 
 const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
@@ -163,6 +167,81 @@ const defaultDays = new DayPilot.Duration(
 	defaultStart,
 	defaultEnd.addDays(1)
 ).totalDays();
+
+function readOrSeedLocalStorage<T>(key: string, seed: T): T {
+	const raw = localStorage.getItem(key);
+	if (raw != null) {
+		try {
+			return JSON.parse(raw) as T;
+		} catch {
+			// Corrupted value — fall through and re-seed.
+		}
+	}
+	localStorage.setItem(key, JSON.stringify(seed));
+	return seed;
+}
+
+const localStorageCache = new Map<string, unknown>();
+const localStorageListeners = new Map<string, Set<() => void>>();
+
+function subscribeLocalStorage(key: string, onStoreChange: () => void) {
+	let listeners = localStorageListeners.get(key);
+	if (!listeners) {
+		listeners = new Set();
+		localStorageListeners.set(key, listeners);
+	}
+	listeners.add(onStoreChange);
+
+	const onStorage = (event: StorageEvent) => {
+		if (event.key === key || event.key === null) {
+			localStorageCache.delete(key);
+			onStoreChange();
+		}
+	};
+	window.addEventListener('storage', onStorage);
+	return () => {
+		listeners.delete(onStoreChange);
+		window.removeEventListener('storage', onStorage);
+	};
+}
+
+function getLocalStorageSnapshot<T>(key: string, seed: T): T {
+	const cached = localStorageCache.get(key);
+	if (cached !== undefined) {
+		return cached as T;
+	}
+	const value = readOrSeedLocalStorage(key, seed);
+	localStorageCache.set(key, value);
+	return value;
+}
+
+function writeLocalStorage<T>(key: string, value: T) {
+	localStorage.setItem(key, JSON.stringify(value));
+	localStorageCache.set(key, value);
+	localStorageListeners.get(key)?.forEach(listener => listener());
+}
+
+function useLocalStorageState<T>(
+	key: string,
+	seed: T
+): [T, (update: T | ((prev: T) => T)) => void] {
+	const value = useSyncExternalStore(
+		onStoreChange => subscribeLocalStorage(key, onStoreChange),
+		() => getLocalStorageSnapshot(key, seed),
+		() => seed
+	);
+
+	const setValue = (update: T | ((prev: T) => T)) => {
+		const prev = getLocalStorageSnapshot(key, seed);
+		const next =
+			typeof update === 'function'
+				? (update as (prev: T) => T)(prev)
+				: update;
+		writeLocalStorage(key, next);
+	};
+
+	return [value, setValue];
+}
 
 function toInputDate(date: DayPilot.Date) {
 	return date.toString('yyyy-MM-dd');
@@ -217,7 +296,14 @@ function fuzzyMatch(query: string, name: string) {
 }
 
 const Scheduler = () => {
-	const [eventRows] = useState(events);
+	const [resources] = useLocalStorageState(
+		RESOURCES_STORAGE_KEY,
+		seedResources
+	);
+	const [eventRows, setEventRows] = useLocalStorageState(
+		EVENTS_STORAGE_KEY,
+		seedEvents
+	);
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
@@ -261,7 +347,7 @@ const Scheduler = () => {
 				!selectedIds.includes(String(resource.id))
 		);
 		return [...(loggedIn ? [loggedIn] : []), ...selected, ...rest];
-	}, [selectedIds, tempLoggedInID]);
+	}, [resources, selectedIds, tempLoggedInID]);
 
 	const addSelected = (id: string) => {
 		setSelectedIds(current =>
@@ -340,6 +426,69 @@ const Scheduler = () => {
 		toggleSelected(String(args.row.id));
 	};
 
+	const persistEventChange = (
+		id: DayPilot.EventId,
+		patch: Pick<DayPilot.EventData, 'start' | 'end' | 'resource'>
+	) => {
+		setEventRows(current =>
+			current.map(event =>
+				String(event.id) === String(id) ? { ...event, ...patch } : event
+			)
+		);
+	};
+
+	const onEventMoved = (args: DayPilot.SchedulerEventMovedArgs) => {
+		const resourceName =
+			resources.find(resource => String(resource.id) === String(args.newResource))
+				?.name ?? '';
+		setEventRows(current =>
+			current.map(event =>
+				String(event.id) === String(args.e.id())
+					? {
+							...event,
+							start: args.newStart.toString(),
+							end: args.newEnd.toString(),
+							resource: args.newResource,
+							text: resourceName
+						}
+					: event
+			)
+		);
+	};
+
+	const onEventResized = (args: DayPilot.SchedulerEventResizedArgs) => {
+		persistEventChange(args.e.id(), {
+			start: args.newStart.toString(),
+			end: args.newEnd.toString()
+		});
+	};
+
+	const onTimeRangeSelected = (
+		args: DayPilot.SchedulerTimeRangeSelectedArgs
+	) => {
+		const resourceName =
+			resources.find(resource => String(resource.id) === String(args.resource))
+				?.name ?? '';
+		setEventRows(current => {
+			const nextId =
+				current.reduce((max, event) => {
+					const id = Number(event.id);
+					return Number.isFinite(id) ? Math.max(max, id) : max;
+				}, 0) + 1;
+			return [
+				...current,
+				{
+					id: nextId,
+					resource: args.resource,
+					start: args.start.toString(),
+					end: args.end.toString(),
+					text: resourceName
+				}
+			];
+		});
+		args.control.clearSelection();
+	};
+
 	const config: DayPilot.SchedulerConfig = useMemo(
 		() => ({
 			timeHeaders: [{ groupBy: 'Month' }, { groupBy: 'Day', format: 'd' }],
@@ -348,7 +497,10 @@ const Scheduler = () => {
 			days,
 			cellWidth: 28,
 			rowHeaderWidth: 180,
-			rowClickHandling: 'Enabled'
+			rowClickHandling: 'Enabled',
+			eventMoveHandling: 'Update',
+			eventResizeHandling: 'Update',
+			timeRangeSelectedHandling: 'Enabled'
 		}),
 		[startDate, days]
 	);
@@ -465,6 +617,9 @@ const Scheduler = () => {
 				onBeforeRowHeaderRender={onBeforeRowHeaderRender}
 				onBeforeCellRender={onBeforeCellRender}
 				onRowClick={onRowClick}
+				onEventMoved={onEventMoved}
+				onEventResized={onEventResized}
+				onTimeRangeSelected={onTimeRangeSelected}
 			/>
 		</div>
 	);
