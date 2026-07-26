@@ -46,3 +46,30 @@
 	line-height: 1;
 	pointer-events: none;
 }
+
+.scheduler-event-content {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	max-width: 100%;
+	min-width: 0;
+}
+
+.scheduler-event-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.scheduler-event-delete-mark {
+	flex-shrink: 0;
+	font-size: 12px;
+	font-weight: 600;
+	line-height: 1;
+	opacity: 0.45;
+	cursor: pointer;
+}
+
+.scheduler-event-delete-mark:hover {
+	opacity: 0.9;
+}

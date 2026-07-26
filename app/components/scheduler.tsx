@@ -268,6 +268,14 @@ function normalizeSearchText(value: string) {
 	return value.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
+function escapeHtml(value: string) {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;');
+}
+
 /** Case-insensitive fuzzy match: each query word must appear as a subsequence in the name. */
 function fuzzyMatch(query: string, name: string) {
 	const normalizedQuery = normalizeSearchText(query);
@@ -463,6 +471,30 @@ const Scheduler = () => {
 		});
 	};
 
+	const deleteEvent = (id: DayPilot.EventId) => {
+		setEventRows(current =>
+			current.filter(event => String(event.id) !== String(id))
+		);
+	};
+
+	const onBeforeEventRender = (
+		args: DayPilot.SchedulerBeforeEventRenderArgs
+	) => {
+		const name = escapeHtml(String(args.data.text ?? ''));
+		args.data.html = `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span><span class="scheduler-event-delete-mark" title="Delete" onmousedown="event.stopPropagation()">×</span></span>`;
+	};
+
+	const onEventClick = (args: DayPilot.SchedulerEventClickArgs) => {
+		const target = args.originalEvent.target;
+		if (
+			target instanceof Element &&
+			target.closest('.scheduler-event-delete-mark')
+		) {
+			args.preventDefault();
+			deleteEvent(args.e.id());
+		}
+	};
+
 	const onTimeRangeSelected = (
 		args: DayPilot.SchedulerTimeRangeSelectedArgs
 	) => {
@@ -500,6 +532,8 @@ const Scheduler = () => {
 			rowClickHandling: 'Enabled',
 			eventMoveHandling: 'Update',
 			eventResizeHandling: 'Update',
+			eventClickHandling: 'Enabled',
+			eventDeleteHandling: 'Disabled',
 			timeRangeSelectedHandling: 'Enabled'
 		}),
 		[startDate, days]
@@ -616,7 +650,9 @@ const Scheduler = () => {
 				events={eventRows}
 				onBeforeRowHeaderRender={onBeforeRowHeaderRender}
 				onBeforeCellRender={onBeforeCellRender}
+				onBeforeEventRender={onBeforeEventRender}
 				onRowClick={onRowClick}
+				onEventClick={onEventClick}
 				onEventMoved={onEventMoved}
 				onEventResized={onEventResized}
 				onTimeRangeSelected={onTimeRangeSelected}
