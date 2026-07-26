@@ -9,11 +9,22 @@ import {
 } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import {
-	AvailabilityModal
+	AvailabilityModal,
+	ReadOnlyAvailabilityModal
 } from '@/app/components/availability-modal';
+import { CalendarDays, Search, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
@@ -454,12 +465,6 @@ async function mockDatabaseWrite(
 type SaveUiState = 'idle' | 'loading' | 'success' | 'error';
 type EditStatus = 'ready' | 'unsaved' | 'saved';
 
-const EDIT_STATUS_LABELS: Record<EditStatus, string> = {
-	ready: 'Drag to edit',
-	unsaved: 'Unsaved changes',
-	saved: 'Saved'
-};
-
 const EVENT_STATUS_LABELS: Record<EditStatus, string> = {
 	ready: 'Drag to edit',
 	unsaved: 'Unsaved',
@@ -562,6 +567,14 @@ function fuzzyMatch(query: string, name: string) {
 	});
 }
 
+type SchedulerFontSize = 'small' | 'medium' | 'large';
+
+const SCHEDULER_FONT_SIZE: Record<SchedulerFontSize, { cellWidth: number }> = {
+	small: { cellWidth: 28 },
+	medium: { cellWidth: 32 },
+	large: { cellWidth: 38 }
+};
+
 const Scheduler = () => {
 	const [resources] = useLocalStorageState(
 		RESOURCES_STORAGE_KEY,
@@ -601,10 +614,17 @@ const Scheduler = () => {
 	const [savedThisSession, setSavedThisSession] = useState(false);
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 	const [availabilityOpen, setAvailabilityOpen] = useState(false);
+	const [availabilityFocusId, setAvailabilityFocusId] = useState<string | null>(
+		null
+	);
+	const [readOnlyEvent, setReadOnlyEvent] =
+		useState<DayPilot.EventData | null>(null);
+	const [settingsOpen, setSettingsOpen] = useState(false);
 	const unsavedHistoryPushedRef = useRef(false);
 	const allowLeaveRef = useRef(false);
 	const isNarrow = useIsNarrowScreen();
 	const [namesCollapsed, setNamesCollapsed] = useState(true);
+	const [fontSize, setFontSize] = useState<SchedulerFontSize>('medium');
 
 	const canEditResource = (resourceId: string) =>
 		tempIsAdmin || resourceId === tempLoggedInID;
@@ -622,12 +642,6 @@ const Scheduler = () => {
 			}),
 		[eventRows, tempIsAdmin, tempLoggedInID]
 	);
-
-	const editStatus: EditStatus = hasUnsavedChanges
-		? 'unsaved'
-		: savedThisSession
-			? 'saved'
-			: 'ready';
 
 	const saveChanges = async (eventsOverride?: DayPilot.EventData[]) => {
 		if (saveUiState === 'loading') {
@@ -697,11 +711,17 @@ const Scheduler = () => {
 
 	const closeAvailabilityModal = () => {
 		setAvailabilityOpen(false);
+		setAvailabilityFocusId(null);
+	};
+
+	const closeReadOnlyAvailabilityModal = () => {
+		setReadOnlyEvent(null);
 	};
 
 	useEffect(() => {
 		if (tempIsAdmin) {
 			setAvailabilityOpen(false);
+			setAvailabilityFocusId(null);
 		}
 	}, [tempIsAdmin]);
 
@@ -756,6 +776,7 @@ const Scheduler = () => {
 					);
 
 		setAvailabilityOpen(false);
+		setAvailabilityFocusId(null);
 		await saveChanges(nextEvents);
 	};
 
@@ -774,6 +795,12 @@ const Scheduler = () => {
 		setSavedThisSession(false);
 		unsavedHistoryPushedRef.current = false;
 		history.back();
+	};
+
+	const discardChanges = () => {
+		setDraftEvents(null);
+		setSavedThisSession(false);
+		unsavedHistoryPushedRef.current = false;
 	};
 
 	useEffect(() => {
@@ -1044,16 +1071,33 @@ const Scheduler = () => {
 	const onEventClick = (args: DayPilot.SchedulerEventClickArgs) => {
 		const target = args.originalEvent.target;
 		if (
-			!(target instanceof Element) ||
-			!target.closest('.scheduler-event-delete-mark')
+			target instanceof Element &&
+			target.closest('.scheduler-event-delete-mark')
 		) {
+			args.preventDefault();
+			if (!canEditResource(String(args.e.resource()))) {
+				return;
+			}
+			deleteEvent(args.e.id());
 			return;
 		}
-		args.preventDefault();
-		if (!canEditResource(String(args.e.resource()))) {
+
+		const eventId = String(args.e.id());
+		const event = eventRows.find(item => String(item.id) === eventId);
+		if (!event) {
 			return;
 		}
-		deleteEvent(args.e.id());
+
+		if (String(event.resource) === tempLoggedInID) {
+			setReadOnlyEvent(null);
+			setAvailabilityFocusId(eventId);
+			setAvailabilityOpen(true);
+			return;
+		}
+
+		setAvailabilityOpen(false);
+		setAvailabilityFocusId(null);
+		setReadOnlyEvent(event);
 	};
 
 	const onTimeRangeSelect = (args: DayPilot.SchedulerTimeRangeSelectArgs) => {
@@ -1100,6 +1144,7 @@ const Scheduler = () => {
 	};
 
 	const rowHeaderWidth = !isNarrow ? 180 : namesCollapsed ? 2 : 100;
+	const fontSizeConfig = SCHEDULER_FONT_SIZE[fontSize];
 
 	const config: DayPilot.SchedulerConfig = useMemo(
 		() => ({
@@ -1107,7 +1152,7 @@ const Scheduler = () => {
 			scale: 'Day',
 			startDate,
 			days,
-			cellWidth: 28,
+			cellWidth: fontSizeConfig.cellWidth,
 			rowHeaderWidth,
 			rowClickHandling: 'Enabled',
 			eventMoveHandling: 'Update',
@@ -1116,48 +1161,30 @@ const Scheduler = () => {
 			eventDeleteHandling: 'Disabled',
 			timeRangeSelectedHandling: 'Enabled'
 		}),
-		[startDate, days, rowHeaderWidth]
+		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth]
 	);
 
 	return (
 		<div className="p-4">
 			<div className="mb-4 flex flex-wrap items-end gap-x-3 gap-y-3">
-				<div className="grid gap-1.5">
-					<Label htmlFor="scheduler-start-date">Start date</Label>
-					<Input
-						id="scheduler-start-date"
-						type="date"
-						value={startValue}
-						max={endValue || undefined}
-						onChange={event => setStartValue(event.target.value)}
-						required
-						className="w-46 bg-muted"
-					/>
-				</div>
-				<div className="grid gap-1.5">
-					<Label htmlFor="scheduler-end-date">End date</Label>
-					<Input
-						id="scheduler-end-date"
-						type="date"
-						value={endValue}
-						min={startValue || undefined}
-						onChange={event => setEndValue(event.target.value)}
-						required
-						className="w-46 bg-muted"
-					/>
-				</div>
 				<div className="relative min-w-64 flex-1 basis-64 max-w-sm">
 					<div className="grid gap-1.5">
-						<Label htmlFor="scheduler-search-people">Search people</Label>
-						<Input
-							id="scheduler-search-people"
-							type="search"
-							value={query}
-							placeholder="Type a name…"
-							onChange={event => setQuery(event.target.value)}
-							autoComplete="off"
-							className="bg-muted"
-						/>
+						<div className="relative">
+							<Search
+								aria-hidden
+								className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+							/>
+							<Input
+								id="scheduler-search-people"
+								type="search"
+								value={query}
+								placeholder="Find people to compare availability"
+								aria-label="Find people to compare availability"
+								onChange={event => setQuery(event.target.value)}
+								autoComplete="off"
+								className="bg-muted pl-8"
+							/>
+						</div>
 					</div>
 					{suggestions.length > 0 ? (
 						<ul className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md">
@@ -1186,31 +1213,32 @@ const Scheduler = () => {
 					{!tempIsAdmin ? (
 						<Button
 							type="button"
-							variant="outline"
 							size="lg"
-							onClick={() => setAvailabilityOpen(true)}
+							onClick={() => {
+								setAvailabilityFocusId(null);
+								setAvailabilityOpen(true);
+							}}
 							disabled={saveUiState === 'loading'}
+							className="border border-[#6b512b] bg-[#6b512b] text-white hover:bg-[#5a4324] hover:text-white"
 						>
-							Manage availability
+							<CalendarDays
+								data-icon="inline-start"
+								aria-hidden
+							/>
+							Manage your availability
 						</Button>
-					) : null}
-					{editStatus === 'unsaved' || editStatus === 'saved' ? (
-						<span
-							className={`edit-status-chip edit-status-chip-${editStatus}`}
-							aria-live="polite"
-						>
-							{EDIT_STATUS_LABELS[editStatus]}
-						</span>
 					) : null}
 					<Button
 						type="button"
+						variant="outline"
 						size="lg"
-						onClick={() => {
-							void saveChanges();
-						}}
-						disabled={!hasUnsavedChanges || saveUiState === 'loading'}
+						onClick={() => setSettingsOpen(true)}
 					>
-						Save changes
+						<Settings
+							data-icon="inline-start"
+							aria-hidden
+						/>
+						Settings
 					</Button>
 				</div>
 				{error ? (
@@ -1223,6 +1251,168 @@ const Scheduler = () => {
 				) : null}
 			</div>
 
+			{hasUnsavedChanges ? (
+				<div
+					role="status"
+					aria-live="polite"
+					className="fixed right-4 bottom-4 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[#d4a017]/60 bg-popover p-4 shadow-lg ring-1 ring-foreground/10"
+				>
+					<p className="mb-1 text-sm font-medium text-foreground">
+						Keep your updates?
+					</p>
+					<p className="mb-3 text-sm text-muted-foreground">
+						You’ve changed your calendar. Save to keep them, or discard to go
+						back to what you had before.
+					</p>
+					<div className="flex flex-wrap justify-end gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							size="lg"
+							onClick={discardChanges}
+							disabled={saveUiState === 'loading'}
+						>
+							Discard
+						</Button>
+						<Button
+							type="button"
+							size="lg"
+							onClick={() => {
+								void saveChanges();
+							}}
+							disabled={saveUiState === 'loading'}
+							className="border border-[#d4a017] bg-[#ffe566] text-[#5c3d00] hover:bg-[#ffd633] hover:text-[#5c3d00]"
+						>
+							Save
+						</Button>
+					</div>
+				</div>
+			) : null}
+
+			<Dialog
+				open={settingsOpen}
+				onOpenChange={setSettingsOpen}
+			>
+				<DialogContent
+					className="sm:max-w-md"
+					showCloseButton
+				>
+					<DialogHeader>
+						<DialogTitle>Settings</DialogTitle>
+						<DialogDescription>
+							Adjust the calendar date range and text size.
+						</DialogDescription>
+					</DialogHeader>
+
+					<div className="grid gap-4">
+						<div className="grid gap-1.5">
+							<Label id="scheduler-font-size-label">Text size</Label>
+							<ToggleGroup
+								aria-labelledby="scheduler-font-size-label"
+								variant="outline"
+								spacing={0}
+								value={[fontSize]}
+								onValueChange={values => {
+									const next = values[0];
+									if (
+										next === 'small' ||
+										next === 'medium' ||
+										next === 'large'
+									) {
+										setFontSize(next);
+									}
+								}}
+							>
+								<ToggleGroupItem
+									value="small"
+									aria-label="Small text"
+									title="Small"
+									className="px-2.5"
+								>
+									<span
+										aria-hidden
+										className="font-serif text-[11px] font-semibold leading-none"
+									>
+										A
+									</span>
+								</ToggleGroupItem>
+								<ToggleGroupItem
+									value="medium"
+									aria-label="Medium text"
+									title="Medium"
+									className="px-2.5"
+								>
+									<span
+										aria-hidden
+										className="font-serif text-[15px] font-semibold leading-none"
+									>
+										A
+									</span>
+								</ToggleGroupItem>
+								<ToggleGroupItem
+									value="large"
+									aria-label="Large text"
+									title="Large"
+									className="px-2.5"
+								>
+									<span
+										aria-hidden
+										className="font-serif text-[19px] font-semibold leading-none"
+									>
+										A
+									</span>
+								</ToggleGroupItem>
+							</ToggleGroup>
+						</div>
+
+						<div className="grid gap-3 sm:grid-cols-2">
+							<div className="grid gap-1.5">
+								<Label htmlFor="scheduler-start-date">Start date</Label>
+								<Input
+									id="scheduler-start-date"
+									type="date"
+									value={startValue}
+									max={endValue || undefined}
+									onChange={event => setStartValue(event.target.value)}
+									required
+									className="bg-muted"
+								/>
+							</div>
+							<div className="grid gap-1.5">
+								<Label htmlFor="scheduler-end-date">End date</Label>
+								<Input
+									id="scheduler-end-date"
+									type="date"
+									value={endValue}
+									min={startValue || undefined}
+									onChange={event => setEndValue(event.target.value)}
+									required
+									className="bg-muted"
+								/>
+							</div>
+						</div>
+
+						{error ? (
+							<p
+								className="text-sm text-destructive"
+								role="alert"
+							>
+								{error}
+							</p>
+						) : null}
+					</div>
+
+					<DialogFooter>
+						<Button
+							type="button"
+							onClick={() => setSettingsOpen(false)}
+						>
+							Done
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
 			{availabilityOpen && !tempIsAdmin ? (
 				<AvailabilityModal
 					open
@@ -1231,10 +1421,24 @@ const Scheduler = () => {
 						resources.find(resource => String(resource.id) === tempLoggedInID)
 							?.name ?? ''
 					}
+					initialEventId={availabilityFocusId}
 					onDiscard={closeAvailabilityModal}
 					onSave={payload => {
 						void saveAvailabilityFromModal(payload);
 					}}
+				/>
+			) : null}
+
+			{readOnlyEvent != null ? (
+				<ReadOnlyAvailabilityModal
+					open
+					event={readOnlyEvent}
+					memberName={
+						resources.find(
+							resource => String(resource.id) === String(readOnlyEvent.resource)
+						)?.name ?? 'Member'
+					}
+					onClose={closeReadOnlyAvailabilityModal}
 				/>
 			) : null}
 
@@ -1427,7 +1631,10 @@ const Scheduler = () => {
 				</div>
 			) : null}
 
-			<div className="scheduler-frame">
+			<div
+				className="scheduler-frame"
+				data-font-size={fontSize}
+			>
 				{isNarrow ? (
 					<button
 						type="button"

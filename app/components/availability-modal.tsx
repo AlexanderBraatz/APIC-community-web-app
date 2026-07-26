@@ -31,6 +31,8 @@ type AvailabilityModalProps = {
 	open: boolean;
 	userEvents: DayPilot.EventData[];
 	defaultTitle: string;
+	/** When set, open with this event loaded in the yellow edit form. */
+	initialEventId?: string | null;
 	onDiscard: () => void;
 	onSave: (payload: {
 		eventId: string | null;
@@ -70,6 +72,7 @@ export function AvailabilityModal({
 	open,
 	userEvents,
 	defaultTitle,
+	initialEventId = null,
 	onDiscard,
 	onSave
 }: AvailabilityModalProps) {
@@ -97,14 +100,28 @@ export function AvailabilityModal({
 		if (!open) {
 			return;
 		}
+		setFormError(null);
+		if (initialEventId != null) {
+			const event = userEvents.find(
+				item => String(item.id) === String(initialEventId)
+			);
+			if (event && !isMarkedForDeletion(event)) {
+				setFormMode('edit');
+				setEditingId(String(event.id));
+				setStartValue(toInputDate(event.start));
+				setEndValue(toInputDate(event.end));
+				setTitleValue(getEventTitle(event));
+				setNoteValue(getEventNote(event));
+				return;
+			}
+		}
 		setFormMode(null);
 		setEditingId(null);
 		setStartValue('');
 		setEndValue('');
 		setTitleValue('');
 		setNoteValue('');
-		setFormError(null);
-	}, [open]);
+	}, [open, initialEventId, userEvents]);
 
 	const loadEvent = (event: DayPilot.EventData) => {
 		setFormMode('edit');
@@ -369,6 +386,75 @@ export function AvailabilityModal({
 						disabled={!formVisible}
 					>
 						Save
+					</Button>
+				</DialogFooter>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+type ReadOnlyAvailabilityModalProps = {
+	open: boolean;
+	event: DayPilot.EventData;
+	memberName: string;
+	onClose: () => void;
+};
+
+export function ReadOnlyAvailabilityModal({
+	open,
+	event,
+	memberName,
+	onClose
+}: ReadOnlyAvailabilityModalProps) {
+	const title = getEventTitle(event);
+	const note = getEventNote(event);
+
+	return (
+		<Dialog
+			open={open}
+			onOpenChange={nextOpen => {
+				if (!nextOpen) {
+					onClose();
+				}
+			}}
+		>
+			<DialogContent
+				className="sm:max-w-md"
+				showCloseButton
+			>
+				<DialogHeader>
+					<DialogTitle>{title}</DialogTitle>
+					<DialogDescription>
+						{memberName}
+						{' · '}
+						{formatDisplayDate(event.start)}
+						{' – '}
+						{formatDisplayDate(event.end)}
+					</DialogDescription>
+				</DialogHeader>
+
+				<div className="rounded-lg border border-border bg-muted/50 p-4">
+					<p className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+						Note
+					</p>
+					{note ? (
+						<p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground">
+							{note}
+						</p>
+					) : (
+						<p className="text-sm text-muted-foreground italic">
+							No note for this stay.
+						</p>
+					)}
+				</div>
+
+				<DialogFooter>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={onClose}
+					>
+						Close
 					</Button>
 				</DialogFooter>
 			</DialogContent>

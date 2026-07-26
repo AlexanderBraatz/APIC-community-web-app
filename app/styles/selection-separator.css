@@ -2,6 +2,26 @@
 	position: relative;
 }
 
+.scheduler-frame[data-font-size='small'] :is(.brown_theme_main, .brown_theme_main:not(.default)) {
+	--dp-scheduler-font-size: 10px;
+}
+
+.scheduler-frame[data-font-size='medium'] :is(.brown_theme_main, .brown_theme_main:not(.default)) {
+	--dp-scheduler-font-size: 13px;
+}
+
+.scheduler-frame[data-font-size='large'] :is(.brown_theme_main, .brown_theme_main:not(.default)) {
+	--dp-scheduler-font-size: 16px;
+}
+
+.scheduler-frame[data-font-size='medium'] .edit-status-chip-on-event {
+	font-size: 10px;
+}
+
+.scheduler-frame[data-font-size='large'] .edit-status-chip-on-event {
+	font-size: 11px;
+}
+
 .scheduler-names-chip {
 	position: absolute;
 	top: 0px;
@@ -112,16 +132,17 @@
 	cursor: pointer;
 }
 
+.brown_theme_event,
+.brown_theme_event .brown_theme_event_inner,
+.brown_theme_event.scheduler-event-readonly,
+.brown_theme_event.scheduler-event-readonly .brown_theme_event_inner,
+.brown_theme_event.scheduler-event-editable,
+.brown_theme_event.scheduler-event-editable .brown_theme_event_inner {
+	cursor: pointer;
+}
+
 .scheduler-event-delete-mark:hover {
 	opacity: 0.9;
-}
-
-.brown_theme_event.scheduler-event-readonly {
-	cursor: default;
-}
-
-.brown_theme_event.scheduler-event-readonly .brown_theme_event_inner {
-	cursor: default;
 }
 
 .save-overlay-spinner {
