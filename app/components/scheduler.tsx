@@ -8,6 +8,9 @@ import {
 	useSyncExternalStore
 } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
+import {
+	AvailabilityModal
+} from '@/app/components/availability-modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +19,7 @@ import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
 
 const RESOURCES_STORAGE_KEY = 'scheduler-resources';
-const EVENTS_STORAGE_KEY = 'scheduler-events';
+const EVENTS_STORAGE_KEY = 'scheduler-events-v2';
 
 const seedResources: DayPilot.ResourceData[] = [
 	{ id: 'R1', name: 'Emma Clarke' },
@@ -162,15 +165,122 @@ const stays: { resource: string; start: string; end: string }[] = [
 	{ resource: 'R40', start: '2026-12-26', end: '2027-01-06' }
 ];
 
-const seedEvents: DayPilot.EventData[] = stays.map((stay, index) => ({
-	id: index + 1,
-	resource: stay.resource,
-	start: `${stay.start}T00:00:00`,
-	end: `${stay.end}T00:00:00`,
-	text:
-		seedResources.find(resource => resource.id === stay.resource)?.name ?? '',
-	tags: { saveStatus: 'ready' }
-}));
+const seedStayNotes = [
+	'We are new to the community and excited to settle in.',
+	'Cannot wait to see you all again this summer.',
+	'Quiet working weeks — happy to join evening meals.',
+	'Bringing the kids; looking forward to the pool days.',
+	'First long stay — please say hello when you see us.',
+	'Back for our favourite stretch of the year.'
+];
+
+const overlapStays: {
+	resource: string;
+	start: string;
+	end: string;
+	title: string;
+	note: string;
+}[] = [
+	{
+		resource: 'R6',
+		start: '2026-07-10',
+		end: '2026-07-18',
+		title: 'Son is visiting',
+		note: 'He arrives Friday evening — spare bed ready in the annex.'
+	},
+	{
+		resource: 'R6',
+		start: '2026-08-08',
+		end: '2026-08-12',
+		title: 'Attending street festival',
+		note: 'Day trips into town; evenings back at the house.'
+	},
+	{
+		resource: 'R1',
+		start: '2026-07-01',
+		end: '2026-07-12',
+		title: 'Partner is visiting',
+		note: 'Looking forward to introducing everyone around the table.'
+	},
+	{
+		resource: 'R4',
+		start: '2026-07-15',
+		end: '2026-07-22',
+		title: 'Friends from home',
+		note: 'Two couples joining us for a week of walks and cooking.'
+	},
+	{
+		resource: 'R10',
+		start: '2026-08-05',
+		end: '2026-08-14',
+		title: 'Birthday weekend',
+		note: 'Small celebration on the Saturday — all welcome for cake.'
+	},
+	{
+		resource: 'R18',
+		start: '2026-07-12',
+		end: '2026-07-20',
+		title: 'Parents visiting',
+		note: 'Slower pace while they are here; mornings are quiet.'
+	},
+	{
+		resource: 'R28',
+		start: '2026-07-20',
+		end: '2026-07-28',
+		title: 'Workshop week',
+		note: 'Away most afternoons for a ceramics course in the village.'
+	},
+	{
+		resource: 'R40',
+		start: '2026-08-10',
+		end: '2026-08-18',
+		title: 'Niece is visiting',
+		note: 'Teenager in tow — pool and bike rides planned.'
+	}
+];
+
+function buildSeedEvent(
+	id: number,
+	resource: string,
+	start: string,
+	end: string,
+	title: string,
+	note: string
+): DayPilot.EventData {
+	return {
+		id,
+		resource,
+		start: `${start}T00:00:00`,
+		end: `${end}T00:00:00`,
+		text: title,
+		tags: { title, note, saveStatus: 'ready' }
+	};
+}
+
+const seedEvents: DayPilot.EventData[] = [
+	...stays.map((stay, index) => {
+		const memberName =
+			seedResources.find(resource => resource.id === stay.resource)?.name ?? '';
+		return buildSeedEvent(
+			index + 1,
+			stay.resource,
+			stay.start,
+			stay.end,
+			memberName,
+			seedStayNotes[index % seedStayNotes.length] ?? ''
+		);
+	}),
+	...overlapStays.map((stay, index) =>
+		buildSeedEvent(
+			stays.length + index + 1,
+			stay.resource,
+			stay.start,
+			stay.end,
+			stay.title,
+			stay.note
+		)
+	)
+];
 
 const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
 const defaultEnd = new DayPilot.Date('2027-01-10');
@@ -368,6 +478,34 @@ function isMarkedForDeletion(event: DayPilot.EventData): boolean {
 	return event.tags?.markedForDeletion === true;
 }
 
+function getEventTitle(event: DayPilot.EventData) {
+	const fromTags = event.tags?.title;
+	if (typeof fromTags === 'string' && fromTags.length > 0) {
+		return fromTags;
+	}
+	return String(event.text ?? '');
+}
+
+function getEventNote(event: DayPilot.EventData) {
+	const note = event.tags?.note;
+	return typeof note === 'string' ? note : '';
+}
+
+function withEventContent(
+	event: DayPilot.EventData,
+	content: { title: string; note: string }
+): DayPilot.EventData {
+	return {
+		...event,
+		text: content.title,
+		tags: {
+			...event.tags,
+			title: content.title,
+			note: content.note
+		}
+	};
+}
+
 function withEventSaveStatus(
 	event: DayPilot.EventData,
 	saveStatus: EditStatus
@@ -462,6 +600,7 @@ const Scheduler = () => {
 	const [saveUiState, setSaveUiState] = useState<SaveUiState>('idle');
 	const [savedThisSession, setSavedThisSession] = useState(false);
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+	const [availabilityOpen, setAvailabilityOpen] = useState(false);
 	const unsavedHistoryPushedRef = useRef(false);
 	const allowLeaveRef = useRef(false);
 	const isNarrow = useIsNarrowScreen();
@@ -490,14 +629,33 @@ const Scheduler = () => {
 			? 'saved'
 			: 'ready';
 
-	const saveChanges = async () => {
-		if (saveUiState === 'loading' || !hasUnsavedChanges) {
+	const saveChanges = async (eventsOverride?: DayPilot.EventData[]) => {
+		if (saveUiState === 'loading') {
 			return;
 		}
 
+		const rows = eventsOverride ?? eventRows;
+		const hasUnsavedInRows = rows.some(event => {
+			const resourceId = String(event.resource ?? '');
+			if (!(tempIsAdmin || resourceId === tempLoggedInID)) {
+				return false;
+			}
+			return (
+				getEventSaveStatus(event) === 'unsaved' || isMarkedForDeletion(event)
+			);
+		});
+		if (!hasUnsavedInRows) {
+			return;
+		}
+
+		if (eventsOverride) {
+			setDraftEvents(eventsOverride);
+			setSavedThisSession(false);
+		}
+
 		const ownedEvents = tempIsAdmin
-			? eventRows
-			: eventRows.filter(event => String(event.resource) === tempLoggedInID);
+			? rows
+			: rows.filter(event => String(event.resource) === tempLoggedInID);
 		const eventsToSave = ownedEvents.filter(
 			event => !isMarkedForDeletion(event)
 		);
@@ -529,6 +687,76 @@ const Scheduler = () => {
 		} catch {
 			setSaveUiState('error');
 		}
+	};
+
+	const userAvailabilityEvents = useMemo(
+		() =>
+			eventRows.filter(event => String(event.resource) === tempLoggedInID),
+		[eventRows, tempLoggedInID]
+	);
+
+	const closeAvailabilityModal = () => {
+		setAvailabilityOpen(false);
+	};
+
+	useEffect(() => {
+		if (tempIsAdmin) {
+			setAvailabilityOpen(false);
+		}
+	}, [tempIsAdmin]);
+
+	const saveAvailabilityFromModal = async (payload: {
+		eventId: string | null;
+		startValue: string;
+		endValue: string;
+		title: string;
+		note: string;
+	}) => {
+		const resourceName =
+			resources.find(resource => String(resource.id) === tempLoggedInID)
+				?.name ?? '';
+		const title = payload.title.trim() || resourceName;
+		const note = payload.note.trim();
+		const start = `${payload.startValue}T00:00:00`;
+		const end = `${payload.endValue}T00:00:00`;
+		const current = draftEvents ?? dbEvents;
+
+		const nextEvents =
+			payload.eventId == null
+				? [
+						...current,
+						withEventSaveStatus(
+							withEventContent(
+								{
+									id:
+										current.reduce((max, event) => {
+											const id = Number(event.id);
+											return Number.isFinite(id) ? Math.max(max, id) : max;
+										}, 0) + 1,
+									resource: tempLoggedInID,
+									start,
+									end,
+									text: title
+								},
+								{ title, note }
+							),
+							'unsaved'
+						)
+					]
+				: current.map(event =>
+						String(event.id) === payload.eventId
+							? withEventSaveStatus(
+									withEventContent(
+										{ ...event, start, end },
+										{ title, note }
+									),
+									'unsaved'
+								)
+							: event
+					);
+
+		setAvailabilityOpen(false);
+		await saveChanges(nextEvents);
 	};
 
 	const dismissSaveOverlay = () => {
@@ -721,9 +949,6 @@ const Scheduler = () => {
 		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
 			return;
 		}
-		const resourceName =
-			resources.find(resource => String(resource.id) === toResource)?.name ??
-			'';
 		setEventRows(current =>
 			current.map(event =>
 				String(event.id) === String(args.e.id())
@@ -732,8 +957,7 @@ const Scheduler = () => {
 								...event,
 								start: args.newStart.toString(),
 								end: args.newEnd.toString(),
-								resource: args.newResource,
-								text: resourceName
+								resource: args.newResource
 							},
 							'unsaved'
 						)
@@ -801,7 +1025,7 @@ const Scheduler = () => {
 			args.data.fontColor = '#5c3d00';
 		}
 
-		const name = escapeHtml(String(args.data.text ?? ''));
+		const name = escapeHtml(getEventTitle(args.data));
 		const chipLabel = markedForDeletion
 			? 'To delete'
 			: EVENT_STATUS_LABELS[saveStatus];
@@ -857,13 +1081,16 @@ const Scheduler = () => {
 			return [
 				...current,
 				withEventSaveStatus(
-					{
-						id: nextId,
-						resource: args.resource,
-						start: args.start.toString(),
-						end: args.end.toString(),
-						text: resourceName
-					},
+					withEventContent(
+						{
+							id: nextId,
+							resource: args.resource,
+							start: args.start.toString(),
+							end: args.end.toString(),
+							text: resourceName
+						},
+						{ title: resourceName, note: '' }
+					),
 					'unsaved'
 				)
 			];
@@ -956,6 +1183,17 @@ const Scheduler = () => {
 					) : null}
 				</div>
 				<div className="ml-auto flex flex-wrap items-end gap-3">
+					{!tempIsAdmin ? (
+						<Button
+							type="button"
+							variant="outline"
+							size="lg"
+							onClick={() => setAvailabilityOpen(true)}
+							disabled={saveUiState === 'loading'}
+						>
+							Manage availability
+						</Button>
+					) : null}
 					{editStatus === 'unsaved' || editStatus === 'saved' ? (
 						<span
 							className={`edit-status-chip edit-status-chip-${editStatus}`}
@@ -984,6 +1222,21 @@ const Scheduler = () => {
 					</p>
 				) : null}
 			</div>
+
+			{availabilityOpen && !tempIsAdmin ? (
+				<AvailabilityModal
+					open
+					userEvents={userAvailabilityEvents}
+					defaultTitle={
+						resources.find(resource => String(resource.id) === tempLoggedInID)
+							?.name ?? ''
+					}
+					onDiscard={closeAvailabilityModal}
+					onSave={payload => {
+						void saveAvailabilityFromModal(payload);
+					}}
+				/>
+			) : null}
 
 			{saveUiState !== 'idle' ? (
 				<div
