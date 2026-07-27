@@ -301,7 +301,7 @@ const seedEvents: DayPilot.EventData[] = [
 ];
 
 const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
-const defaultEnd = new DayPilot.Date('2027-01-10');
+const defaultEnd = defaultStart.addYears(2);
 const defaultDays = new DayPilot.Duration(
 	defaultStart,
 	defaultEnd.addDays(1)
