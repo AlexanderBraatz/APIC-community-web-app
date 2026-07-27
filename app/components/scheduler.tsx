@@ -39,6 +39,9 @@ import {
 const RESOURCES_STORAGE_KEY = 'scheduler-resources';
 const EVENTS_STORAGE_KEY = 'scheduler-events-v2';
 
+/** Switch between demo members (1) and Castelfalfi community data (2). */
+const ACTIVE_SEED_DATA_SET = 2 as const;
+
 const seedResources: DayPilot.ResourceData[] = [
 	{ id: 'R1', name: 'Emma Clarke' },
 	{ id: 'R2', name: 'James Patel' },
@@ -183,6 +186,86 @@ const stays: { resource: string; start: string; end: string }[] = [
 	{ resource: 'R40', start: '2026-12-26', end: '2027-01-06' }
 ];
 
+const seedResources2: DayPilot.ResourceData[] = [
+	{ id: 'R1', name: 'Johnny and Karen' },
+	{ id: 'R2', name: 'Stephan & Anne Knichel' },
+	{ id: 'R3', name: 'Philippe Roose & Mimi Claus' },
+	{ id: 'R4', name: 'Eva und Thomas Schröer' },
+	{ id: 'R5', name: 'Anke und Norbert Frank' },
+	{ id: 'R6', name: 'Henk & Janine van Cappelle' },
+	{ id: 'R7', name: 'Joanne and Dave Weick' },
+	{ id: 'R8', name: 'matthiasdebbystebler' },
+	{ id: 'R9', name: 'Carmen Walsh' },
+	{ id: 'R10', name: 'Gerald und Susanne Wagener' },
+	{ id: 'R11', name: 'Hugh & Susan Barit' },
+	{ id: 'R12', name: 'Thomas Schmidt' }
+];
+
+type SeedStay = { resource: string; start: string; end: string; note?: string };
+
+type OverlapStay = {
+	resource: string;
+	start: string;
+	end: string;
+	title: string;
+	note: string;
+};
+
+/** Inclusive checkout dates from member records → exclusive scheduler end dates. */
+const stays2: SeedStay[] = [
+	{ resource: 'R1', start: '2026-09-11', end: '2026-10-30' },
+	{ resource: 'R2', start: '2026-07-13', end: '2026-08-04' },
+	{ resource: 'R3', start: '2026-07-09', end: '2026-08-25' },
+	{ resource: 'R4', start: '2026-08-22', end: '2026-09-13' },
+	{ resource: 'R5', start: '2026-07-15', end: '2026-07-29' },
+	{
+		resource: 'R6',
+		start: '2026-07-09',
+		end: '2026-07-27',
+		note: 'Enjoying Italy!'
+	},
+	{
+		resource: 'R7',
+		start: '2026-10-21',
+		end: '2026-10-29',
+		note: 'see you then!'
+	},
+	{ resource: 'R8', start: '2026-07-05', end: '2026-08-10' },
+	{ resource: 'R8', start: '2026-10-04', end: '2026-10-19' },
+	{ resource: 'R9', start: '2026-08-31', end: '2026-10-30' },
+	{ resource: 'R10', start: '2026-09-05', end: '2026-09-27' },
+	{
+		resource: 'R11',
+		start: '2026-07-11',
+		end: '2026-07-23',
+		note: 'Lookinf forward to getting back!'
+	},
+	{ resource: 'R11', start: '2026-08-29', end: '2026-10-05' },
+	{
+		resource: 'R12',
+		start: '2026-06-17',
+		end: '2027-06-18',
+		note: 'Almost always in Castelfalfi.'
+	}
+];
+
+const overlapStays2: OverlapStay[] = [
+	{
+		resource: 'R2',
+		start: '2026-07-21',
+		end: '2026-07-30',
+		title: 'Trip to Piemont',
+		note: '21/07 until 29/07 Trip to Piemont'
+	},
+	{
+		resource: 'R4',
+		start: '2026-08-31',
+		end: '2026-09-05',
+		title: 'Vespa tour',
+		note: 'We are on a Vespa tour from 31st August to 4th September'
+	}
+];
+
 const seedStayNotes = [
 	'We are new to the community and excited to settle in.',
 	'Cannot wait to see you all again this summer.',
@@ -275,30 +358,55 @@ function buildSeedEvent(
 	};
 }
 
-const seedEvents: DayPilot.EventData[] = [
-	...stays.map((stay, index) => {
-		const memberName =
-			seedResources.find(resource => resource.id === stay.resource)?.name ?? '';
-		return buildSeedEvent(
-			index + 1,
-			stay.resource,
-			stay.start,
-			stay.end,
-			memberName,
-			seedStayNotes[index % seedStayNotes.length] ?? ''
-		);
-	}),
-	...overlapStays.map((stay, index) =>
-		buildSeedEvent(
-			stays.length + index + 1,
-			stay.resource,
-			stay.start,
-			stay.end,
-			stay.title,
-			stay.note
+function buildSeedEvents(
+	resources: DayPilot.ResourceData[],
+	stayRows: SeedStay[],
+	overlapRows: OverlapStay[],
+	fallbackNotes: string[] = []
+): DayPilot.EventData[] {
+	return [
+		...stayRows.map((stay, index) => {
+			const memberName =
+				resources.find(resource => resource.id === stay.resource)?.name ?? '';
+			const note =
+				stay.note ?? fallbackNotes[index % fallbackNotes.length] ?? '';
+			return buildSeedEvent(
+				index + 1,
+				stay.resource,
+				stay.start,
+				stay.end,
+				memberName,
+				note
+			);
+		}),
+		...overlapRows.map((stay, index) =>
+			buildSeedEvent(
+				stayRows.length + index + 1,
+				stay.resource,
+				stay.start,
+				stay.end,
+				stay.title,
+				stay.note
+			)
 		)
-	)
-];
+	];
+}
+
+const seedEvents = buildSeedEvents(seedResources, stays, overlapStays, seedStayNotes);
+const seedEvents2 = buildSeedEvents(seedResources2, stays2, overlapStays2);
+
+const seedResourcesBySet = {
+	1: seedResources,
+	2: seedResources2
+} as const;
+
+const seedEventsBySet = {
+	1: seedEvents,
+	2: seedEvents2
+} as const;
+
+const activeSeedResources = seedResourcesBySet[ACTIVE_SEED_DATA_SET];
+const activeSeedEvents = seedEventsBySet[ACTIVE_SEED_DATA_SET];
 
 const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
 const defaultEnd = defaultStart.addYears(2);
@@ -584,13 +692,13 @@ const SCHEDULER_FONT_SIZE: Record<SchedulerFontSize, { cellWidth: number }> = {
 
 const Scheduler = () => {
 	const [resources] = useLocalStorageState(
-		RESOURCES_STORAGE_KEY,
-		seedResources
+		`${RESOURCES_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
+		activeSeedResources
 	);
 	/** Mock database: localStorage, written only on successful Save. */
 	const [dbEvents, setDbEvents] = useLocalStorageState(
-		EVENTS_STORAGE_KEY,
-		seedEvents
+		`${EVENTS_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
+		activeSeedEvents
 	);
 	/**
 	 * Working calendar with unsaved edits. `null` means "show the DB as-is"
