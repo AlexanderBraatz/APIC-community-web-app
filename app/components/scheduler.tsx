@@ -749,13 +749,6 @@ const Scheduler = () => {
 		setReadOnlyEvent(null);
 	};
 
-	useEffect(() => {
-		if (tempIsAdmin) {
-			setAvailabilityOpen(false);
-			setAvailabilityFocusId(null);
-		}
-	}, [tempIsAdmin]);
-
 	const saveAvailabilityFromModal = async (payload: {
 		eventId: string | null;
 		startValue: string;
@@ -1854,7 +1847,14 @@ const Scheduler = () => {
 					id="scheduler-admin-toggle"
 					type="checkbox"
 					checked={tempIsAdmin}
-					onChange={event => setTempIsAdmin(event.target.checked)}
+					onChange={event => {
+						const isAdmin = event.target.checked;
+						setTempIsAdmin(isAdmin);
+						if (isAdmin) {
+							setAvailabilityOpen(false);
+							setAvailabilityFocusId(null);
+						}
+					}}
 					className="size-3.5 accent-[var(--scheme-primary)]"
 				/>
 				<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
