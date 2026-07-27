@@ -2,7 +2,7 @@
 title: Hello
 blocks:
   - message: |
-      # Talk to llama, 
+      # Talk to llama,
 
       # Share the **drama**
 

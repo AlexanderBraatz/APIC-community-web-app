@@ -15,6 +15,17 @@ export default defineConfig({
 				label: 'Page',
 				path: 'content/pages',
 				format: 'md',
+				ui: {
+					router: props => {
+						// set routing from tina filestructure to setting what page to show in tina i frame
+						// Map this Tina document to the frontend route shown in the admin preview iframe
+						// if (props.document._sys.relativePath === 'home.md') {
+						// 	return '/home';
+						// }
+						// return props.document._sys.filename //clicking on home.md moves you to /home
+						return '/';
+					}
+				},
 				fields: [
 					{ name: 'title', type: 'string' },
 					{
