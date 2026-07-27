@@ -38,6 +38,8 @@ import {
 
 const RESOURCES_STORAGE_KEY = 'scheduler-resources';
 const EVENTS_STORAGE_KEY = 'scheduler-events-v2';
+const MOCK_LOGIN_STORAGE_KEY = 'scheduler-mock-login-user';
+const MEMBER_SELECTIONS_STORAGE_KEY = 'scheduler-member-selections-v1';
 
 /** Switch between demo members (1) and Castelfalfi community data (2). */
 const ACTIVE_SEED_DATA_SET = 2 as const;
@@ -407,6 +409,16 @@ const seedEventsBySet = {
 
 const activeSeedResources = seedResourcesBySet[ACTIVE_SEED_DATA_SET];
 const activeSeedEvents = seedEventsBySet[ACTIVE_SEED_DATA_SET];
+const defaultMockLoginId = String(activeSeedResources[0]?.id ?? 'R1');
+
+function filterPinnedMemberIds(
+	ids: string[],
+	loggedInId: string,
+	resourceRows: DayPilot.ResourceData[]
+) {
+	const validIds = new Set(resourceRows.map(resource => String(resource.id)));
+	return ids.filter(id => id !== loggedInId && validIds.has(id));
+}
 
 const defaultStart = DayPilot.Date.today().firstDayOfWeek(1); // Monday
 const defaultEnd = defaultStart.addYears(2);
@@ -416,6 +428,9 @@ const defaultDays = new DayPilot.Duration(
 ).totalDays();
 
 function readOrSeedLocalStorage<T>(key: string, seed: T): T {
+	if (typeof window === 'undefined') {
+		return seed;
+	}
 	const raw = localStorage.getItem(key);
 	if (raw != null) {
 		try {
@@ -722,9 +737,20 @@ const Scheduler = () => {
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
 	const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
-	const [selectedIds, setSelectedIds] = useState<string[]>([]);
-	// Temp stand-in for auth: user id === resource id
-	const [tempLoggedInID] = useState('R6');
+	const [selectedIdsDraft, setSelectedIdsDraft] = useState<string[] | null>(
+		null
+	);
+	const [schedulerMountKey, setSchedulerMountKey] = useState(0);
+	const [tempLoggedInID, setTempLoggedInID] = useLocalStorageState(
+		`${MOCK_LOGIN_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
+		defaultMockLoginId
+	);
+	const [memberSelectionsByUser, setMemberSelectionsByUser] = useLocalStorageState<
+		Record<string, string[]>
+	>(
+		`${MEMBER_SELECTIONS_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
+		{}
+	);
 	const [tempIsAdmin, setTempIsAdmin] = useState(false);
 	const [saveUiState, setSaveUiState] = useState<SaveUiState>('idle');
 	const [savedThisSession, setSavedThisSession] = useState(false);
@@ -752,6 +778,61 @@ const Scheduler = () => {
 		[hiddenColorSchemes]
 	);
 	const activeScheme = COLOR_SCHEMES[colorScheme];
+
+	const storedPinnedIds = useMemo(
+		() =>
+			filterPinnedMemberIds(
+				memberSelectionsByUser[tempLoggedInID] ?? [],
+				tempLoggedInID,
+				resources
+			),
+		[memberSelectionsByUser, tempLoggedInID, resources]
+	);
+	const selectedIds = selectedIdsDraft ?? storedPinnedIds;
+
+	const updateSelectedIds = (
+		update: string[] | ((prev: string[]) => string[])
+	) => {
+		setSelectedIdsDraft(prev => {
+			const base = prev ?? storedPinnedIds;
+			return typeof update === 'function' ? update(base) : update;
+		});
+	};
+
+	useEffect(() => {
+		setMemberSelectionsByUser(prev => {
+			const current = prev[tempLoggedInID] ?? [];
+			if (
+				current.length === selectedIds.length &&
+				current.every((id, index) => id === selectedIds[index])
+			) {
+				return prev;
+			}
+			return { ...prev, [tempLoggedInID]: selectedIds };
+		});
+	}, [selectedIds, tempLoggedInID, setMemberSelectionsByUser]);
+
+	const switchLoginUser = (userId: string) => {
+		if (userId === tempLoggedInID) {
+			return;
+		}
+		setTempLoggedInID(userId);
+		setQuery('');
+		setActiveSuggestionIndex(0);
+		const saved = memberSelectionsByUser[userId] ?? [];
+		setSelectedIdsDraft(filterPinnedMemberIds(saved, userId, resources));
+		setSchedulerMountKey(key => key + 1);
+	};
+
+	const loginOptions = useMemo(
+		() =>
+			[...resources].sort((a, b) =>
+				(a.name ?? '').localeCompare(b.name ?? '', undefined, {
+					sensitivity: 'base'
+				})
+			),
+		[resources]
+	);
 
 	const hideColorScheme = (id: ColorSchemeId) => {
 		const nextHidden = [...hiddenColorSchemes, id];
@@ -1007,7 +1088,7 @@ const Scheduler = () => {
 	}, [resources, selectedIds, tempLoggedInID]);
 
 	const addSelected = (id: string) => {
-		setSelectedIds(current =>
+		updateSelectedIds(current =>
 			current.includes(id) ? current : [...current, id]
 		);
 		setQuery('');
@@ -1015,7 +1096,7 @@ const Scheduler = () => {
 	};
 
 	const toggleSelected = (id: string) => {
-		setSelectedIds(current =>
+		updateSelectedIds(current =>
 			current.includes(id)
 				? current.filter(selectedId => selectedId !== id)
 				: [...current, id]
@@ -1836,7 +1917,7 @@ const Scheduler = () => {
 							</button>
 						) : null}
 						<DayPilotScheduler
-							key={colorScheme}
+							key={`${colorScheme}-${schedulerMountKey}-${tempLoggedInID}`}
 							{...config}
 							theme="brown_theme"
 							resources={orderedResources}
@@ -1945,28 +2026,46 @@ const Scheduler = () => {
 				) : null}
 			</div>
 
-			<div className="mt-[200px]">
-			<Label
-				htmlFor="scheduler-admin-toggle"
-				title="Testing only — switch permission role"
-				className="ml-4 w-fit cursor-pointer rounded-lg border border-dashed border-[var(--scheme-border)] px-3 py-2 text-muted-foreground"
-			>
-				<input
-					id="scheduler-admin-toggle"
-					type="checkbox"
-					checked={tempIsAdmin}
-					onChange={event => {
-						const isAdmin = event.target.checked;
-						setTempIsAdmin(isAdmin);
-						if (isAdmin) {
-							setAvailabilityOpen(false);
-							setAvailabilityFocusId(null);
-						}
-					}}
-					className="size-3.5 accent-[var(--scheme-primary)]"
-				/>
-				<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
-			</Label>
+			<div className="mt-[200px] ml-4 flex flex-wrap items-end gap-4">
+				<div className="flex min-w-52 flex-col gap-1">
+					<Label htmlFor="scheduler-mock-login">Log in as (test)</Label>
+					<select
+						id="scheduler-mock-login"
+						value={tempLoggedInID}
+						onChange={event => switchLoginUser(event.target.value)}
+						className="h-10 min-w-52 rounded-lg border border-dashed border-[var(--scheme-border)] bg-background px-3 text-sm text-muted-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+					>
+						{loginOptions.map(resource => (
+							<option
+								key={String(resource.id)}
+								value={String(resource.id)}
+							>
+								{resource.name}
+							</option>
+						))}
+					</select>
+				</div>
+				<Label
+					htmlFor="scheduler-admin-toggle"
+					title="Testing only — switch permission role"
+					className="w-fit cursor-pointer rounded-lg border border-dashed border-[var(--scheme-border)] px-3 py-2 text-muted-foreground"
+				>
+					<input
+						id="scheduler-admin-toggle"
+						type="checkbox"
+						checked={tempIsAdmin}
+						onChange={event => {
+							const isAdmin = event.target.checked;
+							setTempIsAdmin(isAdmin);
+							if (isAdmin) {
+								setAvailabilityOpen(false);
+								setAvailabilityFocusId(null);
+							}
+						}}
+						className="size-3.5 accent-[var(--scheme-primary)]"
+					/>
+					<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
+				</Label>
 			</div>
 		</div>
 	);
