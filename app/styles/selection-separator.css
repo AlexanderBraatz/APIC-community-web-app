@@ -1,16 +1,33 @@
+.scheduler-shell-header {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 1rem 1.25rem;
+
+	padding: 1rem 0;
+}
+
+.scheduler-shell-well {
+	background: var(--scheme-well, #6b512b);
+	padding: 6px;
+}
+
 .scheduler-frame {
 	position: relative;
 }
 
-.scheduler-frame[data-font-size='small'] :is(.brown_theme_main, .brown_theme_main:not(.default)) {
+.scheduler-frame[data-font-size='small']
+	:is(.brown_theme_main, .brown_theme_main:not(.default)) {
 	--dp-scheduler-font-size: 10px;
 }
 
-.scheduler-frame[data-font-size='medium'] :is(.brown_theme_main, .brown_theme_main:not(.default)) {
+.scheduler-frame[data-font-size='medium']
+	:is(.brown_theme_main, .brown_theme_main:not(.default)) {
 	--dp-scheduler-font-size: 13px;
 }
 
-.scheduler-frame[data-font-size='large'] :is(.brown_theme_main, .brown_theme_main:not(.default)) {
+.scheduler-frame[data-font-size='large']
+	:is(.brown_theme_main, .brown_theme_main:not(.default)) {
 	--dp-scheduler-font-size: 16px;
 }
 

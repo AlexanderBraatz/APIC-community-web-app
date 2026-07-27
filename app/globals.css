@@ -50,7 +50,7 @@
 
 :root {
   /* Aligned with DayPilot brown_theme (#6b512b / #f7f5f0 / #968a80) */
-  --background: #faf9f6;
+  --background: #f7f5f0;
   --foreground: #333333;
   --card: #ffffff;
   --card-foreground: #333333;
