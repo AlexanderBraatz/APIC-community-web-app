@@ -2,8 +2,11 @@
 
 import { PageQuery } from '@/tina/__generated__/types';
 import CommunityFeatures from './community-features';
+import CategoryGrid from './category-grid';
+import CtaSection from './cta-section';
 import FeatureList from './feature-list';
 import HeroBanner from './hero-banner';
+import MemberIntro from './member-intro';
 import QuoteBanner from './quote-banner';
 import WelcomeHero from './welcome-hero';
 import { useTina } from 'tinacms/react';
@@ -37,6 +40,30 @@ export default function PageContent(props: {
 					case 'PageBlocksQuoteBanner': {
 						return (
 							<QuoteBanner
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksMemberIntro': {
+						return (
+							<MemberIntro
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksCategoryGrid': {
+						return (
+							<CategoryGrid
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksCtaSection': {
+						return (
+							<CtaSection
 								key={i}
 								{...block}
 							/>

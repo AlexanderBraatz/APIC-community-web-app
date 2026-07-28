@@ -113,6 +113,66 @@ export default defineConfig({
 								]
 							},
 							{
+								name: 'memberIntro',
+								label: 'Member Intro',
+								fields: [
+									{
+										name: 'body',
+										type: 'rich-text',
+										label: 'Intro Text'
+									},
+									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
+									{
+										name: 'actions',
+										label: 'Action Buttons',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => ({ label: item.label })
+										},
+										fields: [
+											{ name: 'label', type: 'string' },
+											{ name: 'link', type: 'string' }
+										]
+									}
+								]
+							},
+							{
+								name: 'categoryGrid',
+								label: 'Category Grid',
+								fields: [
+									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
+									{
+										name: 'items',
+										label: 'Categories',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => ({ label: item.title })
+										},
+										fields: [
+											{ name: 'title', type: 'string' },
+											{ name: 'image', type: 'image' },
+											{ name: 'link', type: 'string' }
+										]
+									}
+								]
+							},
+							{
+								name: 'ctaSection',
+								label: 'CTA Section',
+								fields: [
+									{ name: 'title', type: 'string', required: true },
+									{
+										name: 'description',
+										type: 'string',
+										ui: { component: 'textarea' }
+									},
+									{ name: 'buttonLabel', label: 'Button Label', type: 'string' },
+									{ name: 'buttonLink', label: 'Button Link', type: 'string' }
+								]
+							},
+							{
 								name: 'welcomeHero',
 								label: 'Welcome Hero',
 								fields: [
