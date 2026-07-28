@@ -6,7 +6,7 @@ import { tinaField } from 'tinacms/tina-field';
 
 export default function QuoteBanner(props: PageBlocksQuoteBanner) {
 	return (
-		<section className="relative h-[320px] w-full overflow-hidden sm:h-[380px] lg:h-[420px]">
+		<section className="relative min-h-[70vh] w-full overflow-hidden">
 			{props.backgroundImage ? (
 				<img
 					src={props.backgroundImage}
@@ -17,8 +17,11 @@ export default function QuoteBanner(props: PageBlocksQuoteBanner) {
 			) : (
 				<div className="absolute inset-0 bg-[#5D4325]" />
 			)}
-			<div className="absolute inset-0 bg-black/35" />
-			<div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center text-white">
+			<div
+				className="absolute inset-0"
+				style={{ backgroundColor: 'rgba(62, 77, 70, 0.44)' }}
+			/>
+			<div className="relative z-10 flex min-h-[70vh] flex-col items-center justify-center px-4 text-center text-white">
 				<p
 					data-tina-field={tinaField(props, 'intro')}
 					className="font-heading max-w-3xl text-base italic sm:text-lg lg:text-xl"

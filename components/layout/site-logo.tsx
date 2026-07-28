@@ -1,5 +1,5 @@
-import { Globe } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function SiteLogo({
 	className = '',
@@ -8,33 +8,19 @@ export default function SiteLogo({
 	className?: string;
 	size?: 'default' | 'large';
 }) {
-	const iconSize = size === 'large' ? 'size-14' : 'size-11';
-	const titleSize = size === 'large' ? 'text-4xl' : 'text-3xl';
-	const subtitleSize = size === 'large' ? 'text-sm' : 'text-xs';
+	const width = size === 'large' ? 280 : 200;
+	const height = size === 'large' ? 55 : 39;
 
 	return (
-		<Link
-			href="/"
-			className={`inline-flex items-center gap-3 text-[#5D4325] ${className}`}
-		>
-			<span
-				className={`flex ${iconSize} items-center justify-center rounded-full border border-[#7A5A32]/40 bg-[#F8F6F2]`}
-			>
-				<Globe
-					className="size-[55%] text-[#7A5A32]"
-					strokeWidth={1.25}
-				/>
-			</span>
-			<span className="flex flex-col leading-none">
-				<span className={`font-heading ${titleSize} font-semibold tracking-wide`}>
-					APIC
-				</span>
-				<span
-					className={`${subtitleSize} mt-1 font-sans tracking-wide text-[#7A5A32]`}
-				>
-					Owners Community
-				</span>
-			</span>
+		<Link href="/" className={`inline-flex ${className}`}>
+			<Image
+				src="/images/apic_community_logo.png"
+				alt="APIC Owners Community"
+				width={width}
+				height={height}
+				className="h-auto w-auto max-h-[55px] object-contain"
+				priority
+			/>
 		</Link>
 	);
 }

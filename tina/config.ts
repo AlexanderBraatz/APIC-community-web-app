@@ -48,8 +48,15 @@ export default defineConfig({
 									{ name: 'heading', type: 'string', required: true },
 									{ name: 'subtitle', type: 'string' },
 									{
+										name: 'backgroundVideo',
+										label: 'Background Video',
+										type: 'string',
+										description:
+											'Path to video in public folder, e.g. /videos/apicherovideo.mp4'
+									},
+									{
 										name: 'backgroundImage',
-										label: 'Background Image',
+										label: 'Background Image / Poster',
 										type: 'image'
 									}
 								]
