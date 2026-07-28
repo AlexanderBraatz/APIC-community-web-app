@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" role="img" aria-label="Map placeholder">
+  <rect width="1200" height="600" fill="#e8e4dc"/>
+  <rect x="0" y="0" width="1200" height="600" fill="url(#grid)" opacity="0.35"/>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#c9bfb0" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <path d="M80 420 C200 380 280 460 400 400 S640 320 760 380 S960 300 1120 340" fill="none" stroke="#b8a99a" stroke-width="18" stroke-linecap="round"/>
+  <path d="M120 180 L1080 180" fill="none" stroke="#d4c9bc" stroke-width="14" stroke-linecap="round"/>
+  <path d="M300 80 L300 520" fill="none" stroke="#d4c9bc" stroke-width="10" stroke-linecap="round"/>
+  <path d="M700 60 L700 540" fill="none" stroke="#d4c9bc" stroke-width="10" stroke-linecap="round"/>
+  <path d="M80 300 L1120 300" fill="none" stroke="#d4c9bc" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="420" cy="260" r="28" fill="#7A5A32" opacity="0.85"/>
+  <circle cx="420" cy="260" r="12" fill="#fff"/>
+  <circle cx="780" cy="340" r="22" fill="#c41e3a" opacity="0.9"/>
+  <circle cx="780" cy="340" r="9" fill="#fff"/>
+  <circle cx="560" cy="180" r="16" fill="#7A5A32" opacity="0.6"/>
+  <circle cx="900" cy="200" r="14" fill="#7A5A32" opacity="0.5"/>
+  <text x="600" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#7A5A32" opacity="0.7">Map placeholder</text>
+</svg>

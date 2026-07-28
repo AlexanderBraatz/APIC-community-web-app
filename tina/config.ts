@@ -248,6 +248,19 @@ export default defineConfig({
 										fields: [{ name: 'image', type: 'image' }]
 									}
 								]
+							},
+							{
+								name: 'mockMap',
+								label: 'Mock Map',
+								fields: [
+									{
+										name: 'image',
+										label: 'Map Image',
+										type: 'image',
+										description:
+											'Optional. Defaults to the built-in map placeholder.'
+									}
+								]
 							}
 						]
 					}

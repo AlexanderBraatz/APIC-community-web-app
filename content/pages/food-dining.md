@@ -7,4 +7,5 @@ blocks:
     _template: heroBanner
   - sectionTitle: Food & Dining
     _template: sectionHeading
+  - _template: mockMap
 ---

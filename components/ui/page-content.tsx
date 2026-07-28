@@ -5,6 +5,7 @@ import ButtonList from './button-list';
 import CommunityFeatures from './community-features';
 import ImageCaptionList from './image-caption-list';
 import ImageGallery from './image-gallery';
+import MockMap from './mock-map';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
 import EventListing from './event-listing';
@@ -107,6 +108,14 @@ export default function PageContent(props: {
 					case 'PageBlocksImageGallery': {
 						return (
 							<ImageGallery
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksMockMap': {
+						return (
+							<MockMap
 								key={i}
 								{...block}
 							/>
