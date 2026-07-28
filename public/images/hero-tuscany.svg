@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7BA3C9"/>
+      <stop offset="55%" stop-color="#E8C48A"/>
+      <stop offset="100%" stop-color="#C4A06A"/>
+    </linearGradient>
+    <linearGradient id="hill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#5A7A45"/>
+      <stop offset="100%" stop-color="#3D5A32"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <ellipse cx="800" cy="820" rx="1100" ry="280" fill="url(#hill)"/>
+  <ellipse cx="300" cy="780" rx="500" ry="200" fill="#4A6B38"/>
+  <ellipse cx="1300" cy="800" rx="450" ry="180" fill="#4F7040"/>
+  <rect x="180" y="520" width="120" height="90" fill="#8B7355" rx="4"/>
+  <polygon points="180,520 240,460 300,520" fill="#6B5344"/>
+  <text x="800" y="120" text-anchor="middle" fill="white" opacity="0.35" font-family="serif" font-size="28">Mock · Tuscany Hero</text>
+</svg>

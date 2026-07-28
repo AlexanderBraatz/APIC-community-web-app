@@ -4,13 +4,13 @@ import { PageBlocksFeatureList } from '@/tina/__generated__/types';
 import { Components, TinaMarkdown } from 'tinacms/dist/rich-text';
 import { tinaField } from 'tinacms/tina-field';
 
-import ByLine from './by-line';
+import Byline from './by-line';
 
 export default function FeatureList(props: PageBlocksFeatureList) {
 	return (
 		<section>
 			<div className="px-4 py-8 text-center">
-				<ByLine fieldName={tinaField(props, 'byline')}>{props.byline}</ByLine>
+				<Byline fieldName={tinaField(props, 'byline')}>{props.byline}</Byline>
 				<div data-tina-field={tinaField(props, 'message')}>
 					<TinaMarkdown
 						content={props.message}

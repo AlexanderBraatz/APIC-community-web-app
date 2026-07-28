@@ -2,6 +2,8 @@ import { defineConfig } from 'tinacms';
 import { FeaturedIcons } from '../components/icons';
 import { IconSelector } from './icon-selector';
 
+const COMMUNITY_FEATURE_ICONS = ['Users', 'Mic', 'Heart', 'FileText'];
+
 export default defineConfig({
 	branch: '',
 	clientId: '',
@@ -9,6 +11,12 @@ export default defineConfig({
 	build: {
 		publicFolder: 'public',
 		outputFolder: 'admin'
+	},
+	media: {
+		tina: {
+			publicFolder: 'public',
+			mediaRoot: 'images'
+		}
 	},
 	schema: {
 		collections: [
@@ -19,13 +27,10 @@ export default defineConfig({
 				format: 'md',
 				ui: {
 					router: props => {
-						// set routing from tina filestructure to setting what page to show in tina i frame
-						// Map this Tina document to the frontend route shown in the admin preview iframe
-						// if (props.document._sys.relativePath === 'home.md') {
-						// 	return '/home';
-						// }
-						// return props.document._sys.filename //clicking on home.md moves you to /home
-						return '/';
+						if (props.document._sys.filename === 'home') {
+							return '/';
+						}
+						return `/${props.document._sys.filename}`;
 					}
 				},
 				fields: [
@@ -36,6 +41,70 @@ export default defineConfig({
 						type: 'object',
 						list: true,
 						templates: [
+							{
+								name: 'heroBanner',
+								label: 'Hero Banner',
+								fields: [
+									{ name: 'heading', type: 'string', required: true },
+									{ name: 'subtitle', type: 'string' },
+									{
+										name: 'backgroundImage',
+										label: 'Background Image',
+										type: 'image'
+									}
+								]
+							},
+							{
+								name: 'communityFeatures',
+								label: 'Community Features',
+								fields: [
+									{ name: 'title', type: 'string', required: true },
+									{
+										name: 'features',
+										label: 'Features',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => ({ label: item.label }),
+											defaultItem: {
+												icon: 'Users',
+												label: 'New Feature',
+												description:
+													'Describe this community feature for members.'
+											}
+										},
+										fields: [
+											{
+												name: 'icon',
+												type: 'string',
+												options: COMMUNITY_FEATURE_ICONS
+											},
+											{ name: 'label', type: 'string' },
+											{
+												name: 'description',
+												type: 'string',
+												ui: { component: 'textarea' }
+											},
+											{ name: 'image', type: 'image' }
+										]
+									}
+								]
+							},
+							{
+								name: 'quoteBanner',
+								label: 'Quote Banner',
+								fields: [
+									{ name: 'intro', type: 'string' },
+									{ name: 'heading', type: 'string', required: true },
+									{ name: 'buttonLabel', label: 'Button Label', type: 'string' },
+									{ name: 'buttonLink', label: 'Button Link', type: 'string' },
+									{
+										name: 'backgroundImage',
+										label: 'Background Image',
+										type: 'image'
+									}
+								]
+							},
 							{
 								name: 'welcomeHero',
 								label: 'Welcome Hero',
@@ -79,7 +148,6 @@ export default defineConfig({
 										name: 'byline',
 										type: 'string'
 									},
-
 									{
 										name: 'features',
 										label: 'Features',

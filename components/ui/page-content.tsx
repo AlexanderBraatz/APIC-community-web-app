@@ -1,9 +1,12 @@
 'use client';
-import { PageQuery } from '@/tina/__generated__/types';
 
+import { PageQuery } from '@/tina/__generated__/types';
+import CommunityFeatures from './community-features';
+import FeatureList from './feature-list';
+import HeroBanner from './hero-banner';
+import QuoteBanner from './quote-banner';
 import WelcomeHero from './welcome-hero';
 import { useTina } from 'tinacms/react';
-import FeatureList from './feature-list';
 
 export default function PageContent(props: {
 	data: PageQuery;
@@ -12,9 +15,33 @@ export default function PageContent(props: {
 }) {
 	const { data } = useTina(props);
 	return (
-		<div>
+		<main>
 			{data.page.blocks?.map((block, i) => {
 				switch (block?.__typename) {
+					case 'PageBlocksHeroBanner': {
+						return (
+							<HeroBanner
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksCommunityFeatures': {
+						return (
+							<CommunityFeatures
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksQuoteBanner': {
+						return (
+							<QuoteBanner
+								key={i}
+								{...block}
+							/>
+						);
+					}
 					case 'PageBlocksWelcomeHero': {
 						return (
 							<WelcomeHero
@@ -31,8 +58,10 @@ export default function PageContent(props: {
 							/>
 						);
 					}
+					default:
+						return null;
 				}
 			})}
-		</div>
+		</main>
 	);
 }

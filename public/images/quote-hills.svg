@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700">
+  <defs>
+    <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#A8C4D8"/>
+      <stop offset="100%" stop-color="#D4B896"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="700" fill="url(#sky2)"/>
+  <ellipse cx="700" cy="620" rx="1000" ry="220" fill="#6B8F4E"/>
+  <ellipse cx="1200" cy="640" rx="600" ry="180" fill="#5A7A42"/>
+  <path d="M1450 0 L1520 700 L1600 700 L1600 0 Z" fill="#2A2218" opacity="0.55"/>
+  <text x="800" y="80" text-anchor="middle" fill="white" opacity="0.4" font-family="serif" font-size="24">Mock · Quote Banner</text>
+</svg>
