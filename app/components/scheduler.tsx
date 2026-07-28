@@ -768,7 +768,7 @@ const Scheduler = () => {
 	const isNarrow = useIsNarrowScreen();
 	const [namesCollapsed, setNamesCollapsed] = useState(true);
 	const [fontSize, setFontSize] = useState<SchedulerFontSize>('medium');
-	const [colorScheme, setColorScheme] = useState<ColorSchemeId>('soft-clay');
+	const [colorScheme, setColorScheme] = useState<ColorSchemeId>('sandstone');
 	const [colorSchemeOpen, setColorSchemeOpen] = useState(true);
 	const [hiddenColorSchemes, setHiddenColorSchemes] = useState<ColorSchemeId[]>(
 		[]

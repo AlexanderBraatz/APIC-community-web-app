@@ -1,8 +1,8 @@
 const BASE_SCHEME_IDS = [
+	'sandstone',
 	'soft-clay',
 	'classic-brown',
 	'linen-suite',
-	'sandstone',
 	'cedar-wing'
 ] as const;
 

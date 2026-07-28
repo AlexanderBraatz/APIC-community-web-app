@@ -85,10 +85,10 @@ export default function SiteHeader() {
 					<SiteLogo />
 
 					<Link
-						href="/login"
+						href="/place"
 						className="hidden rounded-[2px] border border-[#634627] bg-[#805b32] px-[30px] py-2.5 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22] md:inline-flex"
 					>
-						Member Login
+						Member Dashboard
 					</Link>
 
 					<button
@@ -154,11 +154,11 @@ export default function SiteHeader() {
 					</nav>
 					<div className="border-t border-[#6a4b29] px-4 py-3">
 						<Link
-							href="/login"
+							href="/place"
 							className="flex w-full items-center justify-center rounded-[2px] border border-[#634627] bg-[#805b32] px-4 py-2.5 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22]"
 							onClick={() => setOpen(false)}
 						>
-							Member Login
+							Member Dashboard
 						</Link>
 					</div>
 				</div>
