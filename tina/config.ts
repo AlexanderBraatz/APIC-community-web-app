@@ -166,6 +166,17 @@ export default defineConfig({
 								]
 							},
 							{
+								name: 'sectionHeading',
+								label: 'Section Heading',
+								fields: [
+									{
+										name: 'sectionTitle',
+										label: 'Section Title',
+										type: 'string'
+									}
+								]
+							},
+							{
 								name: 'eventListing',
 								label: 'Event Listing',
 								fields: [

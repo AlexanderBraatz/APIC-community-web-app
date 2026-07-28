@@ -8,6 +8,7 @@ import ImageGallery from './image-gallery';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
 import EventListing from './event-listing';
+import SectionHeading from './section-heading';
 import HeroBanner from './hero-banner';
 import QuoteBanner from './quote-banner';
 import TextSection from './text-section';
@@ -74,6 +75,14 @@ export default function PageContent(props: {
 					case 'PageBlocksEventListing': {
 						return (
 							<EventListing
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksSectionHeading': {
+						return (
+							<SectionHeading
 								key={i}
 								{...block}
 							/>
