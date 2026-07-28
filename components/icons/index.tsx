@@ -1,4 +1,4 @@
-import { LucideProps, Moon, Sun, Twitter } from "lucide-react"
+import { LucideProps, Moon, Sun, X } from "lucide-react"
 
 import BallStar from "./ball-star"
 import Broadcast from "./broadcast"
@@ -82,7 +82,7 @@ export const FeaturedIcons = {
 export const BasicIcons = {
   sun: Sun,
   moon: Moon,
-  twitter: Twitter,
+  twitter: X,
   github: (props: LucideProps) => (
     <svg viewBox="0 0 438.549 438.549" {...props}>
       <path

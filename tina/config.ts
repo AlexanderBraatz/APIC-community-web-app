@@ -1,4 +1,5 @@
 import { defineConfig } from 'tinacms';
+import { FeaturedIcons } from '../components/icons';
 
 export default defineConfig({
 	branch: '',
@@ -55,6 +56,59 @@ export default defineConfig({
 											{
 												name: 'label',
 												type: 'string'
+											},
+											{
+												name: 'style',
+												type: 'string',
+												options: ['simple', 'button']
+											}
+										]
+									}
+								]
+							},
+							{
+								name: 'featureList',
+								label: 'Features List',
+								fields: [
+									{
+										name: 'message',
+										type: 'rich-text'
+									},
+									{
+										name: 'byline',
+										type: 'string'
+									},
+
+									{
+										name: 'features',
+										label: 'Features',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => {
+												return { label: item.label };
+											},
+											defaultItem: {
+												icon: Object.keys(FeaturedIcons)[0],
+												label: 'New Feature',
+												description:
+													'Hello i am a new feature nice to meet you. i hope you have a great day.'
+											}
+										},
+										fields: [
+											{
+												name: 'icon',
+												type: 'string',
+												options: Object.keys(FeaturedIcons)
+											},
+											{
+												name: 'label',
+												type: 'string'
+											},
+											{
+												name: 'description',
+												type: 'string',
+												ui: { component: 'textarea' }
 											},
 											{
 												name: 'style',

@@ -3,6 +3,7 @@ import { PageQuery } from '@/tina/__generated__/types';
 
 import WelcomeHero from './welcome-hero';
 import { useTina } from 'tinacms/react';
+import FeatureList from './feature-list';
 
 export default function PageContent(props: {
 	data: PageQuery;
@@ -17,6 +18,14 @@ export default function PageContent(props: {
 					case 'PageBlocksWelcomeHero': {
 						return (
 							<WelcomeHero
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksFeatureList': {
+						return (
+							<FeatureList
 								key={i}
 								{...block}
 							/>
