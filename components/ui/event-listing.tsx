@@ -86,29 +86,6 @@ export default function EventListing(props: PageBlocksEventListing) {
 								})}
 							</div>
 
-							{event.images && event.images.length > 0 ? (
-								<div className="mt-12 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-									{event.images.map((item, imageIndex) => {
-										if (!item?.image) return null;
-
-										return (
-											<div
-												key={imageIndex}
-												className="overflow-hidden"
-												data-tina-field={tinaField(item)}
-											>
-												<img
-													src={item.image}
-													alt=""
-													className="size-full object-cover"
-													data-tina-field={tinaField(item, 'image')}
-												/>
-											</div>
-										);
-									})}
-								</div>
-							) : null}
-
 							{eventIndex < (props.events?.length ?? 0) - 1 ? (
 								<hr className="mt-16 border-[#b8a99a]" />
 							) : null}

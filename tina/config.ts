@@ -1,6 +1,4 @@
 import { defineConfig } from 'tinacms';
-import { FeaturedIcons } from '../components/icons';
-import { IconSelector } from './icon-selector';
 
 const COMMUNITY_FEATURE_ICONS = ['Users', 'Mic', 'Heart', 'FileText'];
 
@@ -113,22 +111,17 @@ export default defineConfig({
 								]
 							},
 							{
-								name: 'memberIntro',
-								label: 'Member Intro',
+								name: 'buttonList',
+								label: 'Button List',
 								fields: [
+									{ name: 'sectionTitle', label: 'Heading', type: 'string' },
 									{
-										name: 'body',
-										type: 'rich-text',
-										label: 'Intro Text'
-									},
-									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
-									{
-										name: 'actions',
-										label: 'Action Buttons',
+										name: 'buttons',
+										label: 'Buttons',
 										type: 'object',
 										list: true,
 										ui: {
-											itemProps: item => ({ label: item.label })
+											itemProps: item => ({ label: item.label || 'Button' })
 										},
 										fields: [
 											{ name: 'label', type: 'string' },
@@ -194,139 +187,54 @@ export default defineConfig({
 												name: 'notes',
 												type: 'string',
 												ui: { component: 'textarea' }
-											},
-											{
-												name: 'images',
-												label: 'Gallery Images',
-												type: 'object',
-												list: true,
-												fields: [{ name: 'image', type: 'image' }]
 											}
 										]
 									}
 								]
 							},
 							{
-								name: 'aboutSection',
-								label: 'About Section',
+								name: 'textSection',
+								label: 'Text',
 								fields: [
-									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
+									{ name: 'sectionTitle', label: 'Heading', type: 'string' },
 									{
-										name: 'paragraphs',
-										label: 'Paragraphs',
+										name: 'body',
+										label: 'Body',
+										type: 'rich-text'
+									}
+								]
+							},
+							{
+								name: 'imageCaptionList',
+								label: 'Image and Caption List',
+								fields: [
+									{
+										name: 'items',
+										label: 'Items',
 										type: 'object',
 										list: true,
 										ui: {
 											itemProps: item => ({
-												label: item.text?.slice(0, 40) || 'Paragraph'
+												label: item.caption || 'Item'
 											})
 										},
 										fields: [
-											{
-												name: 'text',
-												type: 'string',
-												ui: { component: 'textarea' }
-											}
-										]
-									},
-									{
-										name: 'members',
-										label: 'Team Members',
-										type: 'object',
-										list: true,
-										ui: {
-											itemProps: item => ({ label: item.name || 'Member' })
-										},
-										fields: [
-											{ name: 'name', type: 'string' },
-											{ name: 'image', type: 'image' }
+											{ name: 'image', type: 'image' },
+											{ name: 'caption', type: 'string' }
 										]
 									}
 								]
 							},
 							{
-								name: 'welcomeHero',
-								label: 'Welcome Hero',
+								name: 'imageGallery',
+								label: 'Image Gallery',
 								fields: [
 									{
-										name: 'message',
-										type: 'rich-text'
-									},
-									{
-										name: 'links',
-										label: 'Links',
+										name: 'images',
+										label: 'Images',
 										type: 'object',
 										list: true,
-										fields: [
-											{
-												name: 'link',
-												type: 'string'
-											},
-											{
-												name: 'label',
-												type: 'string'
-											},
-											{
-												name: 'style',
-												type: 'string',
-												options: ['simple', 'button']
-											}
-										]
-									}
-								]
-							},
-							{
-								name: 'featureList',
-								label: 'Features List',
-								fields: [
-									{
-										name: 'message',
-										type: 'rich-text'
-									},
-									{
-										name: 'byline',
-										type: 'string'
-									},
-									{
-										name: 'features',
-										label: 'Features',
-										type: 'object',
-										list: true,
-										ui: {
-											itemProps: item => {
-												return { label: item.label };
-											},
-											defaultItem: {
-												icon: Object.keys(FeaturedIcons)[0],
-												label: 'New Feature',
-												description:
-													'Hello i am a new feature nice to meet you. i hope you have a great day.'
-											}
-										},
-										fields: [
-											{
-												name: 'icon',
-												type: 'string',
-												options: Object.keys(FeaturedIcons),
-												ui: {
-													component: IconSelector
-												}
-											},
-											{
-												name: 'label',
-												type: 'string'
-											},
-											{
-												name: 'description',
-												type: 'string',
-												ui: { component: 'textarea' }
-											},
-											{
-												name: 'style',
-												type: 'string',
-												options: ['simple', 'button']
-											}
-										]
+										fields: [{ name: 'image', type: 'image' }]
 									}
 								]
 							}

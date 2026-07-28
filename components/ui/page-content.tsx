@@ -1,16 +1,16 @@
 'use client';
 
 import { PageQuery } from '@/tina/__generated__/types';
-import AboutSection from './about-section';
+import ButtonList from './button-list';
 import CommunityFeatures from './community-features';
+import ImageCaptionList from './image-caption-list';
+import ImageGallery from './image-gallery';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
 import EventListing from './event-listing';
-import FeatureList from './feature-list';
 import HeroBanner from './hero-banner';
-import MemberIntro from './member-intro';
 import QuoteBanner from './quote-banner';
-import WelcomeHero from './welcome-hero';
+import TextSection from './text-section';
 import { useTina } from 'tinacms/react';
 
 export default function PageContent(props: {
@@ -47,9 +47,9 @@ export default function PageContent(props: {
 							/>
 						);
 					}
-					case 'PageBlocksMemberIntro': {
+					case 'PageBlocksButtonList': {
 						return (
-							<MemberIntro
+							<ButtonList
 								key={i}
 								{...block}
 							/>
@@ -79,25 +79,25 @@ export default function PageContent(props: {
 							/>
 						);
 					}
-					case 'PageBlocksAboutSection': {
+					case 'PageBlocksTextSection': {
 						return (
-							<AboutSection
+							<TextSection
 								key={i}
 								{...block}
 							/>
 						);
 					}
-					case 'PageBlocksWelcomeHero': {
+					case 'PageBlocksImageCaptionList': {
 						return (
-							<WelcomeHero
+							<ImageCaptionList
 								key={i}
 								{...block}
 							/>
 						);
 					}
-					case 'PageBlocksFeatureList': {
+					case 'PageBlocksImageGallery': {
 						return (
-							<FeatureList
+							<ImageGallery
 								key={i}
 								{...block}
 							/>
