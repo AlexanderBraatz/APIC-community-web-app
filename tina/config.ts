@@ -207,6 +207,44 @@ export default defineConfig({
 								]
 							},
 							{
+								name: 'aboutSection',
+								label: 'About Section',
+								fields: [
+									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
+									{
+										name: 'paragraphs',
+										label: 'Paragraphs',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => ({
+												label: item.text?.slice(0, 40) || 'Paragraph'
+											})
+										},
+										fields: [
+											{
+												name: 'text',
+												type: 'string',
+												ui: { component: 'textarea' }
+											}
+										]
+									},
+									{
+										name: 'members',
+										label: 'Team Members',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => ({ label: item.name || 'Member' })
+										},
+										fields: [
+											{ name: 'name', type: 'string' },
+											{ name: 'image', type: 'image' }
+										]
+									}
+								]
+							},
+							{
 								name: 'welcomeHero',
 								label: 'Welcome Hero',
 								fields: [

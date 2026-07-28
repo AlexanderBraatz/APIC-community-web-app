@@ -1,6 +1,7 @@
 'use client';
 
 import { PageQuery } from '@/tina/__generated__/types';
+import AboutSection from './about-section';
 import CommunityFeatures from './community-features';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
@@ -73,6 +74,14 @@ export default function PageContent(props: {
 					case 'PageBlocksEventListing': {
 						return (
 							<EventListing
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksAboutSection': {
+						return (
+							<AboutSection
 								key={i}
 								{...block}
 							/>
