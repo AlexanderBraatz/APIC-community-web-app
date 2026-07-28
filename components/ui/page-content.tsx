@@ -4,6 +4,7 @@ import { PageQuery } from '@/tina/__generated__/types';
 import CommunityFeatures from './community-features';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
+import EventListing from './event-listing';
 import FeatureList from './feature-list';
 import HeroBanner from './hero-banner';
 import MemberIntro from './member-intro';
@@ -64,6 +65,14 @@ export default function PageContent(props: {
 					case 'PageBlocksCtaSection': {
 						return (
 							<CtaSection
+								key={i}
+								{...block}
+							/>
+						);
+					}
+					case 'PageBlocksEventListing': {
+						return (
+							<EventListing
 								key={i}
 								{...block}
 							/>

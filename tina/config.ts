@@ -173,6 +173,40 @@ export default defineConfig({
 								]
 							},
 							{
+								name: 'eventListing',
+								label: 'Event Listing',
+								fields: [
+									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
+									{
+										name: 'events',
+										label: 'Events',
+										type: 'object',
+										list: true,
+										ui: {
+											itemProps: item => ({ label: item.name || 'New Event' })
+										},
+										fields: [
+											{ name: 'name', type: 'string' },
+											{ name: 'date', type: 'string' },
+											{ name: 'address', type: 'string' },
+											{ name: 'contact', type: 'string' },
+											{
+												name: 'notes',
+												type: 'string',
+												ui: { component: 'textarea' }
+											},
+											{
+												name: 'images',
+												label: 'Gallery Images',
+												type: 'object',
+												list: true,
+												fields: [{ name: 'image', type: 'image' }]
+											}
+										]
+									}
+								]
+							},
+							{
 								name: 'welcomeHero',
 								label: 'Welcome Hero',
 								fields: [
