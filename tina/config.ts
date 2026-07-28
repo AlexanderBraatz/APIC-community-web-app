@@ -1,5 +1,6 @@
 import { defineConfig } from 'tinacms';
 import { FeaturedIcons } from '../components/icons';
+import { IconSelector } from './icon-selector';
 
 export default defineConfig({
 	branch: '',
@@ -99,7 +100,10 @@ export default defineConfig({
 											{
 												name: 'icon',
 												type: 'string',
-												options: Object.keys(FeaturedIcons)
+												options: Object.keys(FeaturedIcons),
+												ui: {
+													component: IconSelector
+												}
 											},
 											{
 												name: 'label',
