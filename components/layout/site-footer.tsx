@@ -28,7 +28,13 @@ export default function SiteFooter() {
 				<p className="mt-10 text-xs text-[#777777]">
 					© 2026 Apic.Community. All rights reserved.
 				</p>
-				<p className="mt-2 text-xs text-[#999999]">-</p>
+				<Link
+					href="/admin"
+					className="mt-2 text-xs text-[#999999]"
+					aria-label="Open admin"
+				>
+					Admin
+				</Link>
 			</div>
 		</footer>
 	);
