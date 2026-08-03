@@ -169,7 +169,9 @@ export async function inviteUser(formData: FormData): Promise<{ ok: true } | { o
 			newValues: { email, auth_user_id: invited.user?.id ?? null }
 		});
 
+		revalidatePath('/members/admin');
 		revalidatePath('/members/admin/invitations');
+		revalidatePath('/members/admin/audit-log');
 		return { ok: true };
 	} catch (error) {
 		return {
@@ -236,7 +238,9 @@ export async function resendInvitation(
 			summary: `Resent invitation to ${invitation.email}`
 		});
 
+		revalidatePath('/members/admin');
 		revalidatePath('/members/admin/invitations');
+		revalidatePath('/members/admin/audit-log');
 		return { ok: true };
 	} catch (error) {
 		return {
@@ -296,7 +300,9 @@ export async function cancelInvitation(
 			newValues: { status: 'cancelled' }
 		});
 
+		revalidatePath('/members/admin');
 		revalidatePath('/members/admin/invitations');
+		revalidatePath('/members/admin/audit-log');
 		return { ok: true };
 	} catch (error) {
 		return {

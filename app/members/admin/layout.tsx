@@ -20,6 +20,9 @@ export default async function MembersAdminLayout({
 				<p className="text-xs tracking-wide text-[#888] uppercase">App admin</p>
 				<h1 className="font-heading text-3xl text-[#805b32]">Members admin</h1>
 				<nav className="mt-4 flex flex-wrap gap-4 text-sm">
+					<Link href="/members/admin" className="text-[#805b32] underline">
+						Dashboard
+					</Link>
 					<Link href="/members/admin/listings" className="text-[#805b32] underline">
 						Listings
 					</Link>
@@ -28,6 +31,12 @@ export default async function MembersAdminLayout({
 					</Link>
 					<Link href="/members/admin/invitations" className="text-[#805b32] underline">
 						Invitations
+					</Link>
+					<Link
+						href="/members/admin/audit-log"
+						className="text-[#805b32] underline"
+					>
+						Audit log
 					</Link>
 					<Link href="/place" className="text-[#666] underline">
 						Back to members hub

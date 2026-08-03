@@ -182,6 +182,15 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Delete removes Auth user + attendance; invitation history reassigned; audit retained.
 - [ ] Non-admin visiting `/members/admin/users` redirects to `/place`.
 
+## Smoke checks (PR-08)
+
+- [ ] `/members/admin` shows counts for users, admins, listings, pending invites (match DB).
+- [ ] Dashboard recent actions list known invite / role / listing events.
+- [ ] `/members/admin/audit-log` filters by action, target type, and summary search.
+- [ ] Detail dialog shows before/after JSON for a known promote or listing update.
+- [ ] Non-admin cannot insert/update/delete `admin_audit_log` (select-only RLS; no client write UI).
+- [ ] Non-admin visiting `/members/admin` or `/members/admin/audit-log` redirects to `/place`.
+
 ### Auth redirects for invites
 
 Dashboard → **Authentication → URL configuration**

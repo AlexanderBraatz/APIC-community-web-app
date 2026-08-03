@@ -228,7 +228,9 @@ function parseListingForm(formData: FormData): ListingInput | { error: string } 
 }
 
 function revalidateListingPaths(category?: string) {
+	revalidatePath('/members/admin');
 	revalidatePath('/members/admin/listings');
+	revalidatePath('/members/admin/audit-log');
 	if (category) revalidatePath(`/${category}`);
 	for (const slug of ['food-dining', 'services-maintenance', 'health-wellness', 'shop-market']) {
 		revalidatePath(`/${slug}`);

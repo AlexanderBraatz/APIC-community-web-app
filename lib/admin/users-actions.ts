@@ -37,8 +37,10 @@ async function writeAudit(
 }
 
 function revalidateUserAdminPaths() {
+	revalidatePath('/members/admin');
 	revalidatePath('/members/admin/users');
 	revalidatePath('/members/admin/invitations');
+	revalidatePath('/members/admin/audit-log');
 	revalidatePath('/community-calendar');
 	revalidatePath('/account');
 }
