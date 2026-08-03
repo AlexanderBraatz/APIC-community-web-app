@@ -143,6 +143,15 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Resend / cancel work; audit rows appear in `admin_audit_log`.
 - [ ] Non-admin visiting `/members/admin/invitations` redirects to `/place`.
 
+## Smoke checks (PR-04)
+
+- [ ] Migration `create_avatars_storage` applied (`avatars` bucket exists).
+- [ ] `/account` shows email (read-only), role (read-only), editable name.
+- [ ] Save name → refresh shows new `profiles.full_name` (calendar row label updates).
+- [ ] Avatar upload writes under `{user_id}/` and updates `profiles.avatar_url`.
+- [ ] Password change on `/account` succeeds; sign-in with new password works.
+- [ ] Role is not editable on the account page (column not granted for update).
+
 ### Auth redirects for invites
 
 Dashboard → **Authentication → URL configuration**

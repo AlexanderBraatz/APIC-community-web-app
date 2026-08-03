@@ -1,9 +1,22 @@
 import Link from 'next/link';
 import { signOut } from '@/app/auth/actions';
+import {
+	changePassword,
+	removeAvatar,
+	updateFullName,
+	uploadAvatar
+} from '@/lib/account/actions';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/server';
 
-export default async function AccountPage() {
+type PageProps = {
+	searchParams: Promise<{ error?: string; message?: string }>;
+};
+
+export default async function AccountPage({ searchParams }: PageProps) {
+	const params = await searchParams;
 	const supabase = await createClient();
 	const {
 		data: { user }
@@ -21,31 +34,161 @@ export default async function AccountPage() {
 		<main className="mx-auto w-full max-w-lg px-4 py-12">
 			<h1 className="font-heading text-3xl text-[#805b32]">Account</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Profile editing (avatar upload) lands in a later PR. Password changes
-				use the reset flow or will be added with the full account form.
+				Update your name and avatar, change your password, or sign out.
 			</p>
 
-			<dl className="mt-8 space-y-4 border-t border-[#e5e5e5] pt-6 text-sm">
-				<div>
-					<dt className="text-[#888]">Email</dt>
-					<dd className="mt-1 text-[#444]">{user?.email ?? '—'}</dd>
-				</div>
-				<div>
-					<dt className="text-[#888]">Name</dt>
-					<dd className="mt-1 text-[#444]">{profile?.full_name || '—'}</dd>
-				</div>
-				<div>
-					<dt className="text-[#888]">Role</dt>
-					<dd className="mt-1 text-[#444]">{profile?.role ?? '—'}</dd>
-				</div>
-			</dl>
+			{params.error ? (
+				<p
+					className="mt-4 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+					role="alert"
+				>
+					{params.error}
+				</p>
+			) : null}
+			{params.message ? (
+				<p
+					className="mt-4 border border-[#d9cbb8] bg-[#f7f2ec] px-3 py-2 text-sm text-[#57422a]"
+					role="status"
+				>
+					{params.message}
+				</p>
+			) : null}
 
-			<p className="mt-4 text-xs text-[#888]">
-				Scheduler still uses mock login controls until attendance persistence
-				(PR-03).
-			</p>
+			<section className="mt-8 space-y-4 border-t border-[#e5e5e5] pt-6">
+				<h2 className="text-lg font-medium text-[#444]">Profile</h2>
 
-			<div className="mt-8 flex flex-wrap gap-3">
+				<div className="flex items-center gap-4">
+					{profile?.avatar_url ? (
+						// eslint-disable-next-line @next/next/no-img-element -- remote Supabase Storage URL
+						<img
+							src={profile.avatar_url}
+							alt=""
+							width={72}
+							height={72}
+							className="h-[72px] w-[72px] rounded-full object-cover"
+						/>
+					) : (
+						<div
+							className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#e8dfd2] text-sm font-medium text-[#805b32]"
+							aria-hidden
+						>
+							{(profile?.full_name || user?.email || '?')
+								.slice(0, 1)
+								.toUpperCase()}
+						</div>
+					)}
+					<div className="min-w-0 text-sm">
+						<p className="truncate text-[#444]">
+							{profile?.full_name || '—'}
+						</p>
+						<p className="truncate text-[#888]">{user?.email ?? '—'}</p>
+					</div>
+				</div>
+
+				<div>
+					<dt className="sr-only">Email</dt>
+					<p className="text-xs text-[#888]">Email (read-only)</p>
+					<p className="mt-1 text-sm text-[#444]">{user?.email ?? '—'}</p>
+				</div>
+
+				<div>
+					<p className="text-xs text-[#888]">Role (read-only)</p>
+					<p className="mt-1 text-sm text-[#444]">{profile?.role ?? '—'}</p>
+				</div>
+
+				<form action={updateFullName} className="space-y-3">
+					<div className="space-y-2">
+						<Label htmlFor="full_name">Full name</Label>
+						<Input
+							id="full_name"
+							name="full_name"
+							type="text"
+							defaultValue={profile?.full_name ?? ''}
+							maxLength={200}
+							required
+							autoComplete="name"
+						/>
+					</div>
+					<Button
+						type="submit"
+						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
+					>
+						Save name
+					</Button>
+				</form>
+			</section>
+
+			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
+				<h2 className="text-lg font-medium text-[#444]">Avatar</h2>
+				<p className="text-sm text-[#666]">
+					JPEG, PNG, WebP, or GIF up to 2 MB.
+				</p>
+				<form action={uploadAvatar} className="space-y-3">
+					<div className="space-y-2">
+						<Label htmlFor="avatar">Choose image</Label>
+						<Input
+							id="avatar"
+							name="avatar"
+							type="file"
+							accept="image/jpeg,image/png,image/webp,image/gif"
+							required
+						/>
+					</div>
+					<Button
+						type="submit"
+						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
+					>
+						Upload avatar
+					</Button>
+				</form>
+				{profile?.avatar_url ? (
+					<form action={removeAvatar}>
+						<Button
+							type="submit"
+							variant="outline"
+							className="rounded-[2px] border-[#634627]"
+						>
+							Remove avatar
+						</Button>
+					</form>
+				) : null}
+			</section>
+
+			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
+				<h2 className="text-lg font-medium text-[#444]">Password</h2>
+				<form action={changePassword} className="space-y-4">
+					<div className="space-y-2">
+						<Label htmlFor="password">New password</Label>
+						<Input
+							id="password"
+							name="password"
+							type="password"
+							autoComplete="new-password"
+							minLength={8}
+							required
+						/>
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="confirm">Confirm password</Label>
+						<Input
+							id="confirm"
+							name="confirm"
+							type="password"
+							autoComplete="new-password"
+							minLength={8}
+							required
+						/>
+					</div>
+					<Button
+						type="submit"
+						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
+					>
+						Update password
+					</Button>
+				</form>
+			</section>
+
+			<div className="mt-10 flex flex-wrap gap-3 border-t border-[#e5e5e5] pt-6">
 				<Link
 					href="/place"
 					className="inline-flex h-8 items-center rounded-[2px] border border-[#634627] bg-[#805b32] px-3 text-sm font-medium text-white hover:bg-[#1f2d22]"
