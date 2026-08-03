@@ -23,6 +23,9 @@ export default async function MembersAdminLayout({
 					<Link href="/members/admin/listings" className="text-[#805b32] underline">
 						Listings
 					</Link>
+					<Link href="/members/admin/users" className="text-[#805b32] underline">
+						Users
+					</Link>
 					<Link href="/members/admin/invitations" className="text-[#805b32] underline">
 						Invitations
 					</Link>

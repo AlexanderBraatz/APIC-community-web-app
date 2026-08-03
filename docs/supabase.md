@@ -172,6 +172,16 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] `admin_audit_log` records listing create/update/delete (and auto-geocode).
 - [ ] Non-admin cannot mutate listings (UI redirects; Data API policies block).
 
+## Smoke checks (PR-07)
+
+- [ ] Migration `admin_users_role_and_delete` applied (`change_user_role` exists).
+- [ ] `/members/admin/users` lists members with emails; search + role filter work.
+- [ ] Promote member → admin; demote back (confirm dialogs).
+- [ ] Cannot demote or delete the last remaining admin.
+- [ ] Self promote/demote/delete controls are disabled / blocked.
+- [ ] Delete removes Auth user + attendance; invitation history reassigned; audit retained.
+- [ ] Non-admin visiting `/members/admin/users` redirects to `/place`.
+
 ### Auth redirects for invites
 
 Dashboard → **Authentication → URL configuration**
