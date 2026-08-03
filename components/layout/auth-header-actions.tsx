@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { signOut } from '@/app/auth/actions';
 import { createClient } from '@/lib/supabase/client';
@@ -15,23 +16,37 @@ export default function AuthHeaderActions({
 	mobile = false,
 	onNavigate
 }: AuthHeaderActionsProps) {
+	const pathname = usePathname();
 	const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
 	useEffect(() => {
 		const supabase = createClient();
+		let cancelled = false;
 
-		supabase.auth.getClaims().then(({ data }) => {
-			setSignedIn(Boolean(data?.claims));
-		});
+		async function syncFromCookies() {
+			const { data } = await supabase.auth.getClaims();
+			if (!cancelled) {
+				setSignedIn(Boolean(data?.claims));
+			}
+		}
+
+		// Root layout stays mounted across soft navigations, including the
+		// server-action redirect after sign-in/out. Re-read cookies on each route.
+		void syncFromCookies();
 
 		const {
 			data: { subscription }
 		} = supabase.auth.onAuthStateChange((_event, session) => {
-			setSignedIn(Boolean(session));
+			if (!cancelled) {
+				setSignedIn(Boolean(session));
+			}
 		});
 
-		return () => subscription.unsubscribe();
-	}, []);
+		return () => {
+			cancelled = true;
+			subscription.unsubscribe();
+		};
+	}, [pathname]);
 
 	const linkClass = cn(
 		'rounded-[2px] border border-[#634627] bg-[#805b32] px-[30px] py-2.5 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22]',
