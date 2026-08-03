@@ -3,15 +3,14 @@
 import {
 	filterListings,
 	getListingsForCategory,
+	listingHasCoords,
 	suggest,
 	type Listing
 } from '@/lib/listings-search';
 import { PageBlocksMockMap } from '@/tina/__generated__/types';
 import { Search, X } from 'lucide-react';
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { tinaField } from 'tinacms/tina-field';
-
-const DEFAULT_MAP_IMAGE = '/images/mock-map.svg';
+import LocationsMap from './locations-map';
 
 const RESULT_FIELDS = [
 	{ key: 'name', label: 'Name' },
@@ -27,8 +26,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 	'shop-market': 'Shop & Market'
 };
 
-export default function MockMap(props: PageBlocksMockMap) {
-	const src = props.image ?? DEFAULT_MAP_IMAGE;
+export default function MockMap(_props: PageBlocksMockMap) {
 	const listings = useMemo(() => getListingsForCategory(null), []);
 
 	const [query, setQuery] = useState('');
@@ -55,6 +53,14 @@ export default function MockMap(props: PageBlocksMockMap) {
 
 		return filterListings(listings, activeTags, deferredQuery);
 	}, [listings, activeTags, deferredQuery, selectedPlaceName]);
+
+	const mapLocations = useMemo(() => {
+		const scoped =
+			activeTags.length > 0 || deferredQuery.trim() || selectedPlaceName
+				? results
+				: listings;
+		return scoped.filter(listingHasCoords);
+	}, [listings, results, activeTags, deferredQuery, selectedPlaceName]);
 
 	const showSuggestions =
 		panelOpen &&
@@ -104,16 +110,11 @@ export default function MockMap(props: PageBlocksMockMap) {
 	return (
 		<section className="bg-white px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
 			<div className="mx-auto max-w-[1400px]">
-				<div
-					className="overflow-hidden rounded-sm border border-[#b8a99a]/40 bg-[#e8e4dc]"
-					data-tina-field={tinaField(props, 'image')}
-				>
-					<img
-						src={src}
-						alt="Map"
-						className="aspect-[2/1] w-full object-cover"
-					/>
-				</div>
+				<LocationsMap
+					locations={mapLocations}
+					selectedName={selectedPlaceName}
+					onSelect={listing => selectPlace(listing)}
+				/>
 
 				<div
 					ref={rootRef}

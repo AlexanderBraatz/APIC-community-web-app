@@ -9,7 +9,26 @@ export type Listing = {
 	category: string;
 	sourceUrl: string;
 	tags: string[];
+	/** Present when the listing has been geocoded (e.g. from a database). */
+	lat?: number | null;
+	lng?: number | null;
 };
+
+export type ListingWithCoords = Listing & {
+	lat: number;
+	lng: number;
+};
+
+export function listingHasCoords(
+	listing: Listing
+): listing is ListingWithCoords {
+	return (
+		typeof listing.lat === 'number' &&
+		Number.isFinite(listing.lat) &&
+		typeof listing.lng === 'number' &&
+		Number.isFinite(listing.lng)
+	);
+}
 
 export const CATEGORY_SLUGS = [
 	'food-dining',

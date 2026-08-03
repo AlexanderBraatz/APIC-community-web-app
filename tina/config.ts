@@ -251,14 +251,14 @@ export default defineConfig({
 							},
 							{
 								name: 'mockMap',
-								label: 'Mock Map',
+								label: 'Map',
 								fields: [
 									{
-										name: 'image',
-										label: 'Map Image',
-										type: 'image',
+										name: 'caption',
+										label: 'Caption',
+										type: 'string',
 										description:
-											'Optional. Defaults to the built-in map placeholder.'
+											'Optional. Google Map with listing pins requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY and lat/lng on listings.'
 									}
 								]
 							}
