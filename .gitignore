@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# local seed payloads (emails / passwords / demo member data)
+/scripts/data/
+
 # local agent skills install
 .agents/
 skills-lock.json
