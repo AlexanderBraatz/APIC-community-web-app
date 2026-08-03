@@ -5,6 +5,7 @@ import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import AuthHeaderActions from './auth-header-actions';
 import SiteLogo from './site-logo';
 
 const NAV_ITEMS = [
@@ -84,12 +85,9 @@ export default function SiteHeader() {
 				<div className="mx-auto flex h-[90px] max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
 					<SiteLogo />
 
-					<Link
-						href="/place"
-						className="hidden rounded-[2px] border border-[#634627] bg-[#805b32] px-[30px] py-2.5 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22] md:inline-flex"
-					>
-						Member Dashboard
-					</Link>
+					<div className="hidden md:block">
+						<AuthHeaderActions />
+					</div>
 
 					<button
 						type="button"
@@ -153,13 +151,7 @@ export default function SiteHeader() {
 						</ul>
 					</nav>
 					<div className="border-t border-[#6a4b29] px-4 py-3">
-						<Link
-							href="/place"
-							className="flex w-full items-center justify-center rounded-[2px] border border-[#634627] bg-[#805b32] px-4 py-2.5 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22]"
-							onClick={() => setOpen(false)}
-						>
-							Member Dashboard
-						</Link>
+						<AuthHeaderActions mobile onNavigate={() => setOpen(false)} />
 					</div>
 				</div>
 			) : null}

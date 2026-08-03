@@ -87,12 +87,39 @@ Already expected for this app:
 
 - [x] **Public sign-ups disabled** (invitation-only; see PR-02 for invite flow).
 - Confirm under **Authentication → Providers → Email** (disable “Enable sign ups” / equivalent).
+- **URL configuration:** set Site URL to your app origin (local: `http://localhost:3000`).
+- Add the same origin under Redirect URLs, plus `http://localhost:3000/auth/confirm`.
+- Set `NEXT_PUBLIC_SITE_URL` in `.env.local` to that origin so password-reset emails build the correct link.
 
 TinaCMS `/admin` is unrelated to Supabase Auth.
 
+## First admin (PR-01)
+
+After you create the first Auth user (Dashboard → Authentication → Users → Add user / Invite):
+
+1. Confirm a `profiles` row exists (`role = user` by default).
+2. Promote that user in SQL Editor or via MCP `execute_sql`:
+
+```sql
+update public.profiles
+set role = 'admin'
+where id = '<auth-user-uuid>';
+```
+
+Only do this for the bootstrap admin. Later PRs add invite + role-change APIs with final-admin protection.
+
 ## Smoke checks (PR-00)
 
-- [ ] `npx supabase projects list` works after login.
-- [ ] `npx supabase link --project-ref umvlotfvnnpttaddjwna` succeeds.
-- [ ] MCP `list_tables` on `public` works (may be empty until PR-01).
-- [ ] `.env.example` lists the Supabase variables above.
+- [x] `npx supabase projects list` works after login.
+- [x] `npx supabase link --project-ref umvlotfvnnpttaddjwna` succeeds.
+- [x] MCP `list_tables` on `public` works (may be empty until PR-01).
+- [x] `.env.example` lists the Supabase variables above.
+
+## Smoke checks (PR-01)
+
+- [ ] Migration `create_profiles` applied (`profiles` table visible).
+- [ ] Create a user in the Auth dashboard → `profiles` row appears.
+- [ ] `/community-calendar` redirects to `/sign-in` when signed out.
+- [ ] Sign in works; signed-in calendar still shows mock DayPilot data.
+- [ ] `/account` shows email + profile; sign out works.
+- [ ] Member cannot change `role` via the Data API (column not granted for update).
