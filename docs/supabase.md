@@ -120,6 +120,16 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Migration `create_profiles` applied (`profiles` table visible).
 - [ ] Create a user in the Auth dashboard → `profiles` row appears.
 - [ ] `/community-calendar` redirects to `/sign-in` when signed out.
-- [ ] Sign in works; signed-in calendar still shows mock DayPilot data.
+- [ ] Sign in works; signed-in calendar loads (attendance from DB after PR-03).
 - [ ] `/account` shows email + profile; sign out works.
 - [ ] Member cannot change `role` via the Data API (column not granted for update).
+
+## Smoke checks (PR-03)
+
+- [ ] Migration `create_attendance` applied; `save_attendance_batch` exists.
+- [ ] Signed-in calendar shows **profiles as rows** (no mock login select).
+- [ ] Create/edit stay → Save → reload persists; other user can see but not edit.
+- [ ] Soft-delete × then Save removes the row.
+- [ ] Discard restores draft to last saved snapshot.
+- [ ] Modal end date is inclusive (same calendar day as “last day present”).
+- [ ] Admin (`profiles.role = admin`) can edit others’ stays and Save.

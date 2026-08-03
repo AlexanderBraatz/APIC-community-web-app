@@ -23,6 +23,7 @@ import {
 	TableRow
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
+import { dayPilotEndToModalInclusive } from '@/lib/attendance/adapters';
 import { cn } from '@/lib/utils';
 
 type FormMode = 'edit' | 'add';
@@ -109,7 +110,7 @@ export function AvailabilityModal({
 				setFormMode('edit');
 				setEditingId(String(event.id));
 				setStartValue(toInputDate(event.start));
-				setEndValue(toInputDate(event.end));
+				setEndValue(dayPilotEndToModalInclusive(event.end));
 				setTitleValue(getEventTitle(event));
 				setNoteValue(getEventNote(event));
 				return;
@@ -127,7 +128,7 @@ export function AvailabilityModal({
 		setFormMode('edit');
 		setEditingId(String(event.id));
 		setStartValue(toInputDate(event.start));
-		setEndValue(toInputDate(event.end));
+		setEndValue(dayPilotEndToModalInclusive(event.end));
 		setTitleValue(getEventTitle(event));
 		setNoteValue(getEventNote(event));
 		setFormError(null);
@@ -252,7 +253,9 @@ export function AvailabilityModal({
 													{formatDisplayDate(event.start)}
 												</TableCell>
 												<TableCell>
-													{formatDisplayDate(event.end)}
+													{formatDisplayDate(
+														dayPilotEndToModalInclusive(event.end)
+													)}
 												</TableCell>
 												<TableCell className="max-w-44 truncate text-muted-foreground">
 													{note || '—'}
@@ -429,7 +432,7 @@ export function ReadOnlyAvailabilityModal({
 						{' · '}
 						{formatDisplayDate(event.start)}
 						{' – '}
-						{formatDisplayDate(event.end)}
+						{formatDisplayDate(dayPilotEndToModalInclusive(event.end))}
 					</DialogDescription>
 				</DialogHeader>
 

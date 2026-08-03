@@ -35,381 +35,16 @@ import {
 	schemeToCssVars,
 	type ColorSchemeId
 } from '@/app/lib/color-schemes';
+import { saveAttendanceBatch } from '@/lib/attendance/actions';
+import {
+	attendanceToEvent,
+	dayPilotEndToModalInclusive,
+	eventToAttendanceStay,
+	modalInclusiveEndToDayPilotEnd
+} from '@/lib/attendance/adapters';
+import type { AttendanceRow, ProfileResource } from '@/lib/attendance/types';
 
-const RESOURCES_STORAGE_KEY = 'scheduler-resources';
-const EVENTS_STORAGE_KEY = 'scheduler-events-v2';
-const MOCK_LOGIN_STORAGE_KEY = 'scheduler-mock-login-user';
 const MEMBER_SELECTIONS_STORAGE_KEY = 'scheduler-member-selections-v1';
-
-/** Switch between demo members (1) and Castelfalfi community data (2). */
-const ACTIVE_SEED_DATA_SET = 2 as const;
-
-const seedResources: DayPilot.ResourceData[] = [
-	{ id: 'R1', name: 'Emma Clarke' },
-	{ id: 'R2', name: 'James Patel' },
-	{ id: 'R3', name: 'Sofia Rossi' },
-	{ id: 'R4', name: 'Oliver and Mia Bennett' },
-	{ id: 'R5', name: 'Noah Kim' },
-	{ id: 'R6', name: 'Smith family' },
-	{ id: 'R7', name: 'Ava Thompson' },
-	{ id: 'R8', name: 'Liam and Grace Foster' },
-	{ id: 'R9', name: 'Isla Nguyen' },
-	{ id: 'R10', name: 'Johnson family' },
-	{ id: 'R11', name: 'Ethan Brooks' },
-	{ id: 'R12', name: 'Chloe and Henry Walsh' },
-	{ id: 'R13', name: 'Amelia Hughes' },
-	{ id: 'R14', name: 'Williams family' },
-	{ id: 'R15', name: 'Lucas Martin' },
-	{ id: 'R16', name: 'Harper and Jack Reid' },
-	{ id: 'R17', name: 'Ella Moreno' },
-	{ id: 'R18', name: 'Brown family' },
-	{ id: 'R19', name: 'Benjamin Cruz' },
-	{ id: 'R20', name: 'Charlotte and Oscar Daly' },
-	{ id: 'R21', name: 'Mia Andersson' },
-	{ id: 'R22', name: 'Taylor family' },
-	{ id: 'R23', name: 'William Scott' },
-	{ id: 'R24', name: 'Lily and Noah Price' },
-	{ id: 'R25', name: 'Sophie Alvarez' },
-	{ id: 'R26', name: 'Davis family' },
-	{ id: 'R27', name: 'Daniel Okonkwo' },
-	{ id: 'R28', name: 'Emily and George Lane' },
-	{ id: 'R29', name: 'Grace Yamamoto' },
-	{ id: 'R30', name: 'Wilson family' },
-	{ id: 'R31', name: 'Henry Dubois' },
-	{ id: 'R32', name: 'Olivia and Sam Carter' },
-	{ id: 'R33', name: 'Lucas Ferreira' },
-	{ id: 'R34', name: 'Miller family' },
-	{ id: 'R35', name: 'Zoe Andersen' },
-	{ id: 'R36', name: 'Nina and Paul Richter' },
-	{ id: 'R37', name: 'Felix Moreau' },
-	{ id: 'R38', name: 'Anderson family' },
-	{ id: 'R39', name: 'Clara Costa' },
-	{ id: 'R40', name: 'Marco and Elena Bianchi' }
-];
-
-const stays: { resource: string; start: string; end: string }[] = [
-	// Long summer with a week away mid-stay
-	{ resource: 'R1', start: '2026-06-18', end: '2026-08-05' },
-	{ resource: 'R1', start: '2026-08-13', end: '2026-09-10' },
-	// Classic 3-week July/August holiday
-	{ resource: 'R2', start: '2026-07-11', end: '2026-08-01' },
-	// Easter week only
-	{ resource: 'R3', start: '2026-03-28', end: '2026-04-07' },
-	// Easter + long unbroken summer + New Year
-	{ resource: 'R4', start: '2026-04-01', end: '2026-04-12' },
-	{ resource: 'R4', start: '2026-06-27', end: '2026-08-29' },
-	{ resource: 'R4', start: '2026-12-23', end: '2027-01-04' },
-	// Short late-summer + NYE
-	{ resource: 'R5', start: '2026-08-15', end: '2026-08-29' },
-	{ resource: 'R5', start: '2026-12-28', end: '2027-01-05' },
-	// School-holiday summer split by a week home
-	{ resource: 'R6', start: '2026-07-04', end: '2026-07-25' },
-	{ resource: 'R6', start: '2026-08-01', end: '2026-08-29' },
-	// Spring bank-holiday week + 3-week summer
-	{ resource: 'R8', start: '2026-05-22', end: '2026-05-31' },
-	{ resource: 'R8', start: '2026-07-18', end: '2026-08-08' },
-	// Quieter September stay
-	{ resource: 'R9', start: '2026-09-05', end: '2026-09-26' },
-	// Almost whole summer with a week gap, plus NYE
-	{ resource: 'R10', start: '2026-06-20', end: '2026-07-11' },
-	{ resource: 'R10', start: '2026-07-18', end: '2026-09-05' },
-	{ resource: 'R10', start: '2026-12-20', end: '2027-01-03' },
-	// Easter + August fortnight/three weeks
-	{ resource: 'R12', start: '2026-03-30', end: '2026-04-08' },
-	{ resource: 'R12', start: '2026-08-01', end: '2026-08-22' },
-	// Early June only
-	{ resource: 'R13', start: '2026-06-06', end: '2026-06-20' },
-	// Continuous ~2.5 month summer
-	{ resource: 'R14', start: '2026-06-28', end: '2026-09-12' },
-	// New Year only
-	{ resource: 'R15', start: '2026-12-27', end: '2027-01-06' },
-	// Easter + summer three weeks + NYE
-	{ resource: 'R16', start: '2026-04-02', end: '2026-04-10' },
-	{ resource: 'R16', start: '2026-07-25', end: '2026-08-15' },
-	{ resource: 'R16', start: '2026-12-22', end: '2027-01-02' },
-	// Autumn fortnight
-	{ resource: 'R17', start: '2026-10-10', end: '2026-10-24' },
-	// July/August with a week out (friends visiting elsewhere)
-	{ resource: 'R18', start: '2026-07-01', end: '2026-07-26' },
-	{ resource: 'R18', start: '2026-08-02', end: '2026-08-30' },
-	// Split early + late summer
-	{ resource: 'R20', start: '2026-06-13', end: '2026-06-27' },
-	{ resource: 'R20', start: '2026-08-22', end: '2026-09-05' },
-	// Midsummer three weeks
-	{ resource: 'R21', start: '2026-07-04', end: '2026-07-25' },
-	// Easter fortnight + August + NYE
-	{ resource: 'R22', start: '2026-03-27', end: '2026-04-11' },
-	{ resource: 'R22', start: '2026-08-01', end: '2026-08-31' },
-	{ resource: 'R22', start: '2026-12-24', end: '2027-01-05' },
-	// Long continuous summer (~10 weeks)
-	{ resource: 'R24', start: '2026-06-27', end: '2026-09-05' },
-	// Spring week + Ferragosto fortnight
-	{ resource: 'R25', start: '2026-04-18', end: '2026-04-25' },
-	{ resource: 'R25', start: '2026-08-08', end: '2026-08-22' },
-	// Full July school holiday
-	{ resource: 'R26', start: '2026-07-04', end: '2026-08-01' },
-	// Quiet January winter break
-	{ resource: 'R27', start: '2026-01-10', end: '2026-01-24' },
-	// Long summer with a week gap + Christmas (home before NYE)
-	{ resource: 'R28', start: '2026-06-15', end: '2026-07-04' },
-	{ resource: 'R28', start: '2026-07-11', end: '2026-08-22' },
-	{ resource: 'R28', start: '2026-12-19', end: '2026-12-28' },
-	// Early spring + September (avoid August heat)
-	{ resource: 'R29', start: '2026-03-20', end: '2026-03-30' },
-	{ resource: 'R29', start: '2026-09-12', end: '2026-09-26' },
-	// Two summer blocks with a fortnight gap
-	{ resource: 'R30', start: '2026-07-11', end: '2026-08-01' },
-	{ resource: 'R30', start: '2026-08-15', end: '2026-09-05' },
-	// May + late summer/early autumn
-	{ resource: 'R32', start: '2026-05-02', end: '2026-05-16' },
-	{ resource: 'R32', start: '2026-08-29', end: '2026-09-19' },
-	// February half-term + summer month
-	{ resource: 'R33', start: '2026-02-14', end: '2026-02-28' },
-	{ resource: 'R33', start: '2026-07-18', end: '2026-08-15' },
-	// Nearly 3 months with an August week out + NYE
-	{ resource: 'R34', start: '2026-06-20', end: '2026-08-08' },
-	{ resource: 'R34', start: '2026-08-16', end: '2026-09-19' },
-	{ resource: 'R34', start: '2026-12-21', end: '2027-01-04' },
-	// Easter + September
-	{ resource: 'R36', start: '2026-04-01', end: '2026-04-09' },
-	{ resource: 'R36', start: '2026-09-05', end: '2026-09-26' },
-	// Full August (continental style)
-	{ resource: 'R37', start: '2026-08-01', end: '2026-08-29' },
-	// February week + long Jul–Sep
-	{ resource: 'R38', start: '2026-02-14', end: '2026-02-21' },
-	{ resource: 'R38', start: '2026-07-18', end: '2026-09-05' },
-	// Short spring + short autumn hops
-	{ resource: 'R39', start: '2026-05-08', end: '2026-05-15' },
-	{ resource: 'R39', start: '2026-10-02', end: '2026-10-09' },
-	// Easter, long summer with a week break, NYE
-	{ resource: 'R40', start: '2026-03-29', end: '2026-04-08' },
-	{ resource: 'R40', start: '2026-06-20', end: '2026-07-25' },
-	{ resource: 'R40', start: '2026-08-02', end: '2026-09-12' },
-	{ resource: 'R40', start: '2026-12-26', end: '2027-01-06' }
-];
-
-const seedResources2: DayPilot.ResourceData[] = [
-	{ id: 'R1', name: 'Johnny and Karen' },
-	{ id: 'R2', name: 'Stephan & Anne Knichel' },
-	{ id: 'R3', name: 'Philippe Roose & Mimi Claus' },
-	{ id: 'R4', name: 'Eva und Thomas Schröer' },
-	{ id: 'R5', name: 'Anke und Norbert Frank' },
-	{ id: 'R6', name: 'Henk & Janine van Cappelle' },
-	{ id: 'R7', name: 'Joanne and Dave Weick' },
-	{ id: 'R8', name: 'matthiasdebbystebler' },
-	{ id: 'R9', name: 'Carmen Walsh' },
-	{ id: 'R10', name: 'Gerald und Susanne Wagener' },
-	{ id: 'R11', name: 'Hugh & Susan Barit' },
-	{ id: 'R12', name: 'Thomas Schmidt' }
-];
-
-type SeedStay = { resource: string; start: string; end: string; note?: string };
-
-type OverlapStay = {
-	resource: string;
-	start: string;
-	end: string;
-	title: string;
-	note: string;
-};
-
-/** Inclusive checkout dates from member records → exclusive scheduler end dates. */
-const stays2: SeedStay[] = [
-	{ resource: 'R1', start: '2026-09-11', end: '2026-10-30' },
-	{ resource: 'R2', start: '2026-07-13', end: '2026-08-04' },
-	{ resource: 'R3', start: '2026-07-09', end: '2026-08-25' },
-	{ resource: 'R4', start: '2026-08-22', end: '2026-09-13' },
-	{ resource: 'R5', start: '2026-07-15', end: '2026-07-29' },
-	{
-		resource: 'R6',
-		start: '2026-07-09',
-		end: '2026-07-27',
-		note: 'Enjoying Italy!'
-	},
-	{
-		resource: 'R7',
-		start: '2026-10-21',
-		end: '2026-10-29',
-		note: 'see you then!'
-	},
-	{ resource: 'R8', start: '2026-07-05', end: '2026-08-10' },
-	{ resource: 'R8', start: '2026-10-04', end: '2026-10-19' },
-	{ resource: 'R9', start: '2026-08-31', end: '2026-10-30' },
-	{ resource: 'R10', start: '2026-09-05', end: '2026-09-27' },
-	{
-		resource: 'R11',
-		start: '2026-07-11',
-		end: '2026-07-23',
-		note: 'Lookinf forward to getting back!'
-	},
-	{ resource: 'R11', start: '2026-08-29', end: '2026-10-05' },
-	{
-		resource: 'R12',
-		start: '2026-06-17',
-		end: '2027-06-18',
-		note: 'Almost always in Castelfalfi.'
-	}
-];
-
-const overlapStays2: OverlapStay[] = [
-	{
-		resource: 'R2',
-		start: '2026-07-21',
-		end: '2026-07-30',
-		title: 'Trip to Piemont',
-		note: '21/07 until 29/07 Trip to Piemont'
-	},
-	{
-		resource: 'R4',
-		start: '2026-08-31',
-		end: '2026-09-05',
-		title: 'Vespa tour',
-		note: 'We are on a Vespa tour from 31st August to 4th September'
-	}
-];
-
-const seedStayNotes = [
-	'We are new to the community and excited to settle in.',
-	'Cannot wait to see you all again this summer.',
-	'Quiet working weeks — happy to join evening meals.',
-	'Bringing the kids; looking forward to the pool days.',
-	'First long stay — please say hello when you see us.',
-	'Back for our favourite stretch of the year.'
-];
-
-const overlapStays: {
-	resource: string;
-	start: string;
-	end: string;
-	title: string;
-	note: string;
-}[] = [
-	{
-		resource: 'R6',
-		start: '2026-07-10',
-		end: '2026-07-18',
-		title: 'Son is visiting',
-		note: 'He arrives Friday evening — spare bed ready in the annex.'
-	},
-	{
-		resource: 'R6',
-		start: '2026-08-08',
-		end: '2026-08-12',
-		title: 'Attending street festival',
-		note: 'Day trips into town; evenings back at the house.'
-	},
-	{
-		resource: 'R1',
-		start: '2026-07-01',
-		end: '2026-07-12',
-		title: 'Partner is visiting',
-		note: 'Looking forward to introducing everyone around the table.'
-	},
-	{
-		resource: 'R4',
-		start: '2026-07-15',
-		end: '2026-07-22',
-		title: 'Friends from home',
-		note: 'Two couples joining us for a week of walks and cooking.'
-	},
-	{
-		resource: 'R10',
-		start: '2026-08-05',
-		end: '2026-08-14',
-		title: 'Birthday weekend',
-		note: 'Small celebration on the Saturday — all welcome for cake.'
-	},
-	{
-		resource: 'R18',
-		start: '2026-07-12',
-		end: '2026-07-20',
-		title: 'Parents visiting',
-		note: 'Slower pace while they are here; mornings are quiet.'
-	},
-	{
-		resource: 'R28',
-		start: '2026-07-20',
-		end: '2026-07-28',
-		title: 'Workshop week',
-		note: 'Away most afternoons for a ceramics course in the village.'
-	},
-	{
-		resource: 'R40',
-		start: '2026-08-10',
-		end: '2026-08-18',
-		title: 'Niece is visiting',
-		note: 'Teenager in tow — pool and bike rides planned.'
-	}
-];
-
-function buildSeedEvent(
-	id: number,
-	resource: string,
-	start: string,
-	end: string,
-	title: string,
-	note: string
-): DayPilot.EventData {
-	return {
-		id,
-		resource,
-		start: `${start}T00:00:00`,
-		end: `${end}T00:00:00`,
-		text: title,
-		tags: { title, note, saveStatus: 'ready' }
-	};
-}
-
-function buildSeedEvents(
-	resources: DayPilot.ResourceData[],
-	stayRows: SeedStay[],
-	overlapRows: OverlapStay[],
-	fallbackNotes: string[] = []
-): DayPilot.EventData[] {
-	return [
-		...stayRows.map((stay, index) => {
-			const memberName =
-				resources.find(resource => resource.id === stay.resource)?.name ?? '';
-			const note =
-				stay.note ?? fallbackNotes[index % fallbackNotes.length] ?? '';
-			return buildSeedEvent(
-				index + 1,
-				stay.resource,
-				stay.start,
-				stay.end,
-				memberName,
-				note
-			);
-		}),
-		...overlapRows.map((stay, index) =>
-			buildSeedEvent(
-				stayRows.length + index + 1,
-				stay.resource,
-				stay.start,
-				stay.end,
-				stay.title,
-				stay.note
-			)
-		)
-	];
-}
-
-const seedEvents = buildSeedEvents(seedResources, stays, overlapStays, seedStayNotes);
-const seedEvents2 = buildSeedEvents(seedResources2, stays2, overlapStays2);
-
-const seedResourcesBySet = {
-	1: seedResources,
-	2: seedResources2
-} as const;
-
-const seedEventsBySet = {
-	1: seedEvents,
-	2: seedEvents2
-} as const;
-
-const activeSeedResources = seedResourcesBySet[ACTIVE_SEED_DATA_SET];
-const activeSeedEvents = seedEventsBySet[ACTIVE_SEED_DATA_SET];
-const defaultMockLoginId = String(activeSeedResources[0]?.id ?? 'R1');
 
 function filterPinnedMemberIds(
 	ids: string[],
@@ -548,17 +183,6 @@ function escapeHtml(value: string) {
 		.replaceAll('"', '&quot;');
 }
 
-const MOCK_SAVE_DELAY_MS = 1200;
-
-type MockSavePayload = {
-	role: 'admin' | 'user';
-	userId: string;
-	/** Events to commit (already excluding soft-deletes). */
-	events: DayPilot.EventData[];
-	/** Current mock database contents used as the merge base. */
-	baselineEvents: DayPilot.EventData[];
-};
-
 function stripDraftTags(event: DayPilot.EventData): DayPilot.EventData {
 	const restTags = { ...(event.tags ?? {}) };
 	delete restTags.markedForDeletion;
@@ -569,27 +193,6 @@ function stripDraftTags(event: DayPilot.EventData): DayPilot.EventData {
 			saveStatus: 'ready'
 		}
 	};
-}
-
-/** Mock remote write: delay, then commit. Returns the next DB snapshot. */
-async function mockDatabaseWrite(
-	payload: MockSavePayload
-): Promise<DayPilot.EventData[]> {
-	await new Promise<void>(resolve => {
-		setTimeout(resolve, MOCK_SAVE_DELAY_MS);
-	});
-
-	const committed = payload.events.map(stripDraftTags);
-	if (payload.role === 'admin') {
-		return committed;
-	}
-
-	return [
-		...payload.baselineEvents
-			.filter(event => String(event.resource) !== payload.userId)
-			.map(stripDraftTags),
-		...committed
-	];
 }
 
 type SaveUiState = 'idle' | 'loading' | 'success' | 'error';
@@ -705,16 +308,38 @@ const SCHEDULER_FONT_SIZE: Record<SchedulerFontSize, { cellWidth: number }> = {
 	large: { cellWidth: 38 }
 };
 
-const Scheduler = () => {
-	const [resources] = useLocalStorageState(
-		`${RESOURCES_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
-		activeSeedResources
+type SchedulerProps = {
+	profiles: ProfileResource[];
+	attendance: AttendanceRow[];
+	currentUserId: string;
+	isAdmin: boolean;
+};
+
+const Scheduler = ({
+	profiles,
+	attendance,
+	currentUserId,
+	isAdmin
+}: SchedulerProps) => {
+	const resources = useMemo<DayPilot.ResourceData[]>(
+		() =>
+			profiles.map(profile => ({
+				id: profile.id,
+				name: profile.full_name || 'Member'
+			})),
+		[profiles]
 	);
-	/** Mock database: localStorage, written only on successful Save. */
-	const [dbEvents, setDbEvents] = useLocalStorageState(
-		`${EVENTS_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
-		activeSeedEvents
+
+	/** Persisted attendance snapshot from Supabase (loaded props + after Save). */
+	const [dbEvents, setDbEvents] = useState<DayPilot.EventData[]>(() =>
+		attendance.map(attendanceToEvent)
 	);
+
+	useEffect(() => {
+		setDbEvents(attendance.map(attendanceToEvent));
+		setDraftEvents(null);
+	}, [attendance]);
+
 	/**
 	 * Working calendar with unsaved edits. `null` means "show the DB as-is"
 	 * (SSR-safe and resets cleanly on discard).
@@ -741,17 +366,9 @@ const Scheduler = () => {
 		null
 	);
 	const [schedulerMountKey, setSchedulerMountKey] = useState(0);
-	const [tempLoggedInID, setTempLoggedInID] = useLocalStorageState(
-		`${MOCK_LOGIN_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
-		defaultMockLoginId
-	);
 	const [memberSelectionsByUser, setMemberSelectionsByUser] = useLocalStorageState<
 		Record<string, string[]>
-	>(
-		`${MEMBER_SELECTIONS_STORAGE_KEY}-set-${ACTIVE_SEED_DATA_SET}`,
-		{}
-	);
-	const [tempIsAdmin, setTempIsAdmin] = useState(false);
+	>(MEMBER_SELECTIONS_STORAGE_KEY, {});
 	const [saveUiState, setSaveUiState] = useState<SaveUiState>('idle');
 	const [savedThisSession, setSavedThisSession] = useState(false);
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -782,11 +399,11 @@ const Scheduler = () => {
 	const storedPinnedIds = useMemo(
 		() =>
 			filterPinnedMemberIds(
-				memberSelectionsByUser[tempLoggedInID] ?? [],
-				tempLoggedInID,
+				memberSelectionsByUser[currentUserId] ?? [],
+				currentUserId,
 				resources
 			),
-		[memberSelectionsByUser, tempLoggedInID, resources]
+		[memberSelectionsByUser, currentUserId, resources]
 	);
 	const selectedIds = selectedIdsDraft ?? storedPinnedIds;
 
@@ -801,38 +418,17 @@ const Scheduler = () => {
 
 	useEffect(() => {
 		setMemberSelectionsByUser(prev => {
-			const current = prev[tempLoggedInID] ?? [];
+			const current = prev[currentUserId] ?? [];
 			if (
 				current.length === selectedIds.length &&
 				current.every((id, index) => id === selectedIds[index])
 			) {
 				return prev;
 			}
-			return { ...prev, [tempLoggedInID]: selectedIds };
+			return { ...prev, [currentUserId]: selectedIds };
 		});
-	}, [selectedIds, tempLoggedInID, setMemberSelectionsByUser]);
+	}, [selectedIds, currentUserId, setMemberSelectionsByUser]);
 
-	const switchLoginUser = (userId: string) => {
-		if (userId === tempLoggedInID) {
-			return;
-		}
-		setTempLoggedInID(userId);
-		setQuery('');
-		setActiveSuggestionIndex(0);
-		const saved = memberSelectionsByUser[userId] ?? [];
-		setSelectedIdsDraft(filterPinnedMemberIds(saved, userId, resources));
-		setSchedulerMountKey(key => key + 1);
-	};
-
-	const loginOptions = useMemo(
-		() =>
-			[...resources].sort((a, b) =>
-				(a.name ?? '').localeCompare(b.name ?? '', undefined, {
-					sensitivity: 'base'
-				})
-			),
-		[resources]
-	);
 
 	const hideColorScheme = (id: ColorSchemeId) => {
 		const nextHidden = [...hiddenColorSchemes, id];
@@ -848,20 +444,20 @@ const Scheduler = () => {
 	};
 
 	const canEditResource = (resourceId: string) =>
-		tempIsAdmin || resourceId === tempLoggedInID;
+		isAdmin || resourceId === currentUserId;
 
 	const hasUnsavedChanges = useMemo(
 		() =>
 			eventRows.some(event => {
 				const resourceId = String(event.resource ?? '');
-				if (!(tempIsAdmin || resourceId === tempLoggedInID)) {
+				if (!(isAdmin || resourceId === currentUserId)) {
 					return false;
 				}
 				return (
 					getEventSaveStatus(event) === 'unsaved' || isMarkedForDeletion(event)
 				);
 			}),
-		[eventRows, tempIsAdmin, tempLoggedInID]
+		[eventRows, isAdmin, currentUserId]
 	);
 
 	const saveChanges = async (eventsOverride?: DayPilot.EventData[]) => {
@@ -872,7 +468,7 @@ const Scheduler = () => {
 		const rows = eventsOverride ?? eventRows;
 		const hasUnsavedInRows = rows.some(event => {
 			const resourceId = String(event.resource ?? '');
-			if (!(tempIsAdmin || resourceId === tempLoggedInID)) {
+			if (!(isAdmin || resourceId === currentUserId)) {
 				return false;
 			}
 			return (
@@ -888,9 +484,9 @@ const Scheduler = () => {
 			setSavedThisSession(false);
 		}
 
-		const ownedEvents = tempIsAdmin
+		const ownedEvents = isAdmin
 			? rows
-			: rows.filter(event => String(event.resource) === tempLoggedInID);
+			: rows.filter(event => String(event.resource) === currentUserId);
 		const eventsToSave = ownedEvents.filter(
 			event => !isMarkedForDeletion(event)
 		);
@@ -900,14 +496,26 @@ const Scheduler = () => {
 				.map(event => String(event.id))
 		);
 
+		const softDeletedIds = ownedEvents
+			.filter(event => isMarkedForDeletion(event))
+			.map(event => String(event.id));
+
+		const baselineOwnedIds = new Set(
+			(isAdmin ? dbEvents : dbEvents.filter(e => String(e.resource) === currentUserId)).map(
+				event => String(event.id)
+			)
+		);
+		const keptIds = new Set(eventsToSave.map(event => String(event.id)));
+		const droppedFromScope = [...baselineOwnedIds].filter(id => !keptIds.has(id));
+		const deleteIds = [...new Set([...softDeletedIds, ...droppedFromScope])];
+
 		setSaveUiState('loading');
 		try {
-			const nextDb = await mockDatabaseWrite({
-				role: tempIsAdmin ? 'admin' : 'user',
-				userId: tempLoggedInID,
-				events: eventsToSave,
-				baselineEvents: dbEvents
+			const rowsFromDb = await saveAttendanceBatch({
+				stays: eventsToSave.map(eventToAttendanceStay),
+				deleteIds
 			});
+			const nextDb = rowsFromDb.map(attendanceToEvent);
 			setDbEvents(nextDb);
 			setDraftEvents(
 				nextDb.map(event =>
@@ -925,8 +533,8 @@ const Scheduler = () => {
 	};
 
 	const userAvailabilityEvents = useMemo(
-		() => eventRows.filter(event => String(event.resource) === tempLoggedInID),
-		[eventRows, tempLoggedInID]
+		() => eventRows.filter(event => String(event.resource) === currentUserId),
+		[eventRows, currentUserId]
 	);
 
 	const closeAvailabilityModal = () => {
@@ -946,12 +554,12 @@ const Scheduler = () => {
 		note: string;
 	}) => {
 		const resourceName =
-			resources.find(resource => String(resource.id) === tempLoggedInID)
+			resources.find(resource => String(resource.id) === currentUserId)
 				?.name ?? '';
 		const title = payload.title.trim() || resourceName;
 		const note = payload.note.trim();
 		const start = `${payload.startValue}T00:00:00`;
-		const end = `${payload.endValue}T00:00:00`;
+		const end = modalInclusiveEndToDayPilotEnd(payload.endValue);
 		const current = draftEvents ?? dbEvents;
 
 		const nextEvents =
@@ -961,12 +569,8 @@ const Scheduler = () => {
 						withEventSaveStatus(
 							withEventContent(
 								{
-									id:
-										current.reduce((max, event) => {
-											const id = Number(event.id);
-											return Number.isFinite(id) ? Math.max(max, id) : max;
-										}, 0) + 1,
-									resource: tempLoggedInID,
+									id: crypto.randomUUID(),
+									resource: currentUserId,
 									start,
 									end,
 									text: title
@@ -1070,10 +674,10 @@ const Scheduler = () => {
 
 	const orderedResources = useMemo(() => {
 		const loggedIn = resources.find(
-			resource => String(resource.id) === tempLoggedInID
+			resource => String(resource.id) === currentUserId
 		);
 		const selected = selectedIds
-			.filter(id => id !== tempLoggedInID)
+			.filter(id => id !== currentUserId)
 			.map(id => resources.find(resource => String(resource.id) === id))
 			.filter(
 				(resource): resource is DayPilot.ResourceData => resource != null
@@ -1081,11 +685,11 @@ const Scheduler = () => {
 		const rest = resources.filter(
 			resource =>
 				resource.id != null &&
-				String(resource.id) !== tempLoggedInID &&
+				String(resource.id) !== currentUserId &&
 				!selectedIds.includes(String(resource.id))
 		);
 		return [...(loggedIn ? [loggedIn] : []), ...selected, ...rest];
-	}, [resources, selectedIds, tempLoggedInID]);
+	}, [resources, selectedIds, currentUserId]);
 
 	const addSelected = (id: string) => {
 		updateSelectedIds(current =>
@@ -1109,7 +713,7 @@ const Scheduler = () => {
 		args: DayPilot.SchedulerBeforeRowHeaderRenderArgs
 	) => {
 		const id = String(args.row.id);
-		const isLoggedIn = id === tempLoggedInID;
+		const isLoggedIn = id === currentUserId;
 		const isSelected = selectedIds.includes(id);
 
 		if (isLoggedIn) {
@@ -1145,7 +749,7 @@ const Scheduler = () => {
 
 	const onBeforeCellRender = (args: DayPilot.SchedulerBeforeCellRenderArgs) => {
 		const resourceId = String(args.cell.resource);
-		if (resourceId === tempLoggedInID) {
+		if (resourceId === currentUserId) {
 			args.cell.properties.backColor = args.cell.properties.business
 				? activeScheme.cellLoggedInBiz
 				: activeScheme.cellLoggedInWeekend;
@@ -1303,7 +907,7 @@ const Scheduler = () => {
 			return;
 		}
 
-		if (String(event.resource) === tempLoggedInID) {
+		if (String(event.resource) === currentUserId) {
 			setReadOnlyEvent(null);
 			setAvailabilityFocusId(eventId);
 			setAvailabilityOpen(true);
@@ -1332,17 +936,12 @@ const Scheduler = () => {
 			resources.find(resource => String(resource.id) === String(args.resource))
 				?.name ?? '';
 		setEventRows(current => {
-			const nextId =
-				current.reduce((max, event) => {
-					const id = Number(event.id);
-					return Number.isFinite(id) ? Math.max(max, id) : max;
-				}, 0) + 1;
 			return [
 				...current,
 				withEventSaveStatus(
 					withEventContent(
 						{
-							id: nextId,
+							id: crypto.randomUUID(),
 							resource: args.resource,
 							start: args.start.toString(),
 							end: args.end.toString(),
@@ -1546,12 +1145,12 @@ const Scheduler = () => {
 				</DialogContent>
 			</Dialog>
 
-			{availabilityOpen && !tempIsAdmin ? (
+			{availabilityOpen && !isAdmin ? (
 				<AvailabilityModal
 					open
 					userEvents={userAvailabilityEvents}
 					defaultTitle={
-						resources.find(resource => String(resource.id) === tempLoggedInID)
+						resources.find(resource => String(resource.id) === currentUserId)
 							?.name ?? ''
 					}
 					initialEventId={availabilityFocusId}
@@ -1611,7 +1210,7 @@ const Scheduler = () => {
 									Saving changes…
 								</p>
 								<p style={{ margin: 0, color: '#5c5348' }}>
-									{tempIsAdmin
+									{isAdmin
 										? 'Writing all events to the database.'
 										: 'Writing your events to the database.'}
 								</p>
@@ -1629,7 +1228,7 @@ const Scheduler = () => {
 									Changes saved
 								</p>
 								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-									{tempIsAdmin
+									{isAdmin
 										? 'All event updates were written successfully.'
 										: 'Your event updates were written successfully.'}
 								</p>
@@ -1853,7 +1452,7 @@ const Scheduler = () => {
 						) : null}
 					</div>
 					<div className="flex flex-wrap items-center gap-3 sm:ml-auto">
-						{!tempIsAdmin ? (
+						{!isAdmin ? (
 							<Button
 								type="button"
 								size="lg"
@@ -1917,7 +1516,7 @@ const Scheduler = () => {
 							</button>
 						) : null}
 						<DayPilotScheduler
-							key={`${colorScheme}-${schedulerMountKey}-${tempLoggedInID}`}
+							key={`${colorScheme}-${schedulerMountKey}-${currentUserId}`}
 							{...config}
 							theme="brown_theme"
 							resources={orderedResources}
@@ -2026,47 +1625,6 @@ const Scheduler = () => {
 				) : null}
 			</div>
 
-			<div className="mt-[200px] ml-4 flex flex-wrap items-end gap-4">
-				<div className="flex min-w-52 flex-col gap-1">
-					<Label htmlFor="scheduler-mock-login">Log in as (test)</Label>
-					<select
-						id="scheduler-mock-login"
-						value={tempLoggedInID}
-						onChange={event => switchLoginUser(event.target.value)}
-						className="h-10 min-w-52 rounded-lg border border-dashed border-[var(--scheme-border)] bg-background px-3 text-sm text-muted-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-					>
-						{loginOptions.map(resource => (
-							<option
-								key={String(resource.id)}
-								value={String(resource.id)}
-							>
-								{resource.name}
-							</option>
-						))}
-					</select>
-				</div>
-				<Label
-					htmlFor="scheduler-admin-toggle"
-					title="Testing only — switch permission role"
-					className="w-fit cursor-pointer rounded-lg border border-dashed border-[var(--scheme-border)] px-3 py-2 text-muted-foreground"
-				>
-					<input
-						id="scheduler-admin-toggle"
-						type="checkbox"
-						checked={tempIsAdmin}
-						onChange={event => {
-							const isAdmin = event.target.checked;
-							setTempIsAdmin(isAdmin);
-							if (isAdmin) {
-								setAvailabilityOpen(false);
-								setAvailabilityFocusId(null);
-							}
-						}}
-						className="size-3.5 accent-[var(--scheme-primary)]"
-					/>
-					<span>{tempIsAdmin ? 'Admin role' : 'Regular user'} (test)</span>
-				</Label>
-			</div>
 		</div>
 	);
 };
