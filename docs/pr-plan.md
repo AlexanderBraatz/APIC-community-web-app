@@ -476,6 +476,8 @@ Example: starting **PR-03**
 
 **Immediate next step:** open **PR-00**, then **PR-01**.
 
+PR-00 tooling notes live in [`supabase.md`](./supabase.md).
+
 Before coding PR-01, ensure:
 
 - [ ] Project linked (`supabase link`)
