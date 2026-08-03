@@ -1,12 +1,16 @@
 'use client';
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import {
+	categoryFromPathname,
 	filterListings,
-	getListingsForCategory,
 	listingHasCoords,
 	suggest,
 	type Listing
 } from '@/lib/listings-search';
+import { fetchListingsForCategory } from '@/lib/listings/fetch-client';
+import { createClient } from '@/lib/supabase/client';
 import { PageBlocksMockMap } from '@/tina/__generated__/types';
 import { Search, X } from 'lucide-react';
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -26,8 +30,15 @@ const CATEGORY_LABELS: Record<string, string> = {
 	'shop-market': 'Shop & Market'
 };
 
+type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
+
 export default function MockMap(_props: PageBlocksMockMap) {
-	const listings = useMemo(() => getListingsForCategory(null), []);
+	const pathname = usePathname();
+	const category = categoryFromPathname(pathname);
+
+	const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
+	const [listings, setListings] = useState<Listing[]>([]);
+	const [loadError, setLoadError] = useState<string | null>(null);
 
 	const [query, setQuery] = useState('');
 	const [activeTags, setActiveTags] = useState<string[]>([]);
@@ -36,6 +47,62 @@ export default function MockMap(_props: PageBlocksMockMap) {
 	const deferredQuery = useDeferredValue(query);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const inputId = useId();
+
+	useEffect(() => {
+		const supabase = createClient();
+		let cancelled = false;
+
+		async function syncAuth() {
+			const { data } = await supabase.auth.getClaims();
+			if (cancelled) return;
+			setAuthStatus(data?.claims ? 'signed_in' : 'signed_out');
+		}
+
+		syncAuth();
+
+		const {
+			data: { subscription }
+		} = supabase.auth.onAuthStateChange((_event, session) => {
+			setAuthStatus(session ? 'signed_in' : 'signed_out');
+		});
+
+		return () => {
+			cancelled = true;
+			subscription.unsubscribe();
+		};
+	}, []);
+
+	useEffect(() => {
+		if (authStatus !== 'signed_in') {
+			setListings([]);
+			setLoadError(null);
+			return;
+		}
+
+		let cancelled = false;
+
+		async function load() {
+			try {
+				const rows = await fetchListingsForCategory(category);
+				if (!cancelled) {
+					setListings(rows);
+					setLoadError(null);
+				}
+			} catch (error) {
+				if (!cancelled) {
+					setListings([]);
+					setLoadError(
+						error instanceof Error ? error.message : 'Could not load listings.'
+					);
+				}
+			}
+		}
+
+		load();
+		return () => {
+			cancelled = true;
+		};
+	}, [authStatus, category]);
 
 	const suggestions = useMemo(
 		() => suggest(deferredQuery, listings, activeTags),
@@ -107,9 +174,53 @@ export default function MockMap(_props: PageBlocksMockMap) {
 		setPanelOpen(false);
 	}
 
+	if (authStatus === 'loading') {
+		return (
+			<section className="bg-white px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
+				<div className="mx-auto max-w-[1400px]">
+					<p className="font-heading text-sm text-[#666666]">Loading places…</p>
+				</div>
+			</section>
+		);
+	}
+
+	if (authStatus === 'signed_out') {
+		const next = pathname || '/place';
+		return (
+			<section className="bg-white px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
+				<div className="mx-auto max-w-[1400px]">
+					<div className="border border-[#d9cbb8] bg-[#f7f2ec] px-6 py-10 text-center sm:px-10">
+						<h2 className="font-heading text-2xl text-[#805b32]">
+							Members places map
+						</h2>
+						<p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[#57422a]">
+							Local listings and map pins are available after you sign in. Ask
+							an admin for an invitation if you do not have an account yet.
+						</p>
+						<Link
+							href={`/sign-in?next=${encodeURIComponent(next)}`}
+							className="mt-6 inline-flex h-10 items-center rounded-[2px] border border-[#634627] bg-[#805b32] px-5 text-sm font-medium text-white transition-colors hover:bg-[#1f2d22]"
+						>
+							Sign in to browse
+						</Link>
+					</div>
+				</div>
+			</section>
+		);
+	}
+
 	return (
 		<section className="bg-white px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
 			<div className="mx-auto max-w-[1400px]">
+				{loadError ? (
+					<p
+						className="mb-6 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+						role="alert"
+					>
+						{loadError}
+					</p>
+				) : null}
+
 				<LocationsMap
 					locations={mapLocations}
 					selectedName={selectedPlaceName}
@@ -235,6 +346,9 @@ export default function MockMap(_props: PageBlocksMockMap) {
 					{showHint ? (
 						<p className="font-heading mt-4 text-sm text-[#666666]">
 							Search by tag or place name
+							{mapLocations.length === 0
+								? ' · Map pins appear for places that have coordinates (more after geocoding).'
+								: null}
 						</p>
 					) : null}
 

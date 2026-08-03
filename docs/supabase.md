@@ -152,6 +152,16 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Password change on `/account` succeeds; sign-in with new password works.
 - [ ] Role is not editable on the account page (column not granted for update).
 
+## Smoke checks (PR-05)
+
+- [ ] Migration `create_listings` applied (`listings`, `listing_tags`, `listing_tag_assignments`).
+- [ ] `npm run seed:listings` imports ~75 rows from `content/data/listings.json`.
+- [ ] Signed-out category page (`/food-dining` etc.) shows CTA, not listing data.
+- [ ] Signed-in category page shows only that category’s listings (O5).
+- [ ] Tag chips + query filter behave as before.
+- [ ] Map pins only for rows with lat/lng (most wait for PR-06 geocoding).
+- [ ] JSON file is seed-only — not imported at runtime by `lib/listings-search.ts`.
+
 ### Auth redirects for invites
 
 Dashboard → **Authentication → URL configuration**

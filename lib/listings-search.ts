@@ -1,5 +1,3 @@
-import listingsData from '@/content/data/listings.json';
-
 export type Listing = {
 	name: string;
 	type: string | null;
@@ -39,8 +37,6 @@ export const CATEGORY_SLUGS = [
 
 export type CategorySlug = (typeof CATEGORY_SLUGS)[number];
 
-const ALL_LISTINGS = listingsData.listings as Listing[];
-
 export function categoryFromPathname(pathname: string): CategorySlug | null {
 	const segment = pathname.replace(/^\//, '').split('/')[0] ?? '';
 	return (CATEGORY_SLUGS as readonly string[]).includes(segment)
@@ -48,9 +44,12 @@ export function categoryFromPathname(pathname: string): CategorySlug | null {
 		: null;
 }
 
-export function getListingsForCategory(categorySlug: string | null): Listing[] {
-	if (!categorySlug) return ALL_LISTINGS;
-	return ALL_LISTINGS.filter(listing => listing.category === categorySlug);
+export function filterByCategory(
+	listings: Listing[],
+	categorySlug: string | null
+): Listing[] {
+	if (!categorySlug) return listings;
+	return listings.filter(listing => listing.category === categorySlug);
 }
 
 export function collectTags(listings: Listing[]): string[] {
@@ -92,7 +91,6 @@ export function fuzzyScore(query: string, text: string): number {
 	if (t.includes(` ${q}`)) return 60;
 	if (t.includes(q)) return 40;
 
-	// Token starts-with (e.g. "mont" → "Montaione")
 	const tokens = t.split(' ');
 	if (tokens.some(token => token.startsWith(q))) return 70;
 
