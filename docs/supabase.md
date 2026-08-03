@@ -133,3 +133,21 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Discard restores draft to last saved snapshot.
 - [ ] Modal end date is inclusive (same calendar day as “last day present”).
 - [ ] Admin (`profiles.role = admin`) can edit others’ stays and Save.
+
+## Smoke checks (PR-02)
+
+- [ ] Migration `create_invitations_and_audit` applied.
+- [ ] Admin opens `/members/admin/invitations`, invites a new email, row is `pending`.
+- [ ] Invite email arrives; link lands on `/accept-invite` after `/auth/confirm`.
+- [ ] Invitee sets password → profile exists (`role = user`) → invitation `accepted`.
+- [ ] Resend / cancel work; audit rows appear in `admin_audit_log`.
+- [ ] Non-admin visiting `/members/admin/invitations` redirects to `/place`.
+
+### Auth redirects for invites
+
+Dashboard → **Authentication → URL configuration**
+
+- Site URL: `http://localhost:3000`
+- Redirect URLs include:
+  - `http://localhost:3000/auth/confirm`
+  - `http://localhost:3000/accept-invite`

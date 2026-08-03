@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Playfair_Display } from 'next/font/google';
+import AdminNavLink from '@/components/layout/admin-nav-link';
 import SiteFooter from '@/components/layout/site-footer';
 import SiteHeader from '@/components/layout/site-header';
 import './globals.css';
@@ -31,6 +32,7 @@ export default function RootLayout({
 		>
 			<body className="flex min-h-full flex-col bg-white font-sans text-[#444444]">
 				<SiteHeader />
+				<AdminNavLink />
 				<div className="flex-1">{children}</div>
 				<SiteFooter />
 			</body>
