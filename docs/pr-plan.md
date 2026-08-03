@@ -124,6 +124,9 @@ PR-08 App admin dashboard + audit UI
    │
    ▼
 PR-09 Hardening & polish
+   │
+   ▼
+PR-10 Places geocode + listings list redesign
 ```
 
 **Parallelism after PR-01:** PR-02, PR-03, and PR-04 can proceed in parallel on separate branches if needed. PR-05 can start after PR-01 (listings read does not require invitations). Prefer merging PR-02 before heavy admin work so real users exist.
@@ -414,6 +417,32 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 
 ---
 
+### PR-10 — Places geocoding/autocomplete + listings list redesign
+
+**Purpose:** Finish admin place entry with Places, lock down Maps server keys, and refresh the admin listings list UI.
+
+**Depends on:** PR-06 (listings admin + geocode UI). Can follow PR-09 or run after PR-06 once Places work is prioritized.
+
+**Includes**
+
+1. **Geocoding + address completion via Places API**, then secure Geocoding/Places so they can only be called from our server (IP address restrictions on the server key — not from browsers / random clients).
+2. **Redesign the listings list UI** (admin `/members/admin/listings` table/list presentation).
+
+**Out of scope:** Member-facing MockMap browse redesign (unless needed for list consistency); full PR-09 hardening checklist.
+
+**Independently testable**
+
+- [ ] Admin address field suggests places (Places autocomplete) and confirms lat/lng.
+- [ ] Geocoding / Places use a server-only key; browser cannot call those APIs with the restricted key.
+- [ ] Key restricted by server egress IP (hosting/static IP or documented allowlist).
+- [ ] Redesigned listings list is clearer/usable on desktop and mobile for admins.
+
+**Merge when:** Admins can enter addresses safely with Places + the new list UI; keys are IP-locked for server use.
+
+**Branch idea:** `feat/places-and-listings-list`
+
+---
+
 ## 4. Suggested PR sizes & branching
 
 | PR | Approx. size | Branch name idea |
@@ -428,6 +457,7 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 | PR-07 | M–L | `feat/admin-users` |
 | PR-08 | M | `feat/admin-audit-ui` |
 | PR-09 | S–M | `chore/hardening` |
+| PR-10 | M–L | `feat/places-and-listings-list` |
 
 Avoid combining PR-03 + PR-06 in one PR: scheduler and listings are separately testable and both touch large UI files.
 
@@ -485,4 +515,3 @@ Before coding PR-01, ensure:
 - [ ] Public sign-up disabled
 - [ ] Supabase MCP connected in Cursor with tool-call approval on
 - [ ] Agreement on O3 (Server Actions vs Edge) — plan default: Server Actions
-`)
