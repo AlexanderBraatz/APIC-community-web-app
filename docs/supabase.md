@@ -151,3 +151,5 @@ Dashboard → **Authentication → URL configuration**
 - Redirect URLs include:
   - `http://localhost:3000/auth/confirm`
   - `http://localhost:3000/accept-invite`
+
+Invite emails often return tokens in the **URL hash**. `/auth/confirm` is a client page that calls `setSession` from those tokens (server route handlers cannot read the hash).
