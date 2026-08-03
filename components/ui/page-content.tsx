@@ -5,7 +5,7 @@ import ButtonList from './button-list';
 import CommunityFeatures from './community-features';
 import ImageCaptionList from './image-caption-list';
 import ImageGallery from './image-gallery';
-import MockMap from './mock-map';
+import ListingsBrowse from './listings-browse';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
 import EventListing from './event-listing';
@@ -113,9 +113,9 @@ export default function PageContent(props: {
 							/>
 						);
 					}
-					case 'PageBlocksMockMap': {
+					case 'PageBlocksLocationsMap': {
 						return (
-							<MockMap
+							<ListingsBrowse
 								key={i}
 								{...block}
 							/>

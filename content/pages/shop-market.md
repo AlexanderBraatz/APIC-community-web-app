@@ -7,5 +7,5 @@ blocks:
     _template: heroBanner
   - sectionTitle: Shops & Market
     _template: sectionHeading
-  - _template: mockMap
+  - _template: locationsMap
 ---

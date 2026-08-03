@@ -2,6 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
+import { limitGeocode, limitGeocodeBatch } from '@/lib/admin/rate-limit';
+import type { Json } from '@/lib/supabase/database.types';
 import {
 	isCategorySlug,
 	parseOptionalCoord,
@@ -101,8 +103,8 @@ async function writeAudit(
 		p_target_type: 'listing',
 		p_target_id: payload.targetId,
 		p_summary: payload.summary,
-		p_old_values: payload.oldValues ?? null,
-		p_new_values: payload.newValues ?? null
+		p_old_values: (payload.oldValues ?? null) as Json | null,
+		p_new_values: (payload.newValues ?? null) as Json | null
 	});
 	if (error) {
 		throw new Error(error.message);
@@ -392,7 +394,11 @@ export async function geocodeListing(
 	{ ok: true; candidates: GeocodeCandidate[] } | { ok: false; error: string }
 > {
 	try {
-		await requireAdmin();
+		const { user } = await requireAdmin();
+		const rate = limitGeocode(user.id);
+		if (!rate.ok) {
+			return { ok: false, error: rate.error };
+		}
 		const trimmed = address.trim();
 		if (!trimmed) return { ok: false, error: 'Enter an address to geocode.' };
 
@@ -456,6 +462,10 @@ export async function geocodeMissingListings(): Promise<
 > {
 	try {
 		const { supabase, user } = await requireAdmin();
+		const rate = limitGeocodeBatch(user.id);
+		if (!rate.ok) {
+			return { ok: false, error: rate.error };
+		}
 		const key = geocodeApiKey();
 		if (!key) {
 			return {

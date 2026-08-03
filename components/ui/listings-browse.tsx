@@ -11,7 +11,6 @@ import {
 } from '@/lib/listings-search';
 import { fetchListingsForCategory } from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
-import { PageBlocksMockMap } from '@/tina/__generated__/types';
 import { Search, X } from 'lucide-react';
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 import LocationsMap from './locations-map';
@@ -32,7 +31,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 
-export default function MockMap(_props: PageBlocksMockMap) {
+export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const pathname = usePathname();
 	const category = categoryFromPathname(pathname);
 

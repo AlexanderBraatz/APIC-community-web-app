@@ -250,8 +250,8 @@ export default defineConfig({
 								]
 							},
 							{
-								name: 'mockMap',
-								label: 'Map',
+								name: 'locationsMap',
+								label: 'Listings map & search',
 								fields: [
 									{
 										name: 'caption',

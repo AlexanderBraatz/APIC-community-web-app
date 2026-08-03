@@ -90,8 +90,43 @@ Already expected for this app:
 - **URL configuration:** set Site URL to your app origin (local: `http://localhost:3000`).
 - Add the same origin under Redirect URLs, plus `http://localhost:3000/auth/confirm`.
 - Set `NEXT_PUBLIC_SITE_URL` in `.env.local` to that origin so password-reset emails build the correct link.
+- [ ] **Leaked password protection** — Authentication → Attack Protection (HaveIBeenPwned); enable when ready for production.
+- [ ] **Invite / recovery email copy** — Authentication → Email Templates; keep APIC tone and links to `/auth/confirm` + `/accept-invite` / `/reset-password`.
 
 TinaCMS `/admin` is unrelated to Supabase Auth.
+
+## Maps / Geocoding keys
+
+| Key | Where | Restriction |
+|-----|-------|-------------|
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser (Maps JS) | HTTP referrer allowlist (localhost + production domain) |
+| `GOOGLE_GEOCODING_API_KEY` | Server only (geocode actions) | Prefer a **separate** key restricted by server IP; fall back to Maps key in code is for local only |
+
+IP-lock of Places/Geocoding for production egress is finished in **PR-10**. Until then keep Geocoding off browser keys you share publicly.
+
+## TypeScript DB types
+
+Committed at `lib/supabase/database.types.ts`. Refresh after schema changes:
+
+```bash
+npm run supabase:types
+```
+
+Wire clients with `createClient<Database>` (browser, server, service role).
+
+## Admin rate limits (app process)
+
+Process-local sliding windows in `lib/admin/rate-limit.ts` (single Node instance):
+
+- Invite / resend: 20 / admin / hour
+- Geocode (single): 30 / admin / minute
+- Geocode missing batch: 5 / admin / hour
+
+Scale-out needs a shared store (e.g. Redis); not required for v1.
+
+## Advisor notes (intentional)
+
+Security Advisor may warn that `write_admin_audit` and `change_user_role` are `SECURITY DEFINER` callable by `authenticated`. Both call `is_admin()` internally; revoke-only would break the admin RPC path. Leave as-is unless moving those writes fully to the service-role client.
 
 ## First admin (PR-01)
 
@@ -190,6 +225,17 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Detail dialog shows before/after JSON for a known promote or listing update.
 - [ ] Non-admin cannot insert/update/delete `admin_audit_log` (select-only RLS; no client write UI).
 - [ ] Non-admin visiting `/members/admin` or `/members/admin/audit-log` redirects to `/place`.
+
+## Smoke checks (PR-09)
+
+- [ ] Migration `listings_trigram_indexes` applied (`pg_trgm` + GIN indexes on listing name/type and tag name).
+- [ ] `/place` Attendance Calendar button works; **Add Attendance** button removed (no `/add-attendance`).
+- [ ] Footer Privacy Policy → `/privacy` loads stub policy page.
+- [ ] Category pages still show listings browse + map (`locationsMap` Tina block / `ListingsBrowse`).
+- [ ] Invite/resend and geocode actions return a friendly error when rate-limited.
+- [ ] `lib/supabase/database.types.ts` exists; `npm run supabase:types` regenerates it.
+- [ ] Dashboard: leaked-password protection + email template polish (manual).
+- [ ] Dashboard / Cloud Console: Maps JS key referrer-restricted; Geocoding key preferred server-only (IP-lock in PR-10).
 
 ### Auth redirects for invites
 

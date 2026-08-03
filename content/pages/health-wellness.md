@@ -7,5 +7,5 @@ blocks:
     _template: heroBanner
   - sectionTitle: Health & Wellness
     _template: sectionHeading
-  - _template: mockMap
+  - _template: locationsMap
 ---

@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
+import type { Json } from '@/lib/supabase/database.types';
 
 export type AdminUserRow = {
 	id: string;
@@ -28,8 +29,8 @@ async function writeAudit(
 		p_target_type: 'user',
 		p_target_id: payload.targetId,
 		p_summary: payload.summary,
-		p_old_values: payload.oldValues ?? null,
-		p_new_values: payload.newValues ?? null
+		p_old_values: (payload.oldValues ?? null) as Json | null,
+		p_new_values: (payload.newValues ?? null) as Json | null
 	});
 	if (error) {
 		throw new Error(error.message);

@@ -11,10 +11,8 @@ blocks:
     _template: textSection
   - sectionTitle: Who is in Castelfalfi?
     buttons:
-      - label: Attendance Calender
+      - label: Attendance Calendar
         link: /community-calendar
-      - label: Add Attendance
-        link: /add-attendance
     _template: buttonList
   - sectionTitle: 'Explore the community, discover helpful places, and stay connected with other APIC members.'
     items:

@@ -7,5 +7,5 @@ blocks:
     _template: heroBanner
   - sectionTitle: Services & Maintenance
     _template: sectionHeading
-  - _template: mockMap
+  - _template: locationsMap
 ---

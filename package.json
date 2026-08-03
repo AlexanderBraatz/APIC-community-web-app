@@ -11,7 +11,8 @@
 		"supabase:link": "supabase link --project-ref umvlotfvnnpttaddjwna",
 		"supabase:db:push": "supabase db push",
 		"supabase:db:pull": "supabase db pull",
-		"seed:listings": "node --env-file=.env.local scripts/seed-listings.mjs"
+		"seed:listings": "node --env-file=.env.local scripts/seed-listings.mjs",
+		"supabase:types": "supabase gen types typescript --project-id umvlotfvnnpttaddjwna --schema public > lib/supabase/database.types.ts"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.6.0",
