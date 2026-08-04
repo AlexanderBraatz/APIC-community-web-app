@@ -9,18 +9,12 @@ import {
 	suggest,
 	type Listing
 } from '@/lib/listings-search';
+import { formatOpeningHoursLines } from '@/lib/listings/opening-hours';
 import { fetchListingsForCategory } from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
-import { Search, X } from 'lucide-react';
+import { Clock, Globe, Mail, MapPin, Phone, Search, X } from 'lucide-react';
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react';
 import LocationsMap from './locations-map';
-
-const RESULT_FIELDS = [
-	{ key: 'name', label: 'Name' },
-	{ key: 'type', label: 'Type' },
-	{ key: 'contact', label: 'Contact' },
-	{ key: 'remark', label: 'Remark' }
-] as const;
 
 const CATEGORY_LABELS: Record<string, string> = {
 	'food-dining': 'Food & Dining',
@@ -30,6 +24,118 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
+
+function websiteHref(url: string): string {
+	return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+function websiteLabel(url: string): string {
+	try {
+		return new URL(websiteHref(url)).hostname.replace(/^www\./, '');
+	} catch {
+		return url.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+	}
+}
+
+function ListingResultCard({ listing }: { listing: Listing }) {
+	const hoursLines = formatOpeningHoursLines(listing.openingHours);
+	const hasContact = Boolean(listing.phone || listing.email || listing.website);
+
+	return (
+		<article className="pb-12 last:pb-0">
+			<div className="space-y-3">
+				<p className="font-heading text-sm tracking-wide text-[#7A5A32] uppercase">
+					{CATEGORY_LABELS[listing.category] ?? listing.category}
+				</p>
+				<h3 className="font-heading text-2xl font-semibold leading-snug text-[#333333]">
+					{listing.name}
+				</h3>
+				{listing.type ? (
+					<p className="font-heading text-sm text-[#666666]">{listing.type}</p>
+				) : null}
+
+				{listing.address ? (
+					<p className="font-heading flex items-start gap-2 text-base leading-relaxed text-[#333333]">
+						<MapPin
+							className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
+							aria-hidden="true"
+						/>
+						<span>{listing.address}</span>
+					</p>
+				) : null}
+
+				{hoursLines.length > 0 ? (
+					<div className="font-heading flex items-start gap-2 text-base leading-relaxed text-[#333333]">
+						<Clock
+							className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
+							aria-hidden="true"
+						/>
+						<div className="space-y-0.5">
+							{hoursLines.map(line => (
+								<p key={line}>{line}</p>
+							))}
+						</div>
+					</div>
+				) : null}
+
+				{hasContact ? (
+					<ul className="space-y-2">
+						{listing.phone ? (
+							<li className="font-heading flex items-start gap-2 text-base text-[#333333]">
+								<Phone
+									className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
+									aria-hidden="true"
+								/>
+								<a
+									href={`tel:${listing.phone.replace(/[^\d+]/g, '')}`}
+									className="underline-offset-2 hover:underline"
+								>
+									{listing.phone}
+								</a>
+							</li>
+						) : null}
+						{listing.email ? (
+							<li className="font-heading flex items-start gap-2 text-base text-[#333333]">
+								<Mail
+									className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
+									aria-hidden="true"
+								/>
+								<a
+									href={`mailto:${listing.email}`}
+									className="underline-offset-2 hover:underline"
+								>
+									{listing.email}
+								</a>
+							</li>
+						) : null}
+						{listing.website ? (
+							<li className="font-heading flex items-start gap-2 text-base text-[#333333]">
+								<Globe
+									className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
+									aria-hidden="true"
+								/>
+								<a
+									href={websiteHref(listing.website)}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="underline-offset-2 hover:underline"
+								>
+									{websiteLabel(listing.website)}
+								</a>
+							</li>
+						) : null}
+					</ul>
+				) : null}
+
+				{listing.notes ? (
+					<p className="font-heading text-base leading-relaxed text-[#444444]">
+						{listing.notes}
+					</p>
+				) : null}
+			</div>
+		</article>
+	);
+}
 
 export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const pathname = usePathname();
@@ -114,7 +220,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		}
 
 		if (activeTags.length === 0 && !deferredQuery.trim()) {
-			return [];
+			return listings;
 		}
 
 		return filterListings(listings, activeTags, deferredQuery);
@@ -133,7 +239,8 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		deferredQuery.trim().length > 0 &&
 		(suggestions.tags.length > 0 || suggestions.places.length > 0);
 
-	const showHint = activeTags.length === 0 && !query.trim() && !selectedPlaceName;
+	const isFiltered =
+		activeTags.length > 0 || Boolean(deferredQuery.trim()) || Boolean(selectedPlaceName);
 
 	useEffect(() => {
 		const onPointerDown = (event: MouseEvent) => {
@@ -220,181 +327,169 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 					</p>
 				) : null}
 
-				<LocationsMap
-					locations={mapLocations}
-					selectedName={selectedPlaceName}
-					onSelect={listing => selectPlace(listing)}
-				/>
-
-				<div
-					ref={rootRef}
-					className="relative mt-8"
-				>
-					<label
-						htmlFor={inputId}
-						className="sr-only"
-					>
-						Search places and tags
-					</label>
-					<div className="relative">
-						<Search
-							className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
-							aria-hidden="true"
+				<div className="sticky top-0 z-40 grid max-h-[100dvh] grid-cols-1 gap-6 bg-white lg:h-[100dvh] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8">
+					{/* Map — first on mobile, right column on desktop */}
+					<div className="order-1 min-h-0 self-start lg:order-2">
+						<LocationsMap
+							locations={mapLocations}
+							selectedName={selectedPlaceName}
+							onSelect={listing => selectPlace(listing)}
 						/>
-						<input
-							id={inputId}
-							type="search"
-							value={query}
-							autoComplete="off"
-							placeholder="Search by tag or place name"
-							onChange={event => {
-								setQuery(event.target.value);
-								setSelectedPlaceName(null);
-								setPanelOpen(true);
-							}}
-							onFocus={() => setPanelOpen(true)}
-							className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
-						/>
-						{(query || activeTags.length > 0 || selectedPlaceName) && (
-							<button
-								type="button"
-								onClick={clearAll}
-								className="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm p-1.5 text-[#7A5A32] transition-colors hover:bg-[#f3eee6]"
-								aria-label="Clear search"
-							>
-								<X className="size-4" />
-							</button>
-						)}
 					</div>
 
-					{showSuggestions ? (
-						<div className="absolute z-20 mt-1 w-full border border-[#b8a99a] bg-white shadow-sm">
-							{suggestions.tags.length > 0 ? (
-								<div className="border-b border-[#e8e4dc] px-4 py-3">
-									<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
-										Tags
-									</p>
-									<div className="flex flex-wrap gap-2">
-										{suggestions.tags.map(tag => (
-											<button
-												key={tag}
-												type="button"
-												onClick={() => addTag(tag)}
-												className="font-heading border border-[#b8a99a] px-3 py-1.5 text-sm text-[#333333] transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec]"
-											>
-												{tag}
-											</button>
-										))}
-									</div>
-								</div>
-							) : null}
+					{/* Search + list — second on mobile, left column on desktop */}
+					<div
+						ref={rootRef}
+						className="relative order-2 flex min-h-0 flex-col lg:order-1 lg:h-full"
+					>
+						<div className="shrink-0">
+							<label
+								htmlFor={inputId}
+								className="sr-only"
+							>
+								Search places and tags
+							</label>
+							<div className="relative">
+								<Search
+									className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
+									aria-hidden="true"
+								/>
+								<input
+									id={inputId}
+									type="search"
+									value={query}
+									autoComplete="off"
+									placeholder="Search by tag or place name"
+									onChange={event => {
+										setQuery(event.target.value);
+										setSelectedPlaceName(null);
+										setPanelOpen(true);
+									}}
+									onFocus={() => setPanelOpen(true)}
+									className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
+								/>
+								{(query || activeTags.length > 0 || selectedPlaceName) && (
+									<button
+										type="button"
+										onClick={clearAll}
+										className="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm p-1.5 text-[#7A5A32] transition-colors hover:bg-[#f3eee6]"
+										aria-label="Clear search"
+									>
+										<X className="size-4" />
+									</button>
+								)}
+							</div>
 
-							{suggestions.places.length > 0 ? (
-								<div className="px-2 py-2">
-									<p className="font-heading px-2 py-1 text-xs tracking-wide text-[#7A5A32] uppercase">
-										Places
-									</p>
-									<ul>
-										{suggestions.places.map(place => (
-											<li key={`${place.category}-${place.name}`}>
-												<button
-													type="button"
-													onClick={() => selectPlace(place)}
-													className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
-												>
-													<span className="text-base text-[#333333]">
-														{place.name}
-													</span>
-													<span className="text-sm text-[#666666]">
-														{[
-															place.type,
-															CATEGORY_LABELS[place.category]
-														]
-															.filter(Boolean)
-															.join(' · ')}
-													</span>
-												</button>
-											</li>
-										))}
-									</ul>
-								</div>
-							) : null}
-						</div>
-					) : null}
-
-					{activeTags.length > 0 ? (
-						<div className="mt-3 flex flex-wrap gap-2">
-							{activeTags.map(tag => (
-								<button
-									key={tag}
-									type="button"
-									onClick={() => removeTag(tag)}
-									className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
-									aria-label={`Remove tag ${tag}`}
-								>
-									{tag}
-									<X
-										className="size-3.5"
-										aria-hidden="true"
-									/>
-								</button>
-							))}
-						</div>
-					) : null}
-
-					{showHint ? (
-						<p className="font-heading mt-4 text-sm text-[#666666]">
-							Search by tag or place name
-							{mapLocations.length === 0
-								? ' · Map pins appear for places that have coordinates (more after geocoding).'
-								: null}
-						</p>
-					) : null}
-
-					{!showHint && results.length === 0 ? (
-						<p className="font-heading mt-6 text-base text-[#666666]">
-							No places match your search.
-						</p>
-					) : null}
-
-					{results.length > 0 ? (
-						<div className="mt-8">
-							<p className="font-heading mb-6 text-sm text-[#666666]">
-								{results.length}{' '}
-								{results.length === 1 ? 'place' : 'places'}
-							</p>
-							{results.map((listing, index) => (
-								<article
-									key={`${listing.category}-${listing.name}`}
-									className="pb-12 last:pb-0"
-								>
-									<div className="space-y-4">
-										<p className="font-heading text-sm tracking-wide text-[#7A5A32] uppercase">
-											{CATEGORY_LABELS[listing.category] ??
-												listing.category}
-										</p>
-										{RESULT_FIELDS.map(({ key, label }) => {
-											const value = listing[key];
-											if (!value) return null;
-
-											return (
-												<p
-													key={key}
-													className="font-heading text-lg leading-[1.75] text-[#333333]"
-												>
-													{label} :{' '}
-													<span className="font-normal">{value}</span>
-												</p>
-											);
-										})}
-									</div>
-									{index < results.length - 1 ? (
-										<hr className="mt-12 border-[#b8a99a]" />
+							{showSuggestions ? (
+								<div className="absolute z-20 mt-1 w-full border border-[#b8a99a] bg-white shadow-sm">
+									{suggestions.tags.length > 0 ? (
+										<div className="border-b border-[#e8e4dc] px-4 py-3">
+											<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
+												Tags
+											</p>
+											<div className="flex flex-wrap gap-2">
+												{suggestions.tags.map(tag => (
+													<button
+														key={tag}
+														type="button"
+														onClick={() => addTag(tag)}
+														className="font-heading border border-[#b8a99a] px-3 py-1.5 text-sm text-[#333333] transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec]"
+													>
+														{tag}
+													</button>
+												))}
+											</div>
+										</div>
 									) : null}
-								</article>
-							))}
+
+									{suggestions.places.length > 0 ? (
+										<div className="px-2 py-2">
+											<p className="font-heading px-2 py-1 text-xs tracking-wide text-[#7A5A32] uppercase">
+												Places
+											</p>
+											<ul>
+												{suggestions.places.map(place => (
+													<li key={`${place.category}-${place.name}`}>
+														<button
+															type="button"
+															onClick={() => selectPlace(place)}
+															className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
+														>
+															<span className="text-base text-[#333333]">
+																{place.name}
+															</span>
+															<span className="text-sm text-[#666666]">
+																{[
+																	place.type,
+																	CATEGORY_LABELS[place.category]
+																]
+																	.filter(Boolean)
+																	.join(' · ')}
+															</span>
+														</button>
+													</li>
+												))}
+											</ul>
+										</div>
+									) : null}
+								</div>
+							) : null}
+
+							{activeTags.length > 0 ? (
+								<div className="mt-3 flex flex-wrap gap-2">
+									{activeTags.map(tag => (
+										<button
+											key={tag}
+											type="button"
+											onClick={() => removeTag(tag)}
+											className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
+											aria-label={`Remove tag ${tag}`}
+										>
+											{tag}
+											<X
+												className="size-3.5"
+												aria-hidden="true"
+											/>
+										</button>
+									))}
+								</div>
+							) : null}
+
+							{!isFiltered ? (
+								<p className="font-heading mt-3 text-sm text-[#666666]">
+									Search by tag or place name
+									{mapLocations.length === 0
+										? ' · Map pins appear for places that have coordinates (more after geocoding).'
+										: null}
+								</p>
+							) : null}
 						</div>
-					) : null}
+
+						<div className="mt-4 max-h-[50dvh] min-h-0 flex-1 overflow-y-scroll [scrollbar-gutter:stable] lg:max-h-none">
+							{isFiltered && results.length === 0 ? (
+								<p className="font-heading text-base text-[#666666]">
+									No places match your search.
+								</p>
+							) : null}
+
+							{results.length > 0 ? (
+								<div>
+									<p className="font-heading mb-6 text-sm text-[#666666]">
+										{results.length}{' '}
+										{results.length === 1 ? 'place' : 'places'}
+									</p>
+									{results.map((listing, index) => (
+										<div key={`${listing.category}-${listing.name}`}>
+											<ListingResultCard listing={listing} />
+											{index < results.length - 1 ? (
+												<hr className="mt-12 border-[#b8a99a]" />
+											) : null}
+										</div>
+									))}
+								</div>
+							) : null}
+						</div>
+					</div>
 				</div>
 			</div>
 		</section>

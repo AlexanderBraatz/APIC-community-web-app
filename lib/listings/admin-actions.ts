@@ -12,6 +12,10 @@ import {
 	type GeocodeCandidate,
 	type ListingInput
 } from '@/lib/listings/types';
+import {
+	openingHoursToJson,
+	parseOpeningHours
+} from '@/lib/listings/opening-hours';
 import type { CategorySlug } from '@/lib/listings-search';
 
 type ListingRow = {
@@ -19,8 +23,11 @@ type ListingRow = {
 	name: string;
 	type: string | null;
 	address: string | null;
-	contact: string | null;
-	remark: string | null;
+	phone: string | null;
+	email: string | null;
+	website: string | null;
+	notes: string | null;
+	opening_hours: Json | null;
 	category: CategorySlug;
 	source_url: string | null;
 	latitude: number | null;
@@ -60,8 +67,11 @@ function mapAdminListing(row: ListingRow): AdminListing {
 		name: row.name,
 		type: row.type,
 		address: row.address,
-		contact: row.contact,
-		remark: row.remark,
+		phone: row.phone,
+		email: row.email,
+		website: row.website,
+		notes: row.notes,
+		openingHours: parseOpeningHours(row.opening_hours),
 		category: row.category,
 		sourceUrl: row.source_url,
 		lat: row.latitude,
@@ -76,8 +86,11 @@ const LISTING_SELECT = `
 	name,
 	type,
 	address,
-	contact,
-	remark,
+	phone,
+	email,
+	website,
+	notes,
+	opening_hours,
 	category,
 	source_url,
 	latitude,
@@ -124,8 +137,11 @@ function listingPayload(input: ListingInput, userId: string) {
 		name: input.name,
 		type: input.type,
 		address: input.address,
-		contact: input.contact,
-		remark: input.remark,
+		phone: input.phone,
+		email: input.email,
+		website: input.website,
+		notes: input.notes,
+		opening_hours: openingHoursToJson(input.openingHours),
 		category: input.category,
 		source_url: input.sourceUrl,
 		latitude: input.lat,
@@ -214,13 +230,28 @@ function parseListingForm(formData: FormData): ListingInput | { error: string } 
 	}
 
 	const address = String(formData.get('address') ?? '').trim();
+	const websiteRaw = String(formData.get('website') ?? '').trim();
+	let website: string | null = websiteRaw || null;
+	if (website && !/^https?:\/\//i.test(website)) {
+		website = `https://${website}`;
+	}
+
+	const email = String(formData.get('email') ?? '').trim() || null;
+	if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+		return { error: 'Enter a valid email address.' };
+	}
 
 	return {
 		name,
 		type: String(formData.get('type') ?? '').trim() || null,
 		address: address || null,
-		contact: String(formData.get('contact') ?? '').trim() || null,
-		remark: String(formData.get('remark') ?? '').trim() || null,
+		phone: String(formData.get('phone') ?? '').trim() || null,
+		email,
+		website,
+		notes: String(formData.get('notes') ?? '').trim() || null,
+		openingHours: parseOpeningHours(
+			String(formData.get('opening_hours') ?? '').trim() || null
+		),
 		category,
 		sourceUrl: String(formData.get('source_url') ?? '').trim() || null,
 		lat,
@@ -263,6 +294,8 @@ export async function listAdminListings(opts?: {
 			row =>
 				row.name.toLowerCase().includes(q) ||
 				row.address?.toLowerCase().includes(q) ||
+				row.phone?.toLowerCase().includes(q) ||
+				row.email?.toLowerCase().includes(q) ||
 				row.tags.some(tag => tag.toLowerCase().includes(q))
 		);
 	}

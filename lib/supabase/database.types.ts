@@ -135,6 +135,21 @@ export type Database = {
           },
         ]
       }
+      listing_tag_assignments_backup_20260804: {
+        Row: {
+          listing_id: string | null
+          tag_id: string | null
+        }
+        Insert: {
+          listing_id?: string | null
+          tag_id?: string | null
+        }
+        Update: {
+          listing_id?: string | null
+          tag_id?: string | null
+        }
+        Relationships: []
+      }
       listing_tags: {
         Row: {
           created_at: string
@@ -164,54 +179,84 @@ export type Database = {
           },
         ]
       }
+      listing_tags_backup_20260804: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string | null
+          name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
       listings: {
         Row: {
           address: string | null
           category: Database["public"]["Enums"]["listing_category"]
-          contact: string | null
           created_at: string
           created_by: string | null
+          email: string | null
           id: string
           latitude: number | null
           longitude: number | null
           name: string
-          remark: string | null
+          notes: string | null
+          opening_hours: Json | null
+          phone: string | null
           source_url: string | null
           type: string | null
           updated_at: string
           updated_by: string | null
+          website: string | null
         }
         Insert: {
           address?: string | null
           category: Database["public"]["Enums"]["listing_category"]
-          contact?: string | null
           created_at?: string
           created_by?: string | null
+          email?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           name: string
-          remark?: string | null
+          notes?: string | null
+          opening_hours?: Json | null
+          phone?: string | null
           source_url?: string | null
           type?: string | null
           updated_at?: string
           updated_by?: string | null
+          website?: string | null
         }
         Update: {
           address?: string | null
           category?: Database["public"]["Enums"]["listing_category"]
-          contact?: string | null
           created_at?: string
           created_by?: string | null
+          email?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           name?: string
-          remark?: string | null
+          notes?: string | null
+          opening_hours?: Json | null
+          phone?: string | null
           source_url?: string | null
           type?: string | null
           updated_at?: string
           updated_by?: string | null
+          website?: string | null
         }
         Relationships: [
           {
@@ -229,6 +274,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      listings_backup_20260804: {
+        Row: {
+          address: string | null
+          category: Database["public"]["Enums"]["listing_category"] | null
+          contact: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string | null
+          remark: string | null
+          source_url: string | null
+          type: string | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["listing_category"] | null
+          contact?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          remark?: string | null
+          source_url?: string | null
+          type?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["listing_category"] | null
+          contact?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          remark?: string | null
+          source_url?: string | null
+          type?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

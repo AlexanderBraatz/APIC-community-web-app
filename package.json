@@ -12,6 +12,7 @@
 		"supabase:db:push": "supabase db push",
 		"supabase:db:pull": "supabase db pull",
 		"seed:listings": "node --env-file=.env.local scripts/seed-listings.mjs",
+		"migrate:listings-fields": "node --env-file=.env.local scripts/migrate-listings-fields.mjs",
 		"seed:attendance": "node --env-file=.env.local scripts/seed-attendance.mjs",
 		"supabase:types": "supabase gen types typescript --project-id umvlotfvnnpttaddjwna --schema public > lib/supabase/database.types.ts"
 	},

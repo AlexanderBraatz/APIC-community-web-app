@@ -1,14 +1,9 @@
 {
-  "scrapedAt": "2026-07-29T13:32:26.628Z",
-  "source": "https://apic.community",
-  "totalListings": 75,
   "listings": [
     {
       "name": "Casa Masi",
       "type": "Restaurant",
       "address": "Via Collerucci 53, 50050 Montaione",
-      "contact": "+39 0571 677170",
-      "remark": "Set in the peaceful Tuscan countryside just outside Montaione, Casa Masi is one of the area’s best-known restaurants, offering refined traditional Tuscan cuisine in an elegant country-house setting. Seasonal local ingredients, homemade specialties and an outstanding wine list make it an excellent choice for both special occasions and relaxed dinners. Reservations are strongly recommended, especially during weekends and the summer season.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "lat": 43.5682,
@@ -22,14 +17,17 @@
         "fine-dining",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 677170",
+      "email": null,
+      "website": null,
+      "notes": "Set in the peaceful Tuscan countryside just outside Montaione, Casa Masi is one of the area’s best-known restaurants, offering refined traditional Tuscan cuisine in an elegant country-house setting. Seasonal local ingredients, homemade specialties and an outstanding wine list make it an excellent choice for both special occasions and relaxed dinners. Reservations are strongly recommended, especially during weekends and the summer season",
+      "openingHours": null
     },
     {
       "name": "La Locanda del Gobbo Nero",
       "type": "Agri-Restaurant / Tuscan Cuisine",
       "address": "Via Santo Stefano 40, 50050 Montaione",
-      "contact": "+39 388 393 0381 (Reservations) · +39 348 319 8880",
-      "remark": "Opening Hours: Mon, Tue, Thu & Fri 19:00–22:00 · Sat 19:00–22:00 · Sun 12:00–14:30 & 19:00–22:00 · Closed Wed. Agriturismo restaurant at Tenuta Moriniello, offering refined Tuscan cuisine, estate-produced organic wines and olive oil, and panoramic vineyard views. Ideal for a special lunch or dinner.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "lat": 43.5521,
@@ -45,14 +43,81 @@
         "outdoor-seating",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 388 393 0381 (Reservations) · +39 348 319 8880",
+      "email": null,
+      "website": null,
+      "notes": "Agriturismo restaurant at Tenuta Moriniello, offering refined Tuscan cuisine, estate-produced organic wines and olive oil, and panoramic vineyard views. Ideal for a special lunch or dinner",
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "19:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "19:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "19:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "19:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "19:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "sun": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "12:00",
+                "close": "14:30"
+              },
+              {
+                "open": "19:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "closed"
+          }
+        }
+      }
     },
     {
       "name": "Osteria del Castagno",
       "type": "Tuscan Restaurant",
       "address": "Via Camporbiano 1/4, 50050 Il Castagno, Gambassi Terme (FI)",
-      "contact": "+39 0571 638506",
-      "remark": "Traditional Tuscan cuisine with homemade specialties, an excellent wine selection, and a charming terrace. Ideal for both lunch and dinner in a relaxed countryside setting. Opening Hours: Thu–Mon 07:00–22:00 (closed Tue & Wed)",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "lat": 43.5378,
@@ -66,14 +131,66 @@
         "outdoor-seating",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 638506",
+      "email": null,
+      "website": null,
+      "notes": "Traditional Tuscan cuisine with homemade specialties, an excellent wine selection, and a charming terrace. Ideal for both lunch and dinner in a relaxed countryside setting",
+      "openingHours": {
+        "days": {
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "sun": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ]
+          },
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "07:00",
+                "close": "22:00"
+              }
+            ]
+          }
+        },
+        "note": "( Tue & Wed)"
+      }
     },
     {
       "name": "Antico Pastificio Morelli / Ristorante Mo",
       "type": "Pasta Factory / Restaurant",
       "address": "Via S. Francesco, 8, 56020 San Romano (PI)",
-      "contact": "+39 0571 459032 www.pastamorelli.it",
-      "remark": "Gluten free pasta and “normal” pasta – very delicious! Close to Pontedera They do have a small restaurant with tasty pasta dishes",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "lat": 43.6995,
@@ -87,14 +204,17 @@
         "pasta",
         "gluten-free",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 459032",
+      "email": null,
+      "website": "https://www.pastamorelli.it",
+      "notes": "Gluten free pasta and “normal” pasta – very delicious! Close to Pontedera They do have a small restaurant with tasty pasta dishes",
+      "openingHours": null
     },
     {
       "name": "Monte Bernardi",
       "type": "Winery Chianti",
       "address": "50020 Panzano in Chianti",
-      "contact": "+39 055 852400 or +39 329 7634987 www.montebernardi.com",
-      "remark": "Very good wines in Chianti, only red wines. Oﬀer various Chianti Classicos as well as a kind of Bordeaux grape blend. Beautiful seating outside, need to call before the visit. It is very close to the restaurant “Le Panzanelle” – it’s on the list",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "lat": 43.5442,
@@ -109,14 +229,17 @@
         "wine",
         "appointment-needed",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 055 852400 · +39 329 7634987",
+      "email": null,
+      "website": "https://www.montebernardi.com",
+      "notes": "Very good wines in Chianti, only red wines. Oﬀer various Chianti Classicos as well as a kind of Bordeaux grape blend. Beautiful seating outside, need to call before the visit. It is very close to the restaurant “Le Panzanelle” – it’s on the list",
+      "openingHours": null
     },
     {
       "name": "Nittardi",
       "type": "Winery Chianti",
       "address": "Nittardi I 53011 Castellina in Chianti (SI)",
-      "contact": "+39 0577 740269 or +39 0577 741080 www.nittardi.com",
-      "remark": "Very good winery with great white and red wines. Wonderful location, full of art and sculptures. Unique place to go. They do speak several languages",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -127,14 +250,17 @@
         "Castellina in Chianti",
         "wine",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0577 740269 · +39 0577 741080",
+      "email": null,
+      "website": "https://www.nittardi.com",
+      "notes": "Very good winery with great white and red wines. Wonderful location, full of art and sculptures. Unique place to go. They do speak several languages",
+      "openingHours": null
     },
     {
       "name": "Giovanni Chiappini Winery",
       "type": "Winery Bolgheri",
       "address": "Localita Felciano 189 C 57022 Bolgheri (LI)",
-      "contact": "+39 0565 765201 www.giovannichiappini.it",
-      "remark": "Chiappini is locoted next to Orma, Ornelliaia etc. Producer of excellent wines, in the meantime also well known since he got some years ago very high scores for his Bolgheri Superiore Guado dei Gemoli. Very good white wines and red wines. They have introduced a fee for tasting, but we never needed to pay either because Giovanni (70+ years old) passed by or we have purchased a reasonable amount of cases",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -144,14 +270,17 @@
         "Bolgheri",
         "wine",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0565 765201",
+      "email": null,
+      "website": "https://www.giovannichiappini.it",
+      "notes": "Chiappini is locoted next to Orma, Ornelliaia etc. Producer of excellent wines, in the meantime also well known since he got some years ago very high scores for his Bolgheri Superiore Guado dei Gemoli. Very good white wines and red wines. They have introduced a fee for tasting, but we never needed to pay either because Giovanni (70+ years old) passed by or we have purchased a reasonable amount of cases",
+      "openingHours": null
     },
     {
       "name": "Dario di Vaira",
       "type": "Winery Bolgheri",
       "address": "Strada Provinciale Bolgherese 275A 57022 Castagntto Carducci (LI)",
-      "contact": "+39 393 9040798 www.dariodivaira.it",
-      "remark": "Very small winery in Bolgheri; Dario has taken over the vineyard from his father some years ago and produces high quality white and red wines, reasonable pricing. He oﬀers for white a Vermentino and a Viognier, for red a Bolgheri rosso and Bolgheri Superiore. In particular the Bolgheri Superiore has a light mint taste, very good. You need to call them upfront to your visit",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -161,14 +290,17 @@
         "Bolgheri",
         "wine",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 393 9040798",
+      "email": null,
+      "website": "https://www.dariodivaira.it",
+      "notes": "Very small winery in Bolgheri; Dario has taken over the vineyard from his father some years ago and produces high quality white and red wines, reasonable pricing. He oﬀers for white a Vermentino and a Viognier, for red a Bolgheri rosso and Bolgheri Superiore. In particular the Bolgheri Superiore has a light mint taste, very good. You need to call them upfront to your visit",
+      "openingHours": null
     },
     {
       "name": "Tenuta Sant’Ilario",
       "type": "Trattoria",
       "address": "Loc. Cabbialla Strada Proivinziale 4 Volterrana 127 50050 Gambassi Terme (FI)",
-      "contact": "+39 327 2726808 or +39 0571 698195 www.tenutasantilario.it",
-      "remark": "Very nice agriturismo type location with a pretty good restaurant, typical Tuscany food al terra, nice place for summer and also winter times. They do speak several languages",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -178,14 +310,17 @@
         "restaurant",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 327 2726808 · +39 0571 698195",
+      "email": null,
+      "website": "https://www.tenutasantilario.it",
+      "notes": "Very nice agriturismo type location with a pretty good restaurant, typical Tuscany food al terra, nice place for summer and also winter times. They do speak several languages",
+      "openingHours": null
     },
     {
       "name": "I Collazzi",
       "type": "Restaurant / Winery Firenze",
       "address": "Via Colleramole 101 Loc. Tavarnuzze 50023 Impruneta (FI)",
-      "contact": "+39 055 237 4902 (Vino) +39 337 132 2612 (Ristorante) www.collazzi.it",
-      "remark": "Very beautiful location outside of Florence. This is a winery and restaurant. Very good wines, very good food. You need to book a table in restaurant, since they do not open every day and have many events like weddings etc.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -199,14 +334,17 @@
         "wine",
         "appointment-needed",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 055 237 4902 (Vino) +39 337 132 2612 (Ristorante)",
+      "email": null,
+      "website": "https://www.collazzi.it",
+      "notes": "Very beautiful location outside of Florence. This is a winery and restaurant. Very good wines, very good food. You need to book a table in restaurant, since they do not open every day and have many events like weddings etc",
+      "openingHours": null
     },
     {
       "name": "Le Panzanelle",
       "type": "Osteria",
       "address": "Localita Lucarelli 29 53017 Radda in Chianti",
-      "contact": "+39 0577 733511 www.lepanzanelle.it",
-      "remark": "Very nice garden in summer, very local food and excellent wine list; restaurant gets run by three women. Many Italians go there. Medium pricing, good place for lunch during a visit to wineries in Chianti",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -219,14 +357,17 @@
         "gardening",
         "outdoor-seating",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0577 733511",
+      "email": null,
+      "website": "https://www.lepanzanelle.it",
+      "notes": "Very nice garden in summer, very local food and excellent wine list; restaurant gets run by three women. Many Italians go there. Medium pricing, good place for lunch during a visit to wineries in Chianti",
+      "openingHours": null
     },
     {
       "name": "All’Olivo",
       "type": "Restaurant",
       "address": "Piazza S. Quirico 1 55100 Lucca",
-      "contact": "+39 0583 493129 / +39 0583 496264 www.ristoranteolivo.it",
-      "remark": "Very nice place to sit outside in Lucca, upper level, good for fish and also meat.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -235,14 +376,17 @@
         "Lucca",
         "fish",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0583 493129 · +39 0583 496264",
+      "email": null,
+      "website": "https://www.ristoranteolivo.it",
+      "notes": "Very nice place to sit outside in Lucca, upper level, good for fish and also meat",
+      "openingHours": null
     },
     {
       "name": "La Foresta",
       "type": "Fish Restaurant",
       "address": "Via Litorane 2 56128 Marina di Pisa",
-      "contact": "+39 05035082 www.ristoranteforesta.com",
-      "remark": "Fish place directly at the sea and beach, oﬀera basically food al mare. Food of high quality. Beautiful terrace",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -254,14 +398,17 @@
         "fish",
         "outdoor-seating",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 05035082",
+      "email": null,
+      "website": "https://www.ristoranteforesta.com",
+      "notes": "Fish place directly at the sea and beach, oﬀera basically food al mare. Food of high quality. Beautiful terrace",
+      "openingHours": null
     },
     {
       "name": "Lo Scoglietto",
       "type": "Fish Restaurant",
       "address": "Via Lungomare Monte alla Rena 13-15 57016 Rossignano Marittima",
-      "contact": "+39 0586 767962 or +39 335 6653080 www.loscoglietto.com",
-      "remark": "Located directly at the sea and beach, this is a wonderful place on sunny days. Place to eat al mare. Usually very busy, in particular in summer. Easy place, medium pricing, always very good food",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -271,14 +418,17 @@
         "Rossignano",
         "fish",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0586 767962 · +39 335 6653080",
+      "email": null,
+      "website": "https://www.loscoglietto.com",
+      "notes": "Located directly at the sea and beach, this is a wonderful place on sunny days. Place to eat al mare. Usually very busy, in particular in summer. Easy place, medium pricing, always very good food",
+      "openingHours": null
     },
     {
       "name": "Maggese",
       "type": "Vegetarian-Focused Restaurant",
       "address": "Via IV Novembre 29, 56028 San Miniato (PI)",
-      "contact": "Phone: +39 0571 172 3546",
-      "remark": "Maggese is one of Tuscany’s most innovative restaurants, led by renowned chef Fabrizio Marino. Celebrated for its exceptional vegetarian and vegan cuisine, it also offers selected non-vegetarian dishes, making it an outstanding choice for every guest. Just a short drive from Castelfalfi, Maggese delivers a unique fine dining experience based on seasonal local ingredients. https://www.ristorantemaggese.it/",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -290,14 +440,17 @@
         "vegetarian",
         "fine-dining",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 172 3546",
+      "email": null,
+      "website": "https://www.ristorantemaggese.it",
+      "notes": "Maggese is one of Tuscany’s most innovative restaurants, led by renowned chef Fabrizio Marino. Celebrated for its exceptional vegetarian and vegan cuisine, it also offers selected non-vegetarian dishes, making it an outstanding choice for every guest. Just a short drive from Castelfalfi, Maggese delivers a unique fine dining experience based on seasonal local ingredients",
+      "openingHours": null
     },
     {
       "name": "Osteria del Sole",
       "type": "Pizzeria",
       "address": "Via Volterrana 117, 56033 Capannoli (PI)",
-      "contact": "+39 0587 609257",
-      "remark": "Sunday: Closed A charming family-run restaurant led by a young and welcoming team, with the parents actively involved in the kitchen. Enjoy authentic Tuscan cuisine, excellent wood-fired pizzas, and consistently high-quality regional dishes. The carefully selected local wines are offered at very reasonable prices, making it outstanding value for money.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -310,14 +463,23 @@
         "family-run",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0587 609257",
+      "email": null,
+      "website": null,
+      "notes": "A charming family-run restaurant led by a young and welcoming team, with the parents actively involved in the kitchen. Enjoy authentic Tuscan cuisine, excellent wood-fired pizzas, and consistently high-quality regional dishes. The carefully selected local wines are offered at very reasonable prices, making it outstanding value for money",
+      "openingHours": {
+        "days": {
+          "sun": {
+            "status": "closed"
+          }
+        }
+      }
     },
     {
       "name": "Pasticceria Ferretti",
       "type": "Ristorante",
       "address": "Via Carraia 1, Peccioli",
-      "contact": "+39 0587 635124",
-      "remark": "A long-established family-run restaurant and pastry shop in the heart of Peccioli, celebrated for its authentic Tuscan cuisine and handcrafted desserts. Chef Andrea Donati focuses on seasonal ingredients sourced from local producers, creating refined yet traditional dishes. The warm atmosphere, excellent pastries and outstanding value have made Ferretti one of the area’s most highly regarded dining destinations. Monday closed.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -329,14 +491,17 @@
         "family-run",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0587 635124",
+      "email": null,
+      "website": null,
+      "notes": "A long-established family-run restaurant and pastry shop in the heart of Peccioli, celebrated for its authentic Tuscan cuisine and handcrafted desserts. Chef Andrea Donati focuses on seasonal ingredients sourced from local producers, creating refined yet traditional dishes. The warm atmosphere, excellent pastries and outstanding value have made Ferretti one of the area’s most highly regarded dining destinations. Monday closed",
+      "openingHours": null
     },
     {
       "name": "I’Ciampa",
       "type": "Pizzeria",
       "address": "Via Chiarenti 46, Montaione",
-      "contact": "+39 0571 69552",
-      "remark": "A welcoming family-run restaurant in the historic centre of Montaione, serving authentic Tuscan cuisine alongside a wide selection of pizzas. Guests can dine on the panoramic terrace or in the peaceful garden while enjoying regional wines, including labels from the family’s own winery. Friendly service, generous portions and excellent value make I’ Ciampa a favourite with both locals and visitors.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -351,14 +516,17 @@
         "family-run",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 69552",
+      "email": null,
+      "website": null,
+      "notes": "A welcoming family-run restaurant in the historic centre of Montaione, serving authentic Tuscan cuisine alongside a wide selection of pizzas. Guests can dine on the panoramic terrace or in the peaceful garden while enjoying regional wines, including labels from the family’s own winery. Friendly service, generous portions and excellent value make I’ Ciampa a favourite with both locals and visitors",
+      "openingHours": null
     },
     {
       "name": "Chiarò",
       "type": "Fish Restaurant",
       "address": "Via I.Franchi, 11, 50050 Gambassi Terme",
-      "contact": "+39 0571 936636",
-      "remark": "Chiarò is an elegant seafood restaurant run by the former team of the well-known La Terrazza in Montaione. Specializing in fresh fish, Mediterranean cuisine and an excellent wine selection, it offers refined dining in a warm and welcoming atmosphere. Located just a short drive from Castelfalfi, it has quickly become one of the region’s top destinations for seafood lovers. Monday closed.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -371,14 +539,17 @@
         "fish",
         "wine",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 936636",
+      "email": null,
+      "website": null,
+      "notes": "Chiarò is an elegant seafood restaurant run by the former team of the well-known La Terrazza in Montaione. Specializing in fresh fish, Mediterranean cuisine and an excellent wine selection, it offers refined dining in a warm and welcoming atmosphere. Located just a short drive from Castelfalfi, it has quickly become one of the region’s top destinations for seafood lovers. Monday closed",
+      "openingHours": null
     },
     {
       "name": "Oscar",
       "type": "Fish Restaurant",
       "address": "Via Oreste Franchini 78, 57128 Livorno",
-      "contact": "+39 0586 501258 www.ristoranteoscar.it",
-      "remark": "One of the best places for fish; located in the middle of a living area, there are more beautiful places to sit, but the food is excellent. Oscar is always full of Italians, not many foreigners go here to eat",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -388,14 +559,17 @@
         "Livorno",
         "fish",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0586 501258",
+      "email": null,
+      "website": "https://www.ristoranteoscar.it",
+      "notes": "One of the best places for fish; located in the middle of a living area, there are more beautiful places to sit, but the food is excellent. Oscar is always full of Italians, not many foreigners go here to eat",
+      "openingHours": null
     },
     {
       "name": "La Ripadoro Agri Ristorante",
       "type": "Ristorante",
       "address": "Via Amerigo Vespucci 22, 56034 Rivalto",
-      "contact": "+39 347 6265919",
-      "remark": "www.Laripadoro.it A beautiful place on top of the hill, beautiful terrace with good view. Very good food, mostly al terra, run by a family; they offer very local wines",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -407,14 +581,17 @@
         "outdoor-seating",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 347 6265919",
+      "email": null,
+      "website": "https://www.laripadoro.it",
+      "notes": "A beautiful place on top of the hill, beautiful terrace with good view. Very good food, mostly al terra, run by a family; they offer very local wines",
+      "openingHours": null
     },
     {
       "name": "Osteria L’Upupa (in San Mineato)",
       "type": "Ristorante",
       "address": "Via A. Conti 15, 56028 San Miniato",
-      "contact": "39 0571 400429 or +39 345 2955913",
-      "remark": "www.ristorantelupupa.com",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -423,14 +600,17 @@
         "San Miniato",
         "restaurant",
         "food-dining"
-      ]
+      ],
+      "phone": "39 0571 400429 · +39 345 2955913",
+      "email": null,
+      "website": "https://www.ristorantelupupa.com",
+      "notes": null,
+      "openingHours": null
     },
     {
       "name": "Papeveri & Papere (in San Miniato)",
       "type": "Ristorante",
       "address": "Via Dalmazia 159, 56028 San Miniato",
-      "contact": "+39 0571 409422",
-      "remark": "www.papaveriepaolo.com; hey offer a la carte and a fixed menu al mare or al terra for ca. 60€ (4-5 courses); Daniele was the best Sommelier of Tuscany in 2023; he offers very good wines for very reasonable prices",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -443,14 +623,17 @@
         "art",
         "tuscan",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0571 409422",
+      "email": null,
+      "website": "https://www.papaveriepaolo.com",
+      "notes": "; hey offer a la carte and a fixed menu al mare or al terra for ca. 60€ (4-5 courses); Daniele was the best Sommelier of Tuscany in 2023; he offers very good wines for very reasonable prices",
+      "openingHours": null
     },
     {
       "name": "Tenuta di Biserno",
       "type": "Winery Bolgheri",
       "address": "Via Bolgherese 5, 57020 Bibbona",
-      "contact": "+39 0586 671099 www.biserno.it",
-      "remark": "Born into the lineage of Ludovico Antinori, the brilliant mind behind Ornellaia.",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -461,14 +644,17 @@
         "Bibbona",
         "wine",
         "food-dining"
-      ]
+      ],
+      "phone": "+39 0586 671099",
+      "email": null,
+      "website": "https://www.biserno.it",
+      "notes": "Born into the lineage of Ludovico Antinori, the brilliant mind behind Ornellaia",
+      "openingHours": null
     },
     {
       "name": "Wintasting Tamburini",
       "type": "Winery Gambassi Terme",
       "address": "50050 Gambassi Terme, via Catagnano,106, LOC il. Castellucco",
-      "contact": "++49 1777725308",
-      "remark": "Wonderful afternoon in a familiar atmosphere with beautiful wine and canapés",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -478,14 +664,17 @@
         "Gambassi Terme",
         "wine",
         "food-dining"
-      ]
+      ],
+      "phone": "++49 1777725308",
+      "email": null,
+      "website": null,
+      "notes": "Wonderful afternoon in a familiar atmosphere with beautiful wine and canapés",
+      "openingHours": null
     },
     {
       "name": "Enrico Salvini",
       "type": "Pasticceria",
       "address": "Via Volterrana, 341 La Rosa (Terricciola – Pi)",
-      "contact": "3386476658",
-      "remark": "Very Good Bakery, Wonderful Focaccia and homemade Cookies",
       "category": "food-dining",
       "sourceUrl": "https://apic.community/food-dining/",
       "tags": [
@@ -495,14 +684,17 @@
         "La Rosa",
         "bakery",
         "food-dining"
-      ]
+      ],
+      "phone": "3386476658",
+      "email": null,
+      "website": null,
+      "notes": "Very Good Bakery, Wonderful Focaccia and homemade Cookies",
+      "openingHours": null
     },
     {
       "name": "Maurits van Heyst VAN HEYST ESCAPES",
       "type": "Luxury Real Estate Broker",
       "address": "Private Consultations in Castelfalfi Borgo (by appointment)",
-      "contact": "+49 172 666 2707 / mvh-vanheyst@escapes.com",
-      "remark": "Independent luxury real estate advisor specialising in Italy and Tuscany. Drawing on his long-standing connection to Castelfalfi, in-depth market expertise and international network, he supports owners and international buyers with property sales, acquisitions, valuations and comprehensive transaction advice.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -512,14 +704,17 @@
         "real-estate",
         "appointment-needed",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+49 172 666 2707",
+      "email": "mvh-vanheyst@escapes.com",
+      "website": null,
+      "notes": "Independent luxury real estate advisor specialising in Italy and Tuscany. Drawing on his long-standing connection to Castelfalfi, in-depth market expertise and international network, he supports owners and international buyers with property sales, acquisitions, valuations and comprehensive transaction advice",
+      "openingHours": null
     },
     {
       "name": "Rosa Canina Team",
       "type": "Pet Services – Dog Grooming",
       "address": "Via Volterrana 113 56030 Selvatelle",
-      "contact": "+39 331 573 7358",
-      "remark": "Toelettatura Rosa Canina is a professional dog grooming salon in Selvatelle, offering caring and experienced grooming services for dogs of all breeds and sizes. Services typically include bathing, brushing, clipping and breed-specific styling, with a strong focus on the comfort and wellbeing of every dog.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -528,14 +723,17 @@
         "Selvatelle",
         "pet-grooming",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 331 573 7358",
+      "email": null,
+      "website": null,
+      "notes": "Toelettatura Rosa Canina is a professional dog grooming salon in Selvatelle, offering caring and experienced grooming services for dogs of all breeds and sizes. Services typically include bathing, brushing, clipping and breed-specific styling, with a strong focus on the comfort and wellbeing of every dog",
+      "openingHours": null
     },
     {
       "name": "Real Garden (Salvatore & Raffaele)",
       "type": "Gardening & Landscaping",
       "address": "Via Bruno Buozzi 50, 50050 Montaione",
-      "contact": "+39 333 8909756",
-      "remark": "Garden design, landscaping, irrigation systems, fencing, tree pruning, garden maintenance and outdoor living solutions. They are known for reliable workmanship, professional service and an excellent understanding of the local environment, making them a trusted choice for property owners in the Castelfalfi area.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -545,14 +743,17 @@
         "Castelfalfi",
         "Montaione",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 333 8909756",
+      "email": null,
+      "website": null,
+      "notes": "Garden design, landscaping, irrigation systems, fencing, tree pruning, garden maintenance and outdoor living solutions. They are known for reliable workmanship, professional service and an excellent understanding of the local environment, making them a trusted choice for property owners in the Castelfalfi area",
+      "openingHours": null
     },
     {
       "name": "Christian Todarisca – Elettro T.C.",
       "type": "Air Conditioning, Heating & Electrical Services",
       "address": "info@elettro-tc.it",
-      "contact": "+39 331 8207166",
-      "remark": "A highly experienced local contractor specializing in air conditioning, heating systems, electrical installations and general building services. Christian knows Castelfalfi exceptionally well and has completed projects for many Borgo owners as well as several villa owners. He is widely regarded as one of the area’s most knowledgeable technicians and is particularly recommended for HVAC installations, maintenance and troubleshooting, as well as electrical work. Due to high demand, scheduling may require some advance planning.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -563,14 +764,17 @@
         "electrical",
         "hvac-plumbing",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 331 8207166",
+      "email": null,
+      "website": null,
+      "notes": "A highly experienced local contractor specializing in air conditioning, heating systems, electrical installations and general building services. Christian knows Castelfalfi exceptionally well and has completed projects for many Borgo owners as well as several villa owners. He is widely regarded as one of the area’s most knowledgeable technicians and is particularly recommended for HVAC installations, maintenance and troubleshooting, as well as electrical work. Due to high demand, scheduling may require some advance planning",
+      "openingHours": null
     },
     {
       "name": "Riccardo Elefante",
       "type": "Carpenter / Joiner",
       "address": "Via Comiti 3 50050 Montaione",
-      "contact": "+39 0571 524994 / WhatsApp + 39 347 898 6877",
-      "remark": "Experienced local carpenter specialising in bespoke woodwork, custom furniture, doors, windows and interior fittings. Offers repairs, maintenance and tailor-made woodworking solutions for residential properties. A reliable local craftsman for both small repairs and larger carpentry projects in and around Montaione.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -580,14 +784,17 @@
         "Montaione",
         "carpentry",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 0571 524994 · WhatsApp + 39 347 898 6877",
+      "email": null,
+      "website": null,
+      "notes": "Experienced local carpenter specialising in bespoke woodwork, custom furniture, doors, windows and interior fittings. Offers repairs, maintenance and tailor-made woodworking solutions for residential properties. A reliable local craftsman for both small repairs and larger carpentry projects in and around Montaione",
+      "openingHours": null
     },
     {
       "name": "Fontanelli Pneumatici Srl",
       "type": "Tyre & Automotive Service Centre",
       "address": "Via del Commercio 1/A 56033 Capannoli (PI)",
-      "contact": "+39 0587 608204",
-      "remark": "Professional tyre services, seasonal tyre changes, tyre repairs, tyre storage, wheel balancing, vehicle servicing, brakes, batteries, suspension, air conditioning and routine maintenance.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -597,14 +804,17 @@
         "hvac-plumbing",
         "automotive",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 0587 608204",
+      "email": null,
+      "website": null,
+      "notes": "Professional tyre services, seasonal tyre changes, tyre repairs, tyre storage, wheel balancing, vehicle servicing, brakes, batteries, suspension, air conditioning and routine maintenance",
+      "openingHours": null
     },
     {
       "name": "AMP S.R.L.",
       "type": "Classic Car Upholstery & Interior Restoration",
       "address": "Viale Giacomo Matteotti 47, 50025 Montespertoli (FI)",
-      "contact": "Phone: +39 0571 609054 / Mobile: +39 338 2323319 / Email: amp@ampsrl.net",
-      "remark": "A specialist workshop for the restoration and refurbishment of classic car interiors, offering bespoke upholstery in leather and fabric, convertible tops, carpets, headliners, and interior trim. Combining traditional craftsmanship with mechanical expertise, AMP also undertakes selected restoration work on historic vehicles.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -613,14 +823,17 @@
         "Montespertoli",
         "classic-cars",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 0571 609054 · +39 338 2323319",
+      "email": "amp@ampsrl.net",
+      "website": null,
+      "notes": "A specialist workshop for the restoration and refurbishment of classic car interiors, offering bespoke upholstery in leather and fabric, convertible tops, carpets, headliners, and interior trim. Combining traditional craftsmanship with mechanical expertise, AMP also undertakes selected restoration work on historic vehicles",
+      "openingHours": null
     },
     {
       "name": "Noi2 Tendaggi",
       "type": "Awnings • Screens • Pergolas • Insect Screens",
       "address": "Via Comiti 3, 50050 Montaione",
-      "contact": "Phone: +39 338 230 8119 / Email: info@noi2tendaggi.it",
-      "remark": "A local specialist in high-quality sun protection and outdoor living solutions, offering custom-made awnings, ZIP screens, pergolas, insect screens, and shading systems for residential and commercial properties. The company provides consultation, installation, and after-sales service, focusing on quality materials and tailored solutions. Payment Information: The company trades as Noi2 Tendaggi. The legal entity for bank transfers is IL SEMAFORO DI CECCONI FRANCO E LAPENNA SIMONA S.N.C.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -632,14 +845,17 @@
         "Montaione",
         "outdoor-shading",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 338 230 8119",
+      "email": "info@noi2tendaggi.it",
+      "website": null,
+      "notes": "A local specialist in high-quality sun protection and outdoor living solutions, offering custom-made awnings, ZIP screens, pergolas, insect screens, and shading systems for residential and commercial properties. The company provides consultation, installation, and after-sales service, focusing on quality materials and tailored solutions. Payment Information: The company trades as Noi2 Tendaggi. The legal entity for bank transfers is IL SEMAFORO DI CECCONI FRANCO E LAPENNA SIMONA S.N.C",
+      "openingHours": null
     },
     {
       "name": "Sarandria Francesco Infissi",
       "type": "Windows, Doors & Building Fixtures",
       "address": "Via delle Colline per Legoli 3/A 56025 Pontedera (PI), Tuscany, Italy",
-      "contact": "Phone: +39 348 514 6514",
-      "remark": "Professional services & repairs of high-quality windows, doors, shutters, and insect screens. They provide custom-made solutions for residential and commercial properties, combining professional craftsmanship with reliable installation and after-sales service.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -649,14 +865,17 @@
         "Pontedera",
         "outdoor-shading",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 348 514 6514",
+      "email": null,
+      "website": null,
+      "notes": "Professional services & repairs of high-quality windows, doors, shutters, and insect screens. They provide custom-made solutions for residential and commercial properties, combining professional craftsmanship with reliable installation and after-sales service",
+      "openingHours": null
     },
     {
       "name": "Giacomo Pistolesi Picchio Reale Project",
       "type": "Carpenter",
       "address": "Via Comiti 5, Montaione",
-      "contact": "Tel. +39 333 354 7861 / info@picchiorealeproject.it",
-      "remark": "Giacomo is a friendly, approachable craftsman who specializes in the custom manufacture and repair of doors, windows, furniture, and other wooden items. He offers good value for money and delivers quality workmanship. However, working with him does require a little patience. If you have an urgent project, he may not be the best choice.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -665,14 +884,17 @@
         "Montaione",
         "carpentry",
         "services-maintenance"
-      ]
+      ],
+      "phone": "+39 333 354 7861",
+      "email": "info@picchiorealeproject.it",
+      "website": null,
+      "notes": "Giacomo is a friendly, approachable craftsman who specializes in the custom manufacture and repair of doors, windows, furniture, and other wooden items. He offers good value for money and delivers quality workmanship. However, working with him does require a little patience. If you have an urgent project, he may not be the best choice",
+      "openingHours": null
     },
     {
       "name": "Rentokil Initial Italia SpA",
       "type": "Pest control company",
       "address": "Via Partigiani d’Italia, 5 50053 Empoli (FI)",
-      "contact": "t. +39 06911871 mob +39 335 7207105 / alessandro.moscovini@rentokil-initial.com",
-      "remark": "www.rentokil.com/it/",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -681,14 +903,17 @@
         "Empoli",
         "pest-control",
         "services-maintenance"
-      ]
+      ],
+      "phone": "t. +39 06911871 mob +39 335 7207105",
+      "email": "alessandro.moscovini@rentokil-initial.com",
+      "website": "https://www.rentokil.com/it",
+      "notes": null,
+      "openingHours": null
     },
     {
       "name": "TERMAK",
       "type": "Heating and Plumbing Services",
       "address": "Via Luigi Capuana snc 56028 San Miniato (PI)",
-      "contact": "Tel: 0571 499249 – Mail: info@termak.it",
-      "remark": "www.termak.it The company has also carried out many of the heating and plumbing installations in Castelfalfi on behalf of TDC and is therefore familiar with the systems and infrastructure.",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -698,14 +923,17 @@
         "San Miniato",
         "hvac-plumbing",
         "services-maintenance"
-      ]
+      ],
+      "phone": "0571 499249",
+      "email": "info@termak.it",
+      "website": "https://www.termak.it",
+      "notes": "The company has also carried out many of the heating and plumbing installations in Castelfalfi on behalf of TDC and is therefore familiar with the systems and infrastructure",
+      "openingHours": null
     },
     {
       "name": "IN GIARDINO SRL",
       "type": "FREEZANZ",
       "address": "Via Fossa Nuova n. 104 – 56038 Ponsacco (Pi)",
-      "contact": "Telefono: 0587 608424 e-Mail: info@freezanz.it",
-      "remark": "The company offers permanently installed and portable mosquito control systems for gardens and balconies. www.ingiardinoweb.it www.impiantoantizanzare.it www.freezanz.it",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -715,14 +943,17 @@
         "gardening",
         "outdoor-shading",
         "services-maintenance"
-      ]
+      ],
+      "phone": "efono: 0587 608424",
+      "email": "info@freezanz.it",
+      "website": "https://www.ingiardinoweb.it",
+      "notes": "The company offers permanently installed and portable mosquito control systems for gardens and balconies",
+      "openingHours": null
     },
     {
       "name": "Ninci Elettrodomestici srl",
       "type": "Electrical contractor",
       "address": "Via 2 Giugno 5 loc.Ponte a Elsa Empoli",
-      "contact": "tel 0571 931591 / email info@ninci.it",
-      "remark": "www.ninci.it",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -732,14 +963,17 @@
         "electrical",
         "electronics",
         "services-maintenance"
-      ]
+      ],
+      "phone": "0571 931591 · email",
+      "email": "info@ninci.it",
+      "website": "https://www.ninci.it",
+      "notes": null,
+      "openingHours": null
     },
     {
       "name": "Montaione Giardini Srl",
       "type": "Gardener",
       "address": "Via dell´Artigianato 10, 50050 Montaione",
-      "contact": "montaionegiardini@libero.it",
-      "remark": "General gardening services",
       "category": "services-maintenance",
       "sourceUrl": "https://apic.community/services-maintenance/",
       "tags": [
@@ -748,14 +982,17 @@
         "gardening",
         "Montaione",
         "services-maintenance"
-      ]
+      ],
+      "phone": null,
+      "email": "montaionegiardini@libero.it",
+      "website": null,
+      "notes": "General gardening services",
+      "openingHours": null
     },
     {
       "name": "Edward D’Costa",
       "type": "Fitness & Wellness Coach | Personal Trainer",
       "address": "Via Salvadori, Montaione",
-      "contact": "WhatsApp +39 350 531 9515",
-      "remark": "Edward D’Costa offers private, tailor-made wellness experiences designed to help clients relax, recharge, and improve their physical and mental well-being. His services include personal training, Hatha yoga for beginners, stretching, meditation, brain kinetics, and bodyweight training. Sessions are individually adapted to each client’s fitness level and goals and can be held directly at your accommodation, allowing you to enjoy a convenient and personalized wellness experience in the beautiful surroundings of Castelfalfi and the Tuscan countryside.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -766,14 +1003,17 @@
         "Montaione",
         "fitness",
         "health-wellness"
-      ]
+      ],
+      "phone": "WhatsApp +39 350 531 9515",
+      "email": null,
+      "website": null,
+      "notes": "Edward D’Costa offers private, tailor-made wellness experiences designed to help clients relax, recharge, and improve their physical and mental well-being. His services include personal training, Hatha yoga for beginners, stretching, meditation, brain kinetics, and bodyweight training. Sessions are individually adapted to each client’s fitness level and goals and can be held directly at your accommodation, allowing you to enjoy a convenient and personalized wellness experience in the beautiful surroundings of Castelfalfi and the Tuscan countryside",
+      "openingHours": null
     },
     {
       "name": "Romina Vargiu",
       "type": "Physiotherapist",
       "address": "MiniHospital Capanoli, Via Antonio Gramsci, 29, 56033 Capannoli",
-      "contact": "+39 347 284 7629 / info@minihospital.it",
-      "remark": "Romina Vargiu has more than 20 years of experience in physiotherapy and rehabilitation. In addition to treating musculoskeletal conditions, she has particular expertise in respiratory and cardiological rehabilitation and has participated in numerous clinical research studies. She offers a wide range of modern physiotherapy treatments, including Tecar Therapy, shockwave therapy and lymphatic drainage.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -784,14 +1024,17 @@
         "physiotherapy",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 347 284 7629",
+      "email": "info@minihospital.it",
+      "website": null,
+      "notes": "Romina Vargiu has more than 20 years of experience in physiotherapy and rehabilitation. In addition to treating musculoskeletal conditions, she has particular expertise in respiratory and cardiological rehabilitation and has participated in numerous clinical research studies. She offers a wide range of modern physiotherapy treatments, including Tecar Therapy, shockwave therapy and lymphatic drainage",
+      "openingHours": null
     },
     {
       "name": "Farmacia Viotti",
       "type": "Pharmacy",
       "address": "Via Volterrana, 157, Salvatelle (PI)",
-      "contact": "0587 – 653020",
-      "remark": "Opening hours: Monday – Saturday: 8.30 – 20:00 Medication requests and prescription pre-orders can be conveniently submitted via WhatsApp at +39 347 061 6748.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -800,14 +1043,74 @@
         "Salvatelle",
         "whatsapp",
         "health-wellness"
-      ]
+      ],
+      "phone": "0587 – 653020",
+      "email": null,
+      "website": null,
+      "notes": "Medication requests and prescription pre-orders can be conveniently submitted via WhatsApp at +39 347 061 6748",
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "20:00"
+              }
+            ]
+          }
+        }
+      }
     },
     {
       "name": "Oculista – Dott. Vincenzo Parducci",
       "type": "Eye care center",
       "address": "Via Armando Cerbioni, 7, 50051 177 1223",
-      "contact": "+39 0571 1771223",
-      "remark": "Mon–Fri 09:00–19:00 · Sat 09:00–12:30 · Closed Sun. Remark: Highly experienced ophthalmologist specializing in cataract, glaucoma, retinal diseases, laser treatments, and comprehensive eye care.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -815,14 +1118,75 @@
         "Eye care center",
         "eye-care",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 1771223",
+      "email": null,
+      "website": null,
+      "notes": "Sun. Remark: Highly experienced ophthalmologist specializing in cataract, glaucoma, retinal diseases, laser treatments, and comprehensive eye care",
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "19:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "19:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "19:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "19:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "19:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "12:30"
+              }
+            ]
+          }
+        },
+        "note": "Closed"
+      }
     },
     {
       "name": "Radius Valdelsa (Castelfiorentino)",
       "type": "Medical diagnostic center",
       "address": "Via Armando Cerbioni 7, 50051 Castelfiorentino (FI), Italien",
-      "contact": "+39 0571 1771223",
-      "remark": "Radius Valdelsa is a medical diagnostic center, wich offers radiological examinations as well as various outpatient specialist services. The facility uses modern medical technology and a team of specialists for diagnosis and patient care. Online booking is possible!",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -831,14 +1195,17 @@
         "Castelfiorentino",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 1771223",
+      "email": null,
+      "website": null,
+      "notes": "Radius Valdelsa is a medical diagnostic center, wich offers radiological examinations as well as various outpatient specialist services. The facility uses modern medical technology and a team of specialists for diagnosis and patient care. Online booking is possible!",
+      "openingHours": null
     },
     {
       "name": "Dott. Vincenzo Parducci",
       "type": "Ophtalmologist",
       "address": "Via Armando Cerbioni 7, 50051 Castelfiorentino (FI)",
-      "contact": "+39 0571 1771223",
-      "remark": "Highly experienced ophthalmologist with many years of hospital and surgical expertise. Specialised in cataract surgery, glaucoma treatment, retinal diseases and comprehensive eye examinations. Provides modern diagnostics, preventive eye care and long-term follow-up treatment. A trusted specialist for routine eye care as well as complex ophthalmic conditions.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -849,14 +1216,17 @@
         "eye-care",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 1771223",
+      "email": null,
+      "website": null,
+      "notes": "Highly experienced ophthalmologist with many years of hospital and surgical expertise. Specialised in cataract surgery, glaucoma treatment, retinal diseases and comprehensive eye examinations. Provides modern diagnostics, preventive eye care and long-term follow-up treatment. A trusted specialist for routine eye care as well as complex ophthalmic conditions",
+      "openingHours": null
     },
     {
       "name": "Farmacia Priamo",
       "type": "Pharmacy",
       "address": "Via Roma 41/43, 50050 Montaione",
-      "contact": "+39 0571 69046",
-      "remark": "Opening Hours: Mon–Sat: 9:00 AM–1:00 PM, 4:30 PM–8:00 PM Sun: Closed",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -864,14 +1234,101 @@
         "Pharmacy",
         "Montaione",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 69046",
+      "email": null,
+      "website": null,
+      "notes": null,
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "16:30",
+                "close": "20:00"
+              }
+            ]
+          },
+          "sun": {
+            "status": "closed"
+          }
+        }
+      }
     },
     {
       "name": "UP!Estetica",
       "type": "Cosmetic Peccioli",
       "address": "Via I° Maggio, 11, 56037 Peccioli (PI)",
-      "contact": "+ 39 0587 672213 www.upestetica.it",
-      "remark": "Manicures, pedicures and beauty treatments. They’re very busy. You should make an appointment well in advance.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -881,14 +1338,17 @@
         "beauty",
         "appointment-needed",
         "health-wellness"
-      ]
+      ],
+      "phone": "+ 39 0587 672213",
+      "email": null,
+      "website": "https://www.upestetica.it",
+      "notes": "Manicures, pedicures and beauty treatments. They’re very busy. You should make an appointment well in advance",
+      "openingHours": null
     },
     {
       "name": "Studio Odontoiatrico D´ Arienzo",
       "type": "Dentist",
       "address": "Piazza Antonio Gramsci 3, 50050 Montaione",
-      "contact": "+39 0571 698080",
-      "remark": "A modern dental clinic in Montaione, offering general dentistry and cosmetic dental treatments. The clinic is known for its personalized patient care and high patient satisfaction. Appointments in Montaione are available on Tuesday and Friday afternoons.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -898,14 +1358,17 @@
         "beauty",
         "appointment-needed",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 698080",
+      "email": null,
+      "website": null,
+      "notes": "A modern dental clinic in Montaione, offering general dentistry and cosmetic dental treatments. The clinic is known for its personalized patient care and high patient satisfaction. Appointments in Montaione are available on Tuesday and Friday afternoons",
+      "openingHours": null
     },
     {
       "name": "Studio Dentistico Pantani Dott. Ivano",
       "type": "Dentist",
       "address": "Via Scipione Ammirato 25, 50050 Montaione",
-      "contact": "+39 0571 698465",
-      "remark": "General dental practice offering preventive, restorative and routine dental treatments for adults and children.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -913,14 +1376,17 @@
         "Dentist",
         "Montaione",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 698465",
+      "email": null,
+      "website": null,
+      "notes": "General dental practice offering preventive, restorative and routine dental treatments for adults and children",
+      "openingHours": null
     },
     {
       "name": "Dr. Vito Lacerenza",
       "type": "Dentist",
       "address": "Via Pietro Nenni 9, 50050 Montaione",
-      "contact": "+39 0571 697918",
-      "remark": "Experienced dentist providing comprehensive dental care, including routine examinations, preventive treatments and restorative dentistry for patients of all ages.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -928,14 +1394,17 @@
         "Dentist",
         "Montaione",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 697918",
+      "email": null,
+      "website": null,
+      "notes": "Experienced dentist providing comprehensive dental care, including routine examinations, preventive treatments and restorative dentistry for patients of all ages",
+      "openingHours": null
     },
     {
       "name": "Dr. Falaschi, Paolo",
       "type": "Medical doctor",
       "address": "Villa Serena, Viale Vincenzo da Filicaja 18, 50050 Montaione",
-      "contact": "+39 0571 878582 (Praxis) or +39 3204077646 (mobil)",
-      "remark": "General practitioner offering primary healthcare, preventive medicine and ongoing medical care for residents and visitors.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -944,14 +1413,17 @@
         "Montaione",
         "doctor",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 878582 (Praxis) · +39 3204077646 (mobil)",
+      "email": null,
+      "website": null,
+      "notes": "General practitioner offering primary healthcare, preventive medicine and ongoing medical care for residents and visitors",
+      "openingHours": null
     },
     {
       "name": "Dr.ssa Elena Simoni",
       "type": "Medical doctor",
       "address": "Viale da Filicaia 18, 50050 Montaione",
-      "contact": "+39 0571 7051 (Central control) or +39 0571 878582",
-      "remark": "General practitioner providing comprehensive primary healthcare, preventive medicine and medical assistance for residents and visitors.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -960,14 +1432,17 @@
         "Montaione",
         "doctor",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 7051 (Central control) · +39 0571 878582",
+      "email": null,
+      "website": null,
+      "notes": "General practitioner providing comprehensive primary healthcare, preventive medicine and medical assistance for residents and visitors",
+      "openingHours": null
     },
     {
       "name": "Dr. Francesco Lotti",
       "type": "Renowned specialist vetenarien",
       "address": "Via Costantino Nigra 123, 51015 Monsummano Terme (PT)",
-      "contact": "+39 0572 51286 or via WhatsAPP at + 39 331 4307758",
-      "remark": "Emergency service: 24 hours a day, 7 days a week. He is specialized in the treatment of small animals such as dogs and cats. His main areas of expertise include internal medicine, diagnostics and the treatment of vetenery diseases.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -979,14 +1454,17 @@
         "medical-diagnostics",
         "emergency",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0572 51286 · via WhatsAPP at + 39 331 4307758",
+      "email": null,
+      "website": null,
+      "notes": "Emergency service: 24 hours a day, 7 days a week. He is specialized in the treatment of small animals such as dogs and cats. His main areas of expertise include internal medicine, diagnostics and the treatment of vetenery diseases.",
+      "openingHours": null
     },
     {
       "name": "Ambulatorio Veterinario, Associato Dott. Fantoni – Dott .ssa Iacolina",
       "type": "Veterinarien",
       "address": "Via Marconi 15 – 17, 56038, Ponsacco PI, Italien",
-      "contact": "+39 0587 730836",
-      "remark": "This clinic provides comprehensive medical care for small animals such as dogs and cats. Services include preventive care, diagnostics and treatment of both acute and chronic conditions.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -996,14 +1474,17 @@
         "Ponsacco",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0587 730836",
+      "email": null,
+      "website": null,
+      "notes": "This clinic provides comprehensive medical care for small animals such as dogs and cats. Services include preventive care, diagnostics and treatment of both acute and chronic conditions",
+      "openingHours": null
     },
     {
       "name": "AniCura Veterinary Clinic Cascina",
       "type": "Veterinary Clinic",
       "address": "Via Tosco Romagnola Ovest 338, 56012 Fornacette (Calcinaia), Pisa, Italy",
-      "contact": "tel. 0587 423123 / mail: clinicaveterinariacascina@anicura.it",
-      "remark": "AniCura Veterinary Clinic Cascina is a full-service veterinary referral and emergency hospital located just beyond Pontedera, in Fornacette (Calcinaia). The clinic provides both routine and specialist veterinary care, including surgery, diagnostic imaging, internal medicine, neurology, orthopaedics, intensive care and a 24-hour emergency service, 365 days a year.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1018,14 +1499,17 @@
         "medical-diagnostics",
         "emergency",
         "health-wellness"
-      ]
+      ],
+      "phone": "0587 423123",
+      "email": "clinicaveterinariacascina@anicura.it",
+      "website": null,
+      "notes": "AniCura Veterinary Clinic Cascina is a full-service veterinary referral and emergency hospital located just beyond Pontedera, in Fornacette (Calcinaia). The clinic provides both routine and specialist veterinary care, including surgery, diagnostic imaging, internal medicine, neurology, orthopaedics, intensive care and a 24-hour emergency service, 365 days a year.",
+      "openingHours": null
     },
     {
       "name": "Medical Emergency",
       "type": "Medical Emergency",
       "address": "Viale Vincenzo da Filicaja, Montaione",
-      "contact": "+39 0571 6991",
-      "remark": "In the event of a serious medical emergency, you can always call 112 or 118 directly. 112 is the standardized European emergency number, while 118 is the traditional Italian emergency medical number, which remains active and operational.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1035,14 +1519,17 @@
         "hospital",
         "emergency",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 6991",
+      "email": null,
+      "website": null,
+      "notes": "In the event of a serious medical emergency, you can always call 112 or 118 directly. 112 is the standardized European emergency number, while 118 is the traditional Italian emergency medical number, which remains active and operational",
+      "openingHours": null
     },
     {
       "name": "Ospedale Castelfiorentino",
       "type": "Ospedale",
       "address": "Via dei Mille, 1, Castelfiorentino",
-      "contact": "+39 0571 7051",
-      "remark": "The hospital is a local healthcare facility in Tuscany. It provides outpatient services,emergency care and basic diagnistic procedures. For specialized treatments, patients are referred to larger hospitals in the regionn",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1052,14 +1539,17 @@
         "hospital",
         "emergency",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0571 7051",
+      "email": null,
+      "website": null,
+      "notes": "The hospital is a local healthcare facility in Tuscany. It provides outpatient services,emergency care and basic diagnistic procedures. For specialized treatments, patients are referred to larger hospitals in the regionn",
+      "openingHours": null
     },
     {
       "name": "University Hospital Ospedale Cisanello",
       "type": "University Hospital",
       "address": "Via Paradisa, 18, Pisa",
-      "contact": "+39 050 992111",
-      "remark": "One of Tuscany’s leading university hospitals, offering highly specialized medical care across virtually all disciplines. Renowned for its advanced diagnostics, expert physicians, and state-of-the-art treatment facilities. A trusted referral center for complex medical conditions.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1070,14 +1560,17 @@
         "hospital",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 050 992111",
+      "email": null,
+      "website": null,
+      "notes": "One of Tuscany’s leading university hospitals, offering highly specialized medical care across virtually all disciplines. Renowned for its advanced diagnostics, expert physicians, and state-of-the-art treatment facilities. A trusted referral center for complex medical conditions",
+      "openingHours": null
     },
     {
       "name": "Birga Parrucchieri",
       "type": "Hair Salon Pontedera",
       "address": "Viale San Faustino 64, Pontedera",
-      "contact": "+39 0587 53275 www.birga.it",
-      "remark": "A long-established, modern and highly popular hair salon in Pontedera, with convenient parking directly in front of the premises and very reasonable local pricing.",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1086,14 +1579,17 @@
         "Pontedera",
         "hair-salon",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0587 53275",
+      "email": null,
+      "website": "https://www.birga.it",
+      "notes": "A long-established, modern and highly popular hair salon in Pontedera, with convenient parking directly in front of the premises and very reasonable local pricing",
+      "openingHours": null
     },
     {
       "name": "Dott.ssa Silvia Babboni",
       "type": "Dentist",
       "address": "Via Piave, 44 – Castelfiorentino",
-      "contact": "+390571684669",
-      "remark": "Dott.ssa Babboni runs a dental practice offering modern dental care and treatments. Her services include preventive care, restorative dentistry and aesthetic dental treatments. Lunedì, mercoledì, giovedì, venerdì 09:00 – 19:30 Chiuso martedì, sabato e domenica",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1102,14 +1598,17 @@
         "Castelfiorentino",
         "art",
         "health-wellness"
-      ]
+      ],
+      "phone": "+390571684669",
+      "email": null,
+      "website": null,
+      "notes": "Dott.ssa Babboni runs a dental practice offering modern dental care and treatments. Her services include preventive care, restorative dentistry and aesthetic dental treatments. Lunedì, mercoledì, giovedì, venerdì 09:00 – 19:30 Chiuso martedì, sabato e domenica",
+      "openingHours": null
     },
     {
       "name": "Dr. Thomas Herms",
       "type": "Chiropractor, Osteopath & Sports Medicine Physician",
       "address": "Via Sughera 1, 50050 Montaione (Località Sughera)",
-      "contact": "+39 366 453 1425",
-      "remark": "Languages: German, English, Italian",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1121,14 +1620,17 @@
         "doctor",
         "chiropractic",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 366 453 1425",
+      "email": null,
+      "website": null,
+      "notes": "Languages: German, English, Italian",
+      "openingHours": null
     },
     {
       "name": "Radius Valdelsa",
       "type": "Medical Center",
       "address": "Castelfiorentino, via A. Cerbioni n° 7",
-      "contact": "+390571672144 / segreteria@radiusvaldelsa.it",
-      "remark": "radiusvaldelsa.it Min-Fri 09.00-13.00 / 15.00-19.00 Sat 09.00-13.00 Sun closed",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1137,14 +1639,42 @@
         "Castelfiorentino",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+390571672144",
+      "email": "segreteria@radiusvaldelsa.it",
+      "website": "https://radiusvaldelsa.it",
+      "notes": null,
+      "openingHours": {
+        "days": {
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              }
+            ]
+          },
+          "sun": {
+            "status": "closed"
+          }
+        },
+        "note": "Min- / 15.00-19.00"
+      }
     },
     {
       "name": "MiniHospital S. Pertini",
       "type": "Medical Diagnostic Center",
       "address": "Via Antonio Gramsci, 29, 56033 Capannoli PI",
-      "contact": "+39 0587 609134",
-      "remark": "Mon-Fri 08.30-20-00 Sat 08.30-13.00 Sun closed",
       "category": "health-wellness",
       "sourceUrl": "https://apic.community/health-wellness/",
       "tags": [
@@ -1154,14 +1684,33 @@
         "hospital",
         "medical-diagnostics",
         "health-wellness"
-      ]
+      ],
+      "phone": "+39 0587 609134",
+      "email": null,
+      "website": null,
+      "notes": null,
+      "openingHours": {
+        "days": {
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "13:00"
+              }
+            ]
+          },
+          "sun": {
+            "status": "closed"
+          }
+        },
+        "note": "-00"
+      }
     },
     {
       "name": "Expert City – Rossi",
       "type": "Electronics & Home Appliances",
       "address": "Via Donatori del Sangue 25, 50050 Montaione",
-      "contact": "+39 0571 698170",
-      "remark": "A reliable local retailer for household appliances, consumer electronics, TVs, computers and small electrical equipment. Particularly recommended for APIC members thanks to their friendly and knowledgeable staff, as well as their dependable delivery and professional installation service. An excellent choice for purchasing and replacing household appliances in the Montaione and Castelfalfi area.",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1172,14 +1721,17 @@
         "electrical",
         "electronics",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0571 698170",
+      "email": null,
+      "website": null,
+      "notes": "A reliable local retailer for household appliances, consumer electronics, TVs, computers and small electrical equipment. Particularly recommended for APIC members thanks to their friendly and knowledgeable staff, as well as their dependable delivery and professional installation service. An excellent choice for purchasing and replacing household appliances in the Montaione and Castelfalfi area",
+      "openingHours": null
     },
     {
       "name": "Antico Pastificio Morelli / Ristorante Mo",
       "type": "Pasta Factory / Restaurant",
       "address": "Via S. Francesco, 8, 56020 San Romano (PI)",
-      "contact": "+39 0571 459032 www.pastamorelli.it",
-      "remark": "Gluten free pasta and “normal” pasta – very delicious! Close to Pontedera They do have a small restaurant with tasty pasta dishes",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1191,14 +1743,17 @@
         "pasta",
         "gluten-free",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0571 459032",
+      "email": null,
+      "website": "https://www.pastamorelli.it",
+      "notes": "Gluten free pasta and “normal” pasta – very delicious! Close to Pontedera They do have a small restaurant with tasty pasta dishes",
+      "openingHours": null
     },
     {
       "name": "Multicolor",
       "type": "Crafts Market Peccioli",
       "address": "Via G. Carducci, 3/A, 56037 Peccioli PI",
-      "contact": "+39 0587 670160 www.multicolorferramenta.com",
-      "remark": "You get everything what you need for the house and garden. They are super helpful if you have to fix something.",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1208,14 +1763,17 @@
         "gardening",
         "hardware",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0587 670160",
+      "email": null,
+      "website": "https://www.multicolorferramenta.com",
+      "notes": "You get everything what you need for the house and garden. They are super helpful if you have to fix something",
+      "openingHours": null
     },
     {
       "name": "Chelotti Roasting",
       "type": "Coffee roasting company",
       "address": "Via Primo Maggio, 281, 51010 Margine Coperta-Traversagna PT",
-      "contact": "+39 0572 70773 or INFO@CHELOTTICAFFE:COM",
-      "remark": "One of Tuscany’s best-known artisan coffee roasters, famous for its traditional wood-roasting method. The historic roastery is located in Buggiano (Via Benedetto Croce 20), while the modern café and specialty coffee shop are nearby in Margine Coperta (Via Primo Maggio 281), north of Lucca. Although it is a bit of a drive from Castelfalfi, coffee lovers will find the visit well worth the journey.",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1227,14 +1785,17 @@
         "Buggiano",
         "coffee",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0572 70773",
+      "email": "info@chelotticaffe.com",
+      "website": null,
+      "notes": "One of Tuscany’s best-known artisan coffee roasters, famous for its traditional wood-roasting method. The historic roastery is located in Buggiano (Via Benedetto Croce 20), while the modern café and specialty coffee shop are nearby in Margine Coperta (Via Primo Maggio 281), north of Lucca. Although it is a bit of a drive from Castelfalfi, coffee lovers will find the visit well worth the journey",
+      "openingHours": null
     },
     {
       "name": "Zooing Terricciola",
       "type": "Pet & Garden Centre",
       "address": "Via Salaiola Sud 68, 56030 La Rosa di Terricciola (PI)",
-      "contact": "Tel. 0587 670240",
-      "remark": "Large pet and garden centre offering premium pet food and accessories for dogs, cats, birds, rodents and fish, together with gardening supplies, agricultural products, hardware, household goods and pet grooming services. Conveniently located in La Rosa, between Peccioli and Terricciola. Hours Mon–Sat: 9:00–13:00 & 15:30–19:30 Sun: Closed",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1248,14 +1809,101 @@
         "pets",
         "hardware",
         "shop-market"
-      ]
+      ],
+      "phone": "0587 670240",
+      "email": null,
+      "website": null,
+      "notes": "Large pet and garden centre offering premium pet food and accessories for dogs, cats, birds, rodents and fish, together with gardening supplies, agricultural products, hardware, household goods and pet grooming services. Conveniently located in La Rosa, between Peccioli and Terricciola",
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "sun": {
+            "status": "closed"
+          }
+        }
+      }
     },
     {
       "name": "Galleria d’Arte Brunetti",
       "type": "Galleria d’Arte",
       "address": "Via di Gello 15 A/B/C 56038 Ponsacco (Pisa)",
-      "contact": "Tel. +39 0587 732792 / Mobile: +39 339 8403126",
-      "remark": "www.galleriadartebrunetti.com Opening Hours: * Monday–Friday: 9:00 AM – 1:00 PM & 3:00 PM – 8:00 PM * Saturday: 9:30 AM – 1:00 PM & 3:30 PM – 7:30 PM * Sunday: Closed",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1265,14 +1913,101 @@
         "Ponsacco",
         "art",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0587 732792 · +39 339 8403126",
+      "email": null,
+      "website": "https://www.galleriadartebrunetti.com",
+      "notes": null,
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "20:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "20:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "20:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "20:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:00",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "20:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "09:30",
+                "close": "13:00"
+              },
+              {
+                "open": "15:30",
+                "close": "19:30"
+              }
+            ]
+          },
+          "sun": {
+            "status": "closed"
+          }
+        }
+      }
     },
     {
       "name": "NaturaSi Empoli",
       "type": "Organic food store",
       "address": "Via Livornese 137, 50053 Empoli",
-      "contact": "WhatsApp +39 340 003 50 66",
-      "remark": "A health food store offering a wide range of organic products, conveniently located and easily accessible, with free customer parking available directly in front of the store. The store is located on the outskirts of town and is only five minutes away from the large Coop shopping center in Empoli. Orders can be placed in advance via WhatsApp. Product-related questions can also be answered through this channel. Mon 09:00 – 13:35 + 15:00 – 20:00 Tue 09:00 – 13:35 + 15:00 – 20:00 Wed 09:00 – 13:35 + 15:00 – 20:00 Thu 09:00 – 13:35 + 15:00 – 20:00 Fri 09:00 – 20:00 Sat 08:30 – 20:00 Sun 10:00 – 18:00",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1283,14 +2018,17 @@
         "supermarket",
         "whatsapp",
         "shop-market"
-      ]
+      ],
+      "phone": "WhatsApp +39 340 003 50 66",
+      "email": null,
+      "website": null,
+      "notes": "A health food store offering a wide range of organic products, conveniently located and easily accessible, with free customer parking available directly in front of the store. The store is located on the outskirts of town and is only five minutes away from the large Coop shopping center in Empoli. Orders can be placed in advance via WhatsApp. Product-related questions can also be answered through this channel. Mon 09:00 – 13:35 + 15:00 – 20:00 Tue 09:00 – 13:35 + 15:00 – 20:00 Wed 09:00 – 13:35 + 15:00 – 20:00 Thu 09:00 – 13:35 + 15:00 – 20:00 Fri 09:00 – 20:00 Sat 08:30 – 20:00 Sun 10:00 – 18:00",
+      "openingHours": null
     },
     {
       "name": "DIVO",
       "type": "Boutique",
       "address": "Corso Matteotti 24 – 56025 Pontedera | Via di Bientina 64 – 56020 S. Maria a Monte",
-      "contact": "+39 0587 707130",
-      "remark": "A boutique offering men’s and women’s clothing in the upper-price segment. The boutique operates two locations in the surrounding area. Monday: 4pm – 8pm Tuesday-Saturday: 9am – 1pm | 4pm – 8pm Open on the second Sunday of the month",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1300,14 +2038,17 @@
         "S. Maria a Monte",
         "fashion",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0587 707130",
+      "email": null,
+      "website": null,
+      "notes": "A boutique offering men’s and women’s clothing in the upper-price segment. The boutique operates two locations in the surrounding area. Monday: 4pm – 8pm Tuesday-Saturday: 9am – 1pm | 4pm – 8pm Open on the second Sunday of the month",
+      "openingHours": null
     },
     {
       "name": "LA CITTADELLA SPA",
       "type": "Coffee Roastery",
       "address": "Via Tosco Romagnola Est 239/B – Loc. La Bianca – 56025 PONTEDERA (PISA)",
-      "contact": "TEL (+39) 0587 483248",
-      "remark": "www.lacittadella.com Mon-Fri 08:30-13:00 – 15:00-18:00. Sat+Sun closed A wonderful coffee roastery that has been operating since 1965. It produces excellent coffee blends and freshly roasted beans, which are particularly well suited for filter coffee.",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1317,14 +2058,91 @@
         "Pisa",
         "coffee",
         "shop-market"
-      ]
+      ],
+      "phone": "(+39) 0587 483248",
+      "email": null,
+      "website": "https://www.lacittadella.com",
+      "notes": "A wonderful coffee roastery that has been operating since 1965. It produces excellent coffee blends and freshly roasted beans, which are particularly well suited for filter coffee",
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:30",
+                "close": "13:00"
+              },
+              {
+                "open": "15:00",
+                "close": "18:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "closed"
+          },
+          "sun": {
+            "status": "closed"
+          }
+        }
+      }
     },
     {
       "name": "COOP",
       "type": "Supermarket",
       "address": "Via Umberto Terracini, 3 – 56025 Pontedera",
-      "contact": "+39 0587 269699",
-      "remark": "Mon-Sat 08.00-21.00 Sun 08.00-13.30",
       "category": "shop-market",
       "sourceUrl": "https://apic.community/shop-market/",
       "tags": [
@@ -1332,7 +2150,78 @@
         "Supermarket",
         "Pontedera",
         "shop-market"
-      ]
+      ],
+      "phone": "+39 0587 269699",
+      "email": null,
+      "website": null,
+      "notes": null,
+      "openingHours": {
+        "days": {
+          "mon": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "21:00"
+              }
+            ]
+          },
+          "tue": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "21:00"
+              }
+            ]
+          },
+          "wed": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "21:00"
+              }
+            ]
+          },
+          "thu": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "21:00"
+              }
+            ]
+          },
+          "fri": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "21:00"
+              }
+            ]
+          },
+          "sat": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "21:00"
+              }
+            ]
+          },
+          "sun": {
+            "status": "open",
+            "periods": [
+              {
+                "open": "08:00",
+                "close": "13:30"
+              }
+            ]
+          }
+        }
+      }
     }
   ]
 }

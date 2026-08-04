@@ -12,6 +12,15 @@ import {
 	geocodeListing,
 	updateListing
 } from '@/lib/listings/admin-actions';
+import {
+	DAY_KEYS,
+	DAY_LABELS,
+	formStateToOpeningHours,
+	openingHoursToFormState,
+	type DayFormState,
+	type DayKey,
+	type OpeningHoursFormState
+} from '@/lib/listings/opening-hours';
 import type { AdminListing, GeocodeCandidate } from '@/lib/listings/types';
 import { CATEGORY_SLUGS } from '@/lib/listings-search';
 
@@ -28,6 +37,20 @@ type ListingFormProps = {
 	knownTags: string[];
 };
 
+function updateDay(
+	state: OpeningHoursFormState,
+	day: DayKey,
+	patch: Partial<DayFormState>
+): OpeningHoursFormState {
+	return {
+		...state,
+		days: {
+			...state.days,
+			[day]: { ...state.days[day], ...patch }
+		}
+	};
+}
+
 export default function ListingForm({ mode, listing, knownTags }: ListingFormProps) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
@@ -37,8 +60,13 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 	const [name, setName] = useState(listing?.name ?? '');
 	const [type, setType] = useState(listing?.type ?? '');
 	const [address, setAddress] = useState(listing?.address ?? '');
-	const [contact, setContact] = useState(listing?.contact ?? '');
-	const [remark, setRemark] = useState(listing?.remark ?? '');
+	const [phone, setPhone] = useState(listing?.phone ?? '');
+	const [email, setEmail] = useState(listing?.email ?? '');
+	const [website, setWebsite] = useState(listing?.website ?? '');
+	const [notes, setNotes] = useState(listing?.notes ?? '');
+	const [hours, setHours] = useState<OpeningHoursFormState>(() =>
+		openingHoursToFormState(listing?.openingHours ?? null)
+	);
 	const [category, setCategory] = useState(listing?.category ?? 'food-dining');
 	const [sourceUrl, setSourceUrl] = useState(listing?.sourceUrl ?? '');
 	const [tagsText, setTagsText] = useState((listing?.tags ?? []).join(', '));
@@ -107,6 +135,8 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 		formData.set('latitude', lat === null ? '' : String(lat));
 		formData.set('longitude', lng === null ? '' : String(lng));
 		formData.set('tags', tagsText);
+		const opening = formStateToOpeningHours(hours);
+		formData.set('opening_hours', opening ? JSON.stringify(opening) : '');
 
 		startTransition(async () => {
 			setError(null);
@@ -117,7 +147,9 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					setError(result.error);
 					return;
 				}
-				router.push(`/members/admin/listings/${result.id}?message=${encodeURIComponent('Listing created.')}`);
+				router.push(
+					`/members/admin/listings/${result.id}?message=${encodeURIComponent('Listing created.')}`
+				);
 				router.refresh();
 				return;
 			}
@@ -214,12 +246,33 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					</div>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="contact">Contact</Label>
+					<Label htmlFor="phone">Phone</Label>
 					<Input
-						id="contact"
-						name="contact"
-						value={contact}
-						onChange={e => setContact(e.target.value)}
+						id="phone"
+						name="phone"
+						value={phone}
+						onChange={e => setPhone(e.target.value)}
+						placeholder="+39 …"
+					/>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="email">Email</Label>
+					<Input
+						id="email"
+						name="email"
+						type="email"
+						value={email}
+						onChange={e => setEmail(e.target.value)}
+					/>
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="website">Website</Label>
+					<Input
+						id="website"
+						name="website"
+						value={website}
+						onChange={e => setWebsite(e.target.value)}
+						placeholder="https://"
 					/>
 				</div>
 				<div className="space-y-2">
@@ -233,12 +286,12 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					/>
 				</div>
 				<div className="space-y-2 sm:col-span-2">
-					<Label htmlFor="remark">Remark</Label>
+					<Label htmlFor="notes">Notes</Label>
 					<Textarea
-						id="remark"
-						name="remark"
-						value={remark}
-						onChange={e => setRemark(e.target.value)}
+						id="notes"
+						name="notes"
+						value={notes}
+						onChange={e => setNotes(e.target.value)}
 						rows={4}
 					/>
 				</div>
@@ -265,6 +318,104 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 							))}
 						</div>
 					) : null}
+				</div>
+			</section>
+
+			<section className="space-y-3">
+				<div>
+					<h3 className="text-sm font-medium text-[#444]">Opening hours</h3>
+					<p className="text-xs text-[#888]">
+						Leave a day blank if unknown. Check Closed, or enter one or two
+						open/close periods (24-hour, e.g. 09:00).
+					</p>
+				</div>
+				<div className="space-y-2">
+					{DAY_KEYS.map(day => {
+						const row = hours.days[day];
+						return (
+							<div
+								key={day}
+								className="grid grid-cols-[3rem_auto_1fr] items-center gap-2 sm:grid-cols-[3.5rem_auto_repeat(4,minmax(0,5.5rem))]"
+							>
+								<span className="text-sm font-medium text-[#444]">
+									{DAY_LABELS[day]}
+								</span>
+								<label className="flex items-center gap-1.5 text-xs text-[#666]">
+									<input
+										type="checkbox"
+										checked={row.closed}
+										onChange={e =>
+											setHours(prev =>
+												updateDay(prev, day, { closed: e.target.checked })
+											)
+										}
+									/>
+									Closed
+								</label>
+								{row.closed ? (
+									<span className="col-span-1 text-xs text-[#999] sm:col-span-4">
+										Closed all day
+									</span>
+								) : (
+									<>
+										<Input
+											aria-label={`${DAY_LABELS[day]} open`}
+											placeholder="Open"
+											value={row.open1}
+											onChange={e =>
+												setHours(prev =>
+													updateDay(prev, day, { open1: e.target.value })
+												)
+											}
+											className="h-8"
+										/>
+										<Input
+											aria-label={`${DAY_LABELS[day]} close`}
+											placeholder="Close"
+											value={row.close1}
+											onChange={e =>
+												setHours(prev =>
+													updateDay(prev, day, { close1: e.target.value })
+												)
+											}
+											className="h-8"
+										/>
+										<Input
+											aria-label={`${DAY_LABELS[day]} open 2`}
+											placeholder="Open 2"
+											value={row.open2}
+											onChange={e =>
+												setHours(prev =>
+													updateDay(prev, day, { open2: e.target.value })
+												)
+											}
+											className="h-8"
+										/>
+										<Input
+											aria-label={`${DAY_LABELS[day]} close 2`}
+											placeholder="Close 2"
+											value={row.close2}
+											onChange={e =>
+												setHours(prev =>
+													updateDay(prev, day, { close2: e.target.value })
+												)
+											}
+											className="h-8"
+										/>
+									</>
+								)}
+							</div>
+						);
+					})}
+				</div>
+				<div className="space-y-2">
+					<Label htmlFor="hours_note">Hours note (optional)</Label>
+					<Input
+						id="hours_note"
+						value={hours.note}
+						onChange={e => setHours(prev => ({ ...prev, note: e.target.value }))}
+						placeholder="By appointment only"
+					/>
 				</div>
 			</section>
 
