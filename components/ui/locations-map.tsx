@@ -9,14 +9,23 @@ import {
 	APIProvider,
 	InfoWindow,
 	Map,
-	Marker,
-	useMap
+	Marker
 } from '@vis.gl/react-google-maps';
 import { useEffect, useMemo, useState } from 'react';
 
-/** Castel Falfi / Montaione area — used when no pins are available. */
-const DEFAULT_CENTER = { lat: 43.5419, lng: 10.9706 };
+/** Castelfalfi — default map center and fixed landmark pin. */
+const CASTELFALFI = { lat: 43.548442, lng: 10.856672 };
 const DEFAULT_ZOOM = 12;
+/** Matches site accent `#7A5A32` (golden brown). */
+const CASTELFALFI_PIN_COLOR = '#7A5A32';
+
+const CASTELFALFI_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
+	`<svg xmlns="http://www.w3.org/2000/svg" width="36" height="48" viewBox="0 0 36 48">
+		<path fill="${CASTELFALFI_PIN_COLOR}" stroke="#f7f3ec" stroke-width="1.5"
+			d="M18 0C8.06 0 0 8.06 0 18c0 13.5 18 30 18 30s18-16.5 18-30C36 8.06 27.94 0 18 0z"/>
+		<circle fill="#f7f3ec" cx="18" cy="18" r="6"/>
+	</svg>`
+)}`;
 
 type LocationsMapProps = {
 	/** Listings in the current data shape. Only entries with lat/lng become pins. */
@@ -31,26 +40,33 @@ function pinKey(listing: ListingWithCoords) {
 	return `${listing.category}-${listing.name}-${listing.lat}-${listing.lng}`;
 }
 
-function FitToPins({ pins }: { pins: ListingWithCoords[] }) {
-	const map = useMap();
+function CastelfalfiPin() {
+	const [hovered, setHovered] = useState(false);
 
-	useEffect(() => {
-		if (!map || pins.length === 0) return;
-
-		if (pins.length === 1) {
-			map.setCenter({ lat: pins[0].lat, lng: pins[0].lng });
-			map.setZoom(14);
-			return;
-		}
-
-		const bounds = new google.maps.LatLngBounds();
-		for (const pin of pins) {
-			bounds.extend({ lat: pin.lat, lng: pin.lng });
-		}
-		map.fitBounds(bounds, 64);
-	}, [map, pins]);
-
-	return null;
+	return (
+		<>
+			<Marker
+				position={CASTELFALFI}
+				title="Castelfalfi"
+				icon={CASTELFALFI_ICON}
+				zIndex={1000}
+				onMouseOver={() => setHovered(true)}
+				onMouseOut={() => setHovered(false)}
+			/>
+			{hovered ? (
+				<InfoWindow
+					position={CASTELFALFI}
+					pixelOffset={[0, -44]}
+					disableAutoPan
+					headerDisabled
+				>
+					<p className="font-heading text-sm font-medium text-[#333333]">
+						Castelfalfi
+					</p>
+				</InfoWindow>
+			) : null}
+		</>
+	);
 }
 
 function MapPins({
@@ -83,7 +99,7 @@ function MapPins({
 
 	return (
 		<>
-			<FitToPins pins={pins} />
+			<CastelfalfiPin />
 			{pins.map(pin => {
 				const key = pinKey(pin);
 				return (
@@ -157,7 +173,7 @@ export default function LocationsMap({
 			<APIProvider apiKey={apiKey}>
 				<Map
 					className="h-full w-full"
-					defaultCenter={DEFAULT_CENTER}
+					defaultCenter={CASTELFALFI}
 					defaultZoom={DEFAULT_ZOOM}
 					gestureHandling="greedy"
 					mapTypeControl={false}
