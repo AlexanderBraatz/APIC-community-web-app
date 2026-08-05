@@ -51,3 +51,8 @@ export function limitGeocode(adminUserId: string): RateLimitResult {
 export function limitGeocodeBatch(adminUserId: string): RateLimitResult {
 	return checkRateLimit(`geocode-batch:${adminUserId}`, 5, 60 * 60 * 1000);
 }
+
+/** Places autocomplete / place details: 60 per admin per minute. */
+export function limitPlaces(adminUserId: string): RateLimitResult {
+	return checkRateLimit(`places:${adminUserId}`, 60, 60 * 1000);
+}

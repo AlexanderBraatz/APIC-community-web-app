@@ -3,15 +3,14 @@
 import { useMemo, useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminPinMap from '@/components/admin/pin-map';
+import PlacesLookup, {
+	type PlacesLookupStep
+} from '@/components/admin/places-lookup';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-	createListing,
-	geocodeListing,
-	updateListing
-} from '@/lib/listings/admin-actions';
+import { createListing, updateListing } from '@/lib/listings/admin-actions';
 import {
 	DAY_KEYS,
 	DAY_LABELS,
@@ -21,7 +20,7 @@ import {
 	type DayKey,
 	type OpeningHoursFormState
 } from '@/lib/listings/opening-hours';
-import type { AdminListing, GeocodeCandidate } from '@/lib/listings/types';
+import type { AdminListing, PlaceAutofill } from '@/lib/listings/types';
 import { CATEGORY_SLUGS } from '@/lib/listings-search';
 
 const CATEGORY_LABELS: Record<(typeof CATEGORY_SLUGS)[number], string> = {
@@ -37,6 +36,8 @@ type ListingFormProps = {
 	knownTags: string[];
 };
 
+type FormPhase = 'lookup' | 'details';
+
 function updateDay(
 	state: OpeningHoursFormState,
 	day: DayKey,
@@ -51,11 +52,20 @@ function updateDay(
 	};
 }
 
-export default function ListingForm({ mode, listing, knownTags }: ListingFormProps) {
+export default function ListingForm({
+	mode,
+	listing,
+	knownTags
+}: ListingFormProps) {
 	const router = useRouter();
 	const [pending, startTransition] = useTransition();
 	const [error, setError] = useState<string | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
+
+	const [phase, setPhase] = useState<FormPhase>(
+		mode === 'edit' ? 'details' : 'lookup'
+	);
+	const [lookupStep, setLookupStep] = useState<PlacesLookupStep>('business');
 
 	const [name, setName] = useState(listing?.name ?? '');
 	const [type, setType] = useState(listing?.type ?? '');
@@ -67,13 +77,22 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 	const [hours, setHours] = useState<OpeningHoursFormState>(() =>
 		openingHoursToFormState(listing?.openingHours ?? null)
 	);
+	const [showHours, setShowHours] = useState(
+		() => listing?.openingHours != null
+	);
 	const [category, setCategory] = useState(listing?.category ?? 'food-dining');
 	const [sourceUrl, setSourceUrl] = useState(listing?.sourceUrl ?? '');
 	const [tagsText, setTagsText] = useState((listing?.tags ?? []).join(', '));
 	const [lat, setLat] = useState<number | null>(listing?.lat ?? null);
 	const [lng, setLng] = useState<number | null>(listing?.lng ?? null);
-	const [candidates, setCandidates] = useState<GeocodeCandidate[]>([]);
-	const [geocodePending, setGeocodePending] = useState(false);
+	const [latInput, setLatInput] = useState(
+		listing?.lat != null ? String(listing.lat) : ''
+	);
+	const [lngInput, setLngInput] = useState(
+		listing?.lng != null ? String(listing.lng) : ''
+	);
+
+	const pinLocked = lat !== null && lng !== null;
 
 	const tagSuggestions = useMemo(() => {
 		const active = new Set(
@@ -82,9 +101,7 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 				.map(t => t.trim().toLowerCase())
 				.filter(Boolean)
 		);
-		return knownTags
-			.filter(tag => !active.has(tag.toLowerCase()))
-			.slice(0, 24);
+		return knownTags.filter(tag => !active.has(tag.toLowerCase())).slice(0, 24);
 	}, [knownTags, tagsText]);
 
 	function addTag(tag: string) {
@@ -96,37 +113,75 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 		setTagsText([...current, tag].join(', '));
 	}
 
+	function setPin(nextLat: number, nextLng: number) {
+		setLat(nextLat);
+		setLng(nextLng);
+		setLatInput(String(nextLat));
+		setLngInput(String(nextLng));
+	}
+
 	function clearPin() {
 		setLat(null);
 		setLng(null);
+		setLatInput('');
+		setLngInput('');
 	}
 
-	async function runGeocode() {
-		setGeocodePending(true);
+	function showLocationPin() {
 		setError(null);
 		setMessage(null);
-		try {
-			const result = await geocodeListing(address);
-			if (!result.ok) {
-				setError(result.error);
-				setCandidates([]);
-				return;
-			}
-			setCandidates(result.candidates);
-			if (result.candidates.length === 0) {
-				setMessage('No geocode results. Place a pin on the map instead.');
-			} else if (result.candidates.length === 1) {
-				const only = result.candidates[0];
-				setLat(only.lat);
-				setLng(only.lng);
-				setAddress(only.formattedAddress);
-				setMessage('Single result selected — confirm on the map, then save.');
-			} else {
-				setMessage('Pick a candidate below, or adjust the pin on the map.');
-			}
-		} finally {
-			setGeocodePending(false);
+		const parsedLat = Number(latInput.trim());
+		const parsedLng = Number(lngInput.trim());
+		if (
+			!latInput.trim() ||
+			!lngInput.trim() ||
+			!Number.isFinite(parsedLat) ||
+			!Number.isFinite(parsedLng)
+		) {
+			setError('Enter valid latitude and longitude numbers.');
+			return;
 		}
+		if (parsedLat < -90 || parsedLat > 90) {
+			setError('Latitude must be between -90 and 90.');
+			return;
+		}
+		if (parsedLng < -180 || parsedLng > 180) {
+			setError('Longitude must be between -180 and 180.');
+			return;
+		}
+		setPin(parsedLat, parsedLng);
+		setMessage('Location pin shown on the map — confirm, then save.');
+	}
+
+	function applyPlaceAutofill(place: PlaceAutofill) {
+		if (place.name) setName(place.name);
+		if (place.address) setAddress(place.address);
+		if (place.phone) setPhone(place.phone);
+		if (place.website) setWebsite(place.website);
+		if (place.sourceUrl) {
+			setSourceUrl(prev => (prev.trim() ? prev : place.sourceUrl!));
+		}
+		if (place.openingHours) {
+			setHours(openingHoursToFormState(place.openingHours));
+			setShowHours(true);
+		}
+		if (place.lat !== null && place.lng !== null) {
+			setPin(place.lat, place.lng);
+		}
+		setPhase('details');
+		setMessage(
+			place.lat !== null && place.lng !== null
+				? 'Place applied — review the autofilled fields and confirm the map pin.'
+				: 'Place applied — review fields and set a map pin if needed.'
+		);
+		setError(null);
+	}
+
+	function startPlacesLookup() {
+		setLookupStep('business');
+		setPhase('lookup');
+		setError(null);
+		setMessage(null);
 	}
 
 	function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -148,7 +203,9 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					return;
 				}
 				router.push(
-					`/members/admin/listings/${result.id}?message=${encodeURIComponent('Listing created.')}`
+					`/members/admin/listings/${result.id}?message=${encodeURIComponent(
+						'Listing created.'
+					)}`
 				);
 				router.refresh();
 				return;
@@ -165,8 +222,61 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 		});
 	}
 
+	if (phase === 'lookup') {
+		return (
+			<div className="space-y-6">
+				{error ? (
+					<p
+						className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+						role="alert"
+					>
+						{error}
+					</p>
+				) : null}
+				{message ? (
+					<p
+						className="border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
+						role="status"
+					>
+						{message}
+					</p>
+				) : null}
+				<PlacesLookup
+					step={lookupStep}
+					onStepChange={setLookupStep}
+					onPlaceSelected={applyPlaceAutofill}
+					onSkipToDetails={() => {
+						setPhase('details');
+						setMessage(
+							'Enter listing details manually and set a location on the map.'
+						);
+					}}
+					showCancel={mode === 'edit'}
+					onCancel={() => {
+						setPhase('details');
+						setError(null);
+						setMessage(null);
+					}}
+				/>
+				<div className="flex flex-wrap gap-3">
+					<Button
+						type="button"
+						variant="outline"
+						className="rounded-[2px]"
+						onClick={() => router.push('/members/admin/listings')}
+					>
+						Back to list
+					</Button>
+				</div>
+			</div>
+		);
+	}
+
 	return (
-		<form onSubmit={onSubmit} className="space-y-8">
+		<form
+			onSubmit={onSubmit}
+			className="space-y-8"
+		>
 			{error ? (
 				<p
 					className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
@@ -183,6 +293,20 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					{message}
 				</p>
 			) : null}
+
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<p className="text-xs text-[#888]">
+					Review and edit fields below. Use Places lookup to refill from Google.
+				</p>
+				<Button
+					type="button"
+					variant="outline"
+					className="rounded-[2px]"
+					onClick={startPlacesLookup}
+				>
+					Look up with Google Places
+				</Button>
+			</div>
 
 			<section className="grid gap-4 sm:grid-cols-2">
 				<div className="space-y-2 sm:col-span-2">
@@ -209,7 +333,10 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 						required
 					>
 						{CATEGORY_SLUGS.map(slug => (
-							<option key={slug} value={slug}>
+							<option
+								key={slug}
+								value={slug}
+							>
 								{CATEGORY_LABELS[slug]}
 							</option>
 						))}
@@ -226,24 +353,12 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 				</div>
 				<div className="space-y-2 sm:col-span-2">
 					<Label htmlFor="address">Address</Label>
-					<div className="flex flex-col gap-2 sm:flex-row">
-						<Input
-							id="address"
-							name="address"
-							value={address}
-							onChange={e => setAddress(e.target.value)}
-							className="flex-1"
-						/>
-						<Button
-							type="button"
-							variant="outline"
-							className="rounded-[2px]"
-							onClick={runGeocode}
-							disabled={geocodePending || !address.trim()}
-						>
-							{geocodePending ? 'Geocoding…' : 'Geocode address'}
-						</Button>
-					</div>
+					<Input
+						id="address"
+						name="address"
+						value={address}
+						onChange={e => setAddress(e.target.value)}
+					/>
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="phone">Phone</Label>
@@ -276,7 +391,7 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					/>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="source_url">Source URL</Label>
+					<Label htmlFor="source_url">Google Maps Link</Label>
 					<Input
 						id="source_url"
 						name="source_url"
@@ -322,159 +437,199 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 			</section>
 
 			<section className="space-y-3">
-				<div>
-					<h3 className="text-sm font-medium text-[#444]">Opening hours</h3>
-					<p className="text-xs text-[#888]">
-						Leave a day blank if unknown. Check Closed, or enter one or two
-						open/close periods (24-hour, e.g. 09:00).
-					</p>
+				<div className="flex flex-wrap items-center justify-between gap-3">
+					<div>
+						<h3 className="text-sm font-medium text-[#444]">Opening hours</h3>
+						{showHours ? (
+							<p className="text-xs text-[#888]">
+								Leave a day blank if unknown. Check Closed, or enter one or two
+								open/close periods (24-hour, e.g. 09:00).
+							</p>
+						) : (
+							<p className="text-xs text-[#888]">
+								Optional — expand to edit, or leave blank until autofilled from
+								Places.
+							</p>
+						)}
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						className="rounded-[2px]"
+						onClick={() => setShowHours(prev => !prev)}
+						aria-expanded={showHours}
+					>
+						{showHours ? 'Hide opening hours' : 'Add opening hours'}
+					</Button>
 				</div>
-				<div className="space-y-2">
-					{DAY_KEYS.map(day => {
-						const row = hours.days[day];
-						return (
-							<div
-								key={day}
-								className="grid grid-cols-[3rem_auto_1fr] items-center gap-2 sm:grid-cols-[3.5rem_auto_repeat(4,minmax(0,5.5rem))]"
-							>
-								<span className="text-sm font-medium text-[#444]">
-									{DAY_LABELS[day]}
-								</span>
-								<label className="flex items-center gap-1.5 text-xs text-[#666]">
-									<input
-										type="checkbox"
-										checked={row.closed}
-										onChange={e =>
-											setHours(prev =>
-												updateDay(prev, day, { closed: e.target.checked })
-											)
-										}
-									/>
-									Closed
-								</label>
-								{row.closed ? (
-									<span className="col-span-1 text-xs text-[#999] sm:col-span-4">
-										Closed all day
-									</span>
-								) : (
-									<>
-										<Input
-											aria-label={`${DAY_LABELS[day]} open`}
-											placeholder="Open"
-											value={row.open1}
-											onChange={e =>
-												setHours(prev =>
-													updateDay(prev, day, { open1: e.target.value })
-												)
-											}
-											className="h-8"
-										/>
-										<Input
-											aria-label={`${DAY_LABELS[day]} close`}
-											placeholder="Close"
-											value={row.close1}
-											onChange={e =>
-												setHours(prev =>
-													updateDay(prev, day, { close1: e.target.value })
-												)
-											}
-											className="h-8"
-										/>
-										<Input
-											aria-label={`${DAY_LABELS[day]} open 2`}
-											placeholder="Open 2"
-											value={row.open2}
-											onChange={e =>
-												setHours(prev =>
-													updateDay(prev, day, { open2: e.target.value })
-												)
-											}
-											className="h-8"
-										/>
-										<Input
-											aria-label={`${DAY_LABELS[day]} close 2`}
-											placeholder="Close 2"
-											value={row.close2}
-											onChange={e =>
-												setHours(prev =>
-													updateDay(prev, day, { close2: e.target.value })
-												)
-											}
-											className="h-8"
-										/>
-									</>
-								)}
-							</div>
-						);
-					})}
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="hours_note">Hours note (optional)</Label>
-					<Input
-						id="hours_note"
-						value={hours.note}
-						onChange={e => setHours(prev => ({ ...prev, note: e.target.value }))}
-						placeholder="By appointment only"
-					/>
-				</div>
+				{showHours ? (
+					<>
+						<div className="space-y-2">
+							{DAY_KEYS.map(day => {
+								const row = hours.days[day];
+								return (
+									<div
+										key={day}
+										className="grid grid-cols-[3rem_auto_1fr] items-center gap-2 sm:grid-cols-[3.5rem_auto_repeat(4,minmax(0,5.5rem))]"
+									>
+										<span className="text-sm font-medium text-[#444]">
+											{DAY_LABELS[day]}
+										</span>
+										<label className="flex items-center gap-1.5 text-xs text-[#666]">
+											<input
+												type="checkbox"
+												checked={row.closed}
+												onChange={e =>
+													setHours(prev =>
+														updateDay(prev, day, { closed: e.target.checked })
+													)
+												}
+											/>
+											Closed
+										</label>
+										{row.closed ? (
+											<span className="col-span-1 text-xs text-[#999] sm:col-span-4">
+												Closed all day
+											</span>
+										) : (
+											<>
+												<Input
+													aria-label={`${DAY_LABELS[day]} open`}
+													placeholder="Open"
+													value={row.open1}
+													onChange={e =>
+														setHours(prev =>
+															updateDay(prev, day, { open1: e.target.value })
+														)
+													}
+													className="h-8"
+												/>
+												<Input
+													aria-label={`${DAY_LABELS[day]} close`}
+													placeholder="Close"
+													value={row.close1}
+													onChange={e =>
+														setHours(prev =>
+															updateDay(prev, day, { close1: e.target.value })
+														)
+													}
+													className="h-8"
+												/>
+												<Input
+													aria-label={`${DAY_LABELS[day]} open 2`}
+													placeholder="Open 2"
+													value={row.open2}
+													onChange={e =>
+														setHours(prev =>
+															updateDay(prev, day, { open2: e.target.value })
+														)
+													}
+													className="h-8"
+												/>
+												<Input
+													aria-label={`${DAY_LABELS[day]} close 2`}
+													placeholder="Close 2"
+													value={row.close2}
+													onChange={e =>
+														setHours(prev =>
+															updateDay(prev, day, { close2: e.target.value })
+														)
+													}
+													className="h-8"
+												/>
+											</>
+										)}
+									</div>
+								);
+							})}
+						</div>
+						<div className="space-y-2">
+							<Label htmlFor="hours_note">Hours note (optional)</Label>
+							<Input
+								id="hours_note"
+								value={hours.note}
+								onChange={e =>
+									setHours(prev => ({ ...prev, note: e.target.value }))
+								}
+								placeholder="By appointment only"
+							/>
+						</div>
+					</>
+				) : null}
 			</section>
 
-			{candidates.length > 1 ? (
-				<section className="space-y-2">
-					<h3 className="text-sm font-medium text-[#444]">Geocode candidates</h3>
-					<ul className="divide-y divide-[#e5e5e5] border border-[#e5e5e5]">
-						{candidates.map(candidate => (
-							<li key={`${candidate.placeId}-${candidate.formattedAddress}`}>
-								<button
-									type="button"
-									className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-[#f7f2ec]"
-									onClick={() => {
-										setLat(candidate.lat);
-										setLng(candidate.lng);
-										setAddress(candidate.formattedAddress);
-										setMessage('Candidate applied — confirm pin, then save.');
-									}}
-								>
-									<span className="text-[#444]">{candidate.formattedAddress}</span>
-									<span className="text-xs text-[#888]">
-										{candidate.lat.toFixed(5)}, {candidate.lng.toFixed(5)}
-									</span>
-								</button>
-							</li>
-						))}
-					</ul>
-				</section>
-			) : null}
-
 			<section className="space-y-3">
-				<div className="flex flex-wrap items-end justify-between gap-3">
-					<div>
-						<h3 className="text-sm font-medium text-[#444]">Map pin</h3>
-						<p className="text-xs text-[#888]">
-							{lat !== null && lng !== null
-								? `${lat.toFixed(5)}, ${lng.toFixed(5)}`
-								: 'No pin set'}
-						</p>
+				<div>
+					<h3 className="text-sm font-medium text-[#444]">Map pin</h3>
+					<p className="text-xs text-[#888]">
+						{pinLocked
+							? 'Pin set — clear to edit coordinates or place a new pin.'
+							: 'Enter latitude and longitude, click Show location pin, or click the map.'}
+					</p>
+				</div>
+				<div className="grid gap-3 sm:grid-cols-2">
+					<div className="space-y-2">
+						<Label htmlFor="latitude_input">Latitude</Label>
+						<Input
+							id="latitude_input"
+							value={latInput}
+							onChange={e => setLatInput(e.target.value)}
+							placeholder="43.54844"
+							inputMode="decimal"
+							disabled={pinLocked}
+							readOnly={pinLocked}
+						/>
 					</div>
-					{lat !== null || lng !== null ? (
+					<div className="space-y-2">
+						<Label htmlFor="longitude_input">Longitude</Label>
+						<Input
+							id="longitude_input"
+							value={lngInput}
+							onChange={e => setLngInput(e.target.value)}
+							placeholder="10.85667"
+							inputMode="decimal"
+							disabled={pinLocked}
+							readOnly={pinLocked}
+						/>
+					</div>
+				</div>
+				<div className="flex flex-wrap gap-2">
+					{pinLocked ? (
 						<Button
 							type="button"
 							variant="outline"
 							className="rounded-[2px]"
 							onClick={clearPin}
 						>
-							Clear pin
+							Clear pin location
 						</Button>
-					) : null}
+					) : (
+						<Button
+							type="button"
+							variant="outline"
+							className="rounded-[2px]"
+							onClick={showLocationPin}
+							disabled={!latInput.trim() || !lngInput.trim()}
+						>
+							Show location pin
+						</Button>
+					)}
 				</div>
-				<input type="hidden" name="latitude" value={lat ?? ''} />
-				<input type="hidden" name="longitude" value={lng ?? ''} />
+				<input
+					type="hidden"
+					name="latitude"
+					value={lat ?? ''}
+				/>
+				<input
+					type="hidden"
+					name="longitude"
+					value={lng ?? ''}
+				/>
 				<AdminPinMap
 					lat={lat}
 					lng={lng}
 					onChange={coords => {
-						setLat(coords.lat);
-						setLng(coords.lng);
+						setPin(coords.lat, coords.lng);
 					}}
 				/>
 			</section>
@@ -485,7 +640,11 @@ export default function ListingForm({ mode, listing, knownTags }: ListingFormPro
 					disabled={pending}
 					className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
 				>
-					{pending ? 'Saving…' : mode === 'create' ? 'Create listing' : 'Save changes'}
+					{pending
+						? 'Saving…'
+						: mode === 'create'
+						? 'Create listing'
+						: 'Save changes'}
 				</Button>
 				<Button
 					type="button"

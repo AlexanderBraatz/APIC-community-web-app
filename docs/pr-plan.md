@@ -126,7 +126,7 @@ PR-08 App admin dashboard + audit UI
 PR-09 Hardening & polish
    │
    ▼
-PR-10 Places geocode + listings list redesign
+PR-10 Things left to do
 ```
 
 **Parallelism after PR-01:** PR-02, PR-03, and PR-04 can proceed in parallel on separate branches if needed. PR-05 can start after PR-01 (listings read does not require invitations). Prefer merging PR-02 before heavy admin work so real users exist.
@@ -417,29 +417,33 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 
 ---
 
-### PR-10 — Places geocoding/autocomplete + listings list redesign
+### PR-10 — Things left to do
 
-**Purpose:** Finish admin place entry with Places, lock down Maps server keys, and refresh the admin listings list UI.
+**Purpose:** Catch-all for leftover admin/listings work and production hardening that did not land in earlier PRs.
 
-**Depends on:** PR-06 (listings admin + geocode UI). Can follow PR-09 or run after PR-06 once Places work is prioritized.
+**Depends on:** Prior feature PRs as noted per item. Can follow PR-09 or be split into smaller follow-ups.
 
 **Includes**
 
-1. **Geocoding + address completion via Places API**, then secure Geocoding/Places so they can only be called from our server (IP address restrictions on the server key — not from browsers / random clients).
+1. **Production Google key restrictions (reminder)** — Places Autocomplete / Place Details already run server-side via `GOOGLE_PLACES_API_KEY` (and Geocoding via `GOOGLE_GEOCODING_API_KEY`). Local/dev may use an **unrestricted** server key for convenience. Before production:
+   - Restrict the Places (and Geocoding) server key(s) by **server egress IP** (hosting static IP / allowlist) — not HTTP referrers.
+   - API restriction: Places API (New) (± Geocoding if shared).
+   - Keep `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` referrer-restricted to Maps JavaScript API only; do not put Places on the browser key.
 2. **Redesign the listings list UI** (admin `/members/admin/listings` table/list presentation).
 
-**Out of scope:** Member-facing MockMap browse redesign (unless needed for list consistency); full PR-09 hardening checklist.
+**Done elsewhere (do not redo):** Admin Places name → address wizard + autofill (listing form / `lib/listings/places.ts`). Geocode-address fallback remains for manual recovery.
+
+**Out of scope:** Member-facing MockMap browse redesign (unless needed for list consistency); full PR-09 hardening checklist items already covered there.
 
 **Independently testable**
 
-- [ ] Admin address field suggests places (Places autocomplete) and confirms lat/lng.
-- [ ] Geocoding / Places use a server-only key; browser cannot call those APIs with the restricted key.
-- [ ] Key restricted by server egress IP (hosting/static IP or documented allowlist).
+- [ ] Production Places/Geocoding server keys are IP-restricted; browser cannot usefully call those APIs with the restricted key.
+- [ ] Production key allowlist / egress IP documented for the host (Vercel static IPs or equivalent).
 - [ ] Redesigned listings list is clearer/usable on desktop and mobile for admins.
 
-**Merge when:** Admins can enter addresses safely with Places + the new list UI; keys are IP-locked for server use.
+**Merge when:** Server Maps keys are locked down for production and any remaining list-UI work you want in this bucket is done.
 
-**Branch idea:** `feat/places-and-listings-list`
+**Branch idea:** `chore/leftovers` (or split: `chore/maps-key-lockdown`, `feat/admin-listings-list-ui`)
 
 ---
 
@@ -457,7 +461,7 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 | PR-07 | M–L | `feat/admin-users` |
 | PR-08 | M | `feat/admin-audit-ui` |
 | PR-09 | S–M | `chore/hardening` |
-| PR-10 | M–L | `feat/places-and-listings-list` |
+| PR-10 | S–M | `chore/leftovers` |
 
 Avoid combining PR-03 + PR-06 in one PR: scheduler and listings are separately testable and both touch large UI files.
 

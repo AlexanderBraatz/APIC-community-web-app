@@ -95,14 +95,17 @@ Already expected for this app:
 
 TinaCMS `/admin` is unrelated to Supabase Auth.
 
-## Maps / Geocoding keys
+## Maps / Places / Geocoding keys
 
 | Key | Where | Restriction |
 |-----|-------|-------------|
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser (Maps JS) | HTTP referrer allowlist (localhost + production domain) |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser (Maps JS) | HTTP referrer allowlist (localhost + production domain); API = Maps JavaScript API |
+| `GOOGLE_PLACES_API_KEY` | Server only (Places Autocomplete + Place Details) | Prefer a **separate** key restricted by server IP; API = Places API (New) |
 | `GOOGLE_GEOCODING_API_KEY` | Server only (geocode actions) | Prefer a **separate** key restricted by server IP; fall back to Maps key in code is for local only |
 
-IP-lock of Places/Geocoding for production egress is finished in **PR-10**. Until then keep Geocoding off browser keys you share publicly.
+Enable **Places API (New)** and **Maps JavaScript API** (keep **Geocoding API** if you use the geocode fallback). Places lookup resolves `GOOGLE_PLACES_API_KEY` → `GOOGLE_GEOCODING_API_KEY` → Maps key for local only.
+
+**Reminder (PR-10 — Things left to do):** local/dev may use an unrestricted Places server key. Before production, IP-restrict Places/Geocoding server keys to host egress; keep Places off the browser Maps key. Until then keep Places/Geocoding off browser keys you share publicly.
 
 ## TypeScript DB types
 
@@ -121,6 +124,7 @@ Process-local sliding windows in `lib/admin/rate-limit.ts` (single Node instance
 - Invite / resend: 20 / admin / hour
 - Geocode (single): 30 / admin / minute
 - Geocode missing batch: 5 / admin / hour
+- Places autocomplete / details: 60 / admin / minute
 
 Scale-out needs a shared store (e.g. Redis); not required for v1.
 
@@ -235,7 +239,7 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Invite/resend and geocode actions return a friendly error when rate-limited.
 - [ ] `lib/supabase/database.types.ts` exists; `npm run supabase:types` regenerates it.
 - [ ] Dashboard: leaked-password protection + email template polish (manual).
-- [ ] Dashboard / Cloud Console: Maps JS key referrer-restricted; Geocoding key preferred server-only (IP-lock in PR-10).
+- [ ] Dashboard / Cloud Console: Maps JS key referrer-restricted; Geocoding/Places server keys IP-locked for production (PR-10 — Things left to do). Local may stay unrestricted for now.
 
 ### Auth redirects for invites
 

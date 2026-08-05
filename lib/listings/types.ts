@@ -27,6 +27,25 @@ export type GeocodeCandidate = {
 	placeId: string | null;
 };
 
+export type PlacesAutocompleteMode = 'business' | 'address';
+
+export type PlaceSuggestion = {
+	placeId: string;
+	primaryText: string;
+	secondaryText: string;
+};
+
+export type PlaceAutofill = {
+	name: string | null;
+	address: string | null;
+	phone: string | null;
+	website: string | null;
+	sourceUrl: string | null;
+	lat: number | null;
+	lng: number | null;
+	openingHours: OpeningHours | null;
+};
+
 export type ListingInput = {
 	name: string;
 	type: string | null;
