@@ -19,6 +19,7 @@ import {
 	isContactKind,
 	mergeContactsFromAutofill,
 	newContactFormRow,
+	sortByContactKind,
 	type ContactFormRow,
 	type ContactKind
 } from '@/lib/listings/contacts';
@@ -393,7 +394,9 @@ export default function ListingForm({
 							variant="outline"
 							className="rounded-[2px]"
 							onClick={() =>
-								setContacts(prev => [...prev, newContactFormRow()])
+								setContacts(prev =>
+									sortByContactKind([...prev, newContactFormRow()])
+								)
 							}
 						>
 							Add contact
@@ -417,10 +420,12 @@ export default function ListingForm({
 											const kind = e.target.value;
 											if (!isContactKind(kind)) return;
 											setContacts(prev =>
-												prev.map(c =>
-													c.key === row.key
-														? { ...c, kind: kind as ContactKind }
-														: c
+												sortByContactKind(
+													prev.map(c =>
+														c.key === row.key
+															? { ...c, kind: kind as ContactKind }
+															: c
+													)
 												)
 											);
 										}}

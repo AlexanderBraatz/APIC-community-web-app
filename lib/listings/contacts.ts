@@ -31,6 +31,21 @@ export function isContactKind(value: string): value is ContactKind {
 	return (CONTACT_KINDS as readonly string[]).includes(value);
 }
 
+const CONTACT_KIND_ORDER = new Map(
+	CONTACT_KINDS.map((kind, index) => [kind, index])
+);
+
+/** Stable sort: phone → mobile → whatsapp → email → website. */
+export function sortByContactKind<T extends { kind: ContactKind }>(
+	items: T[]
+): T[] {
+	return [...items].sort(
+		(a, b) =>
+			(CONTACT_KIND_ORDER.get(a.kind) ?? 99) -
+			(CONTACT_KIND_ORDER.get(b.kind) ?? 99)
+	);
+}
+
 function normalizeWebsite(value: string): string {
 	const trimmed = value.trim();
 	if (!trimmed) return '';
@@ -86,7 +101,7 @@ export function parseContacts(value: unknown): ListingContact[] {
 			typeof labelRaw === 'string' && labelRaw.trim() ? labelRaw.trim() : null;
 		contacts.push(label ? { kind: kindRaw, value: normalized, label } : { kind: kindRaw, value: normalized });
 	}
-	return contacts;
+	return sortByContactKind(contacts);
 }
 
 /** Strict parse for form submit — returns an error string when invalid. */
@@ -128,7 +143,7 @@ export function parseContactsForm(
 				: { kind: kindRaw, value: normalized }
 		);
 	}
-	return contacts;
+	return sortByContactKind(contacts);
 }
 
 export function contactsToJson(contacts: ListingContact[]): Json {
@@ -177,7 +192,7 @@ export function mergeContactsFromAutofill(
 			result.push({ ...incoming });
 		}
 	}
-	return result;
+	return sortByContactKind(result);
 }
 
 export function telHref(value: string): string {
@@ -226,7 +241,7 @@ export function contactsToFormRows(
 	contacts: ListingContact[]
 ): ContactFormRow[] {
 	if (contacts.length === 0) return [];
-	return contacts.map(c =>
+	return sortByContactKind(contacts).map(c =>
 		newContactFormRow({
 			kind: c.kind,
 			label: c.label ?? '',
@@ -238,12 +253,14 @@ export function contactsToFormRows(
 export function formRowsToContactsPayload(
 	rows: ContactFormRow[]
 ): ListingContact[] {
-	return rows
-		.filter(row => row.value.trim() || row.label.trim())
-		.map(row => {
-			const label = row.label.trim();
-			return label
-				? { kind: row.kind, value: row.value.trim(), label }
-				: { kind: row.kind, value: row.value.trim() };
-		});
+	return sortByContactKind(
+		rows
+			.filter(row => row.value.trim() || row.label.trim())
+			.map(row => {
+				const label = row.label.trim();
+				return label
+					? { kind: row.kind, value: row.value.trim(), label }
+					: { kind: row.kind, value: row.value.trim() };
+			})
+	);
 }
