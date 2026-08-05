@@ -6,6 +6,7 @@ import AdminPinMap from '@/components/admin/pin-map';
 import PlacesLookup, {
 	type PlacesLookupStep
 } from '@/components/admin/places-lookup';
+import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -73,6 +74,7 @@ export default function ListingForm({
 	const [pending, startTransition] = useTransition();
 	const [error, setError] = useState<string | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
+	const [successTitle, setSuccessTitle] = useState<string | null>(null);
 
 	const [phase, setPhase] = useState<FormPhase>(
 		mode === 'edit' ? 'details' : 'lookup'
@@ -222,12 +224,7 @@ export default function ListingForm({
 					setError(result.error);
 					return;
 				}
-				router.push(
-					`/members/admin/listings/${result.id}?message=${encodeURIComponent(
-						'Listing created.'
-					)}`
-				);
-				router.refresh();
+				setSuccessTitle('Listing created');
 				return;
 			}
 
@@ -237,8 +234,7 @@ export default function ListingForm({
 				setError(result.error);
 				return;
 			}
-			setMessage('Listing saved.');
-			router.refresh();
+			setSuccessTitle('Listing saved');
 		});
 	}
 
@@ -759,6 +755,10 @@ export default function ListingForm({
 					Back to list
 				</Button>
 			</div>
+			<RedirectSuccessDialog
+				open={successTitle !== null}
+				title={successTitle ?? ''}
+			/>
 		</form>
 	);
 }

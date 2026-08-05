@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { deleteListing } from '@/lib/listings/admin-actions';
+import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -20,8 +20,8 @@ export default function DeleteListingButton({
 	id: string;
 	name: string;
 }) {
-	const router = useRouter();
 	const [open, setOpen] = useState(false);
+	const [successOpen, setSuccessOpen] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, startTransition] = useTransition();
 
@@ -34,10 +34,7 @@ export default function DeleteListingButton({
 				return;
 			}
 			setOpen(false);
-			router.push(
-				`/members/admin/listings?message=${encodeURIComponent('Listing deleted.')}`
-			);
-			router.refresh();
+			setSuccessOpen(true);
 		});
 	}
 
@@ -86,6 +83,10 @@ export default function DeleteListingButton({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
+			<RedirectSuccessDialog
+				open={successOpen}
+				title="Listing deleted"
+			/>
 		</>
 	);
 }
