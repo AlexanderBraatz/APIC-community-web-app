@@ -11,7 +11,7 @@ import {
 	Map,
 	Marker
 } from '@vis.gl/react-google-maps';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 /** Castelfalfi — default map center and fixed landmark pin. */
 const CASTELFALFI = { lat: 43.548442, lng: 10.856672 };
@@ -32,7 +32,10 @@ type LocationsMapProps = {
 	locations: Listing[];
 	/** When set, opens the info window for the matching listing name. */
 	selectedName?: string | null;
+	/** Temporary highlight from list hover — opens info window without filtering. */
+	highlightedName?: string | null;
 	onSelect?: (listing: ListingWithCoords) => void;
+	onClearSelect?: () => void;
 	className?: string;
 };
 
@@ -72,52 +75,45 @@ function CastelfalfiPin() {
 function MapPins({
 	pins,
 	selectedName,
-	onSelect
+	highlightedName,
+	onSelect,
+	onClearSelect
 }: {
 	pins: ListingWithCoords[];
 	selectedName?: string | null;
+	highlightedName?: string | null;
 	onSelect?: (listing: ListingWithCoords) => void;
+	onClearSelect?: () => void;
 }) {
-	const [activeKey, setActiveKey] = useState<string | null>(null);
+	const activePin = useMemo(() => {
+		const nameToShow = highlightedName || selectedName || null;
+		if (!nameToShow) return null;
+		return pins.find(pin => pin.name === nameToShow) ?? null;
+	}, [pins, highlightedName, selectedName]);
 
-	const activePin = useMemo(
-		() => pins.find(pin => pinKey(pin) === activeKey) ?? null,
-		[pins, activeKey]
-	);
-
-	useEffect(() => {
-		if (!selectedName) return;
-		const match = pins.find(pin => pin.name === selectedName);
-		if (match) setActiveKey(pinKey(match));
-	}, [selectedName, pins]);
-
-	useEffect(() => {
-		if (activeKey && !pins.some(pin => pinKey(pin) === activeKey)) {
-			setActiveKey(null);
-		}
-	}, [pins, activeKey]);
+	const activeKey = activePin ? pinKey(activePin) : null;
 
 	return (
 		<>
 			<CastelfalfiPin />
 			{pins.map(pin => {
 				const key = pinKey(pin);
+				const isActive = key === activeKey;
 				return (
 					<Marker
 						key={key}
 						position={{ lat: pin.lat, lng: pin.lng }}
 						title={pin.name}
-						onClick={() => {
-							setActiveKey(key);
-							onSelect?.(pin);
-						}}
+						zIndex={isActive ? 100 : 1}
+						onClick={() => onSelect?.(pin)}
 					/>
 				);
 			})}
 			{activePin ? (
 				<InfoWindow
 					position={{ lat: activePin.lat, lng: activePin.lng }}
-					onCloseClick={() => setActiveKey(null)}
+					disableAutoPan={Boolean(highlightedName)}
+					onCloseClick={() => onClearSelect?.()}
 				>
 					<div className="font-heading max-w-56 px-0.5 py-0.5 text-[#333333]">
 						<p className="text-sm font-medium">{activePin.name}</p>
@@ -139,7 +135,9 @@ function MapPins({
 export default function LocationsMap({
 	locations,
 	selectedName = null,
+	highlightedName = null,
 	onSelect,
+	onClearSelect,
 	className
 }: LocationsMapProps) {
 	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -184,7 +182,9 @@ export default function LocationsMap({
 					<MapPins
 						pins={pins}
 						selectedName={selectedName}
+						highlightedName={highlightedName}
 						onSelect={onSelect}
+						onClearSelect={onClearSelect}
 					/>
 				</Map>
 			</APIProvider>

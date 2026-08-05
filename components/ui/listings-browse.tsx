@@ -77,12 +77,22 @@ function contactDisplay(contact: Listing['contacts'][number]): string {
 	return contact.value;
 }
 
-function ListingResultCard({ listing }: { listing: Listing }) {
+function ListingResultCard({
+	listing,
+	highlighted
+}: {
+	listing: Listing;
+	highlighted: boolean;
+}) {
 	const hoursLines = formatOpeningHoursLines(listing.openingHours);
 	const contacts = listing.contacts ?? [];
 
 	return (
-		<article className="pb-12 last:pb-0">
+		<article
+			className={`-mx-3 rounded-sm px-3 py-4 transition-colors ${
+				highlighted ? 'bg-[#ebe4da]' : 'bg-transparent'
+			}`}
+		>
 			<div className="space-y-3">
 				<p className="font-heading text-sm tracking-wide text-[#7A5A32] uppercase">
 					{CATEGORY_LABELS[listing.category] ?? listing.category}
@@ -187,6 +197,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const [selectedPlaceName, setSelectedPlaceName] = useState<string | null>(
 		null
 	);
+	const [highlightedPlaceName, setHighlightedPlaceName] = useState<
+		string | null
+	>(null);
 	const [panelOpen, setPanelOpen] = useState(false);
 	const deferredQuery = useDeferredValue(query);
 	const rootRef = useRef<HTMLDivElement>(null);
@@ -505,7 +518,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						<LocationsMap
 							locations={mapLocations}
 							selectedName={selectedPlaceName}
+							highlightedName={highlightedPlaceName}
 							onSelect={listing => selectPlace(listing)}
+							onClearSelect={() => setSelectedPlaceName(null)}
 						/>
 					</div>
 
@@ -523,8 +538,17 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 									{results.length} {results.length === 1 ? 'place' : 'places'}
 								</p>
 								{results.map((listing, index) => (
-									<div key={`${listing.category}-${listing.name}`}>
-										<ListingResultCard listing={listing} />
+									<div
+										key={`${listing.category}-${listing.name}`}
+										onMouseEnter={() =>
+											setHighlightedPlaceName(listing.name)
+										}
+										onMouseLeave={() => setHighlightedPlaceName(null)}
+									>
+										<ListingResultCard
+											listing={listing}
+											highlighted={highlightedPlaceName === listing.name}
+										/>
 										{index < results.length - 1 ? (
 											<hr className="mt-12 border-[#b8a99a]" />
 										) : null}
