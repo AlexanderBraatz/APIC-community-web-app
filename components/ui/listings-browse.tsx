@@ -12,7 +12,7 @@ import {
 import { formatOpeningHoursLines } from '@/lib/listings/opening-hours';
 import { fetchListingsForCategory } from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
-import { Clock, Globe, Mail, MapPin, Phone, Search, X } from 'lucide-react';
+import { Clock, Globe, Mail, Map, MapPin, Phone, Search, X } from 'lucide-react';
 import {
 	useDeferredValue,
 	useEffect,
@@ -137,6 +137,20 @@ function ListingResultCard({ listing }: { listing: Listing }) {
 				{listing.notes ? (
 					<p className="font-heading text-base leading-relaxed text-[#444444]">
 						{listing.notes}
+					</p>
+				) : null}
+
+				{listing.sourceUrl ? (
+					<p>
+						<a
+							href={listing.sourceUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="font-heading inline-flex items-center gap-2 rounded-[2px] border border-[#634627] px-3.5 py-2 text-sm font-medium text-[#805b32] transition-colors hover:bg-[#f7f2ec]"
+						>
+							<Map className="size-4 shrink-0" aria-hidden="true" />
+							Open in Google Maps
+						</a>
 					</p>
 				) : null}
 			</div>

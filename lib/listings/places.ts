@@ -234,8 +234,8 @@ export async function placeDetails(
 			name: payload.displayName?.text?.trim() || null,
 			address: payload.formattedAddress?.trim() || null,
 			phone:
-				payload.nationalPhoneNumber?.trim() ||
 				payload.internationalPhoneNumber?.trim() ||
+				payload.nationalPhoneNumber?.trim() ||
 				null,
 			website: payload.websiteUri?.trim() || null,
 			sourceUrl: payload.googleMapsUri?.trim() || null,
