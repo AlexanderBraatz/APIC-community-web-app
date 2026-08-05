@@ -1,5 +1,6 @@
 import type { CategorySlug } from '@/lib/listings-search';
 import { CATEGORY_SLUGS } from '@/lib/listings-search';
+import type { ListingContact } from '@/lib/listings/contacts';
 import type { OpeningHours } from '@/lib/listings/opening-hours';
 
 export type AdminListing = {
@@ -7,9 +8,7 @@ export type AdminListing = {
 	name: string;
 	type: string | null;
 	address: string | null;
-	phone: string | null;
-	email: string | null;
-	website: string | null;
+	contacts: ListingContact[];
 	notes: string | null;
 	openingHours: OpeningHours | null;
 	category: CategorySlug;
@@ -38,8 +37,7 @@ export type PlaceSuggestion = {
 export type PlaceAutofill = {
 	name: string | null;
 	address: string | null;
-	phone: string | null;
-	website: string | null;
+	contacts: ListingContact[];
 	sourceUrl: string | null;
 	lat: number | null;
 	lng: number | null;
@@ -50,9 +48,7 @@ export type ListingInput = {
 	name: string;
 	type: string | null;
 	address: string | null;
-	phone: string | null;
-	email: string | null;
-	website: string | null;
+	contacts: ListingContact[];
 	notes: string | null;
 	openingHours: OpeningHours | null;
 	category: CategorySlug;

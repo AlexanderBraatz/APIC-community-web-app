@@ -204,59 +204,53 @@ export type Database = {
         Row: {
           address: string | null
           category: Database["public"]["Enums"]["listing_category"]
+          contacts: Json
           created_at: string
           created_by: string | null
-          email: string | null
           id: string
           latitude: number | null
           longitude: number | null
           name: string
           notes: string | null
           opening_hours: Json | null
-          phone: string | null
           source_url: string | null
           type: string | null
           updated_at: string
           updated_by: string | null
-          website: string | null
         }
         Insert: {
           address?: string | null
           category: Database["public"]["Enums"]["listing_category"]
+          contacts?: Json
           created_at?: string
           created_by?: string | null
-          email?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           name: string
           notes?: string | null
           opening_hours?: Json | null
-          phone?: string | null
           source_url?: string | null
           type?: string | null
           updated_at?: string
           updated_by?: string | null
-          website?: string | null
         }
         Update: {
           address?: string | null
           category?: Database["public"]["Enums"]["listing_category"]
+          contacts?: Json
           created_at?: string
           created_by?: string | null
-          email?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           name?: string
           notes?: string | null
           opening_hours?: Json | null
-          phone?: string | null
           source_url?: string | null
           type?: string | null
           updated_at?: string
           updated_by?: string | null
-          website?: string | null
         }
         Relationships: [
           {

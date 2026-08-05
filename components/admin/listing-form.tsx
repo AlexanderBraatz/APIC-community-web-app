@@ -12,6 +12,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { createListing, updateListing } from '@/lib/listings/admin-actions';
 import {
+	CONTACT_KIND_LABELS,
+	CONTACT_KINDS,
+	contactsToFormRows,
+	formRowsToContactsPayload,
+	isContactKind,
+	mergeContactsFromAutofill,
+	newContactFormRow,
+	type ContactFormRow,
+	type ContactKind
+} from '@/lib/listings/contacts';
+import {
 	DAY_KEYS,
 	DAY_LABELS,
 	formStateToOpeningHours,
@@ -70,9 +81,9 @@ export default function ListingForm({
 	const [name, setName] = useState(listing?.name ?? '');
 	const [type, setType] = useState(listing?.type ?? '');
 	const [address, setAddress] = useState(listing?.address ?? '');
-	const [phone, setPhone] = useState(listing?.phone ?? '');
-	const [email, setEmail] = useState(listing?.email ?? '');
-	const [website, setWebsite] = useState(listing?.website ?? '');
+	const [contacts, setContacts] = useState<ContactFormRow[]>(() =>
+		contactsToFormRows(listing?.contacts ?? [])
+	);
 	const [notes, setNotes] = useState(listing?.notes ?? '');
 	const [hours, setHours] = useState<OpeningHoursFormState>(() =>
 		openingHoursToFormState(listing?.openingHours ?? null)
@@ -156,8 +167,13 @@ export default function ListingForm({
 	function applyPlaceAutofill(place: PlaceAutofill) {
 		if (place.name) setName(place.name);
 		if (place.address) setAddress(place.address);
-		if (place.phone) setPhone(place.phone);
-		if (place.website) setWebsite(place.website);
+		if (place.contacts.length) {
+			setContacts(prev => {
+				const existing = formRowsToContactsPayload(prev);
+				const merged = mergeContactsFromAutofill(existing, place.contacts);
+				return contactsToFormRows(merged);
+			});
+		}
 		if (place.sourceUrl) {
 			setSourceUrl(prev => (prev.trim() ? prev : place.sourceUrl!));
 		}
@@ -192,7 +208,10 @@ export default function ListingForm({
 		formData.set('tags', tagsText);
 		const opening = formStateToOpeningHours(hours);
 		formData.set('opening_hours', opening ? JSON.stringify(opening) : '');
-
+		formData.set(
+			'contacts_json',
+			JSON.stringify(formRowsToContactsPayload(contacts))
+		);
 		startTransition(async () => {
 			setError(null);
 			setMessage(null);
@@ -360,37 +379,113 @@ export default function ListingForm({
 						onChange={e => setAddress(e.target.value)}
 					/>
 				</div>
-				<div className="space-y-2">
-					<Label htmlFor="phone">Phone</Label>
-					<Input
-						id="phone"
-						name="phone"
-						value={phone}
-						onChange={e => setPhone(e.target.value)}
-						placeholder="+39 …"
-					/>
+				<div className="space-y-3 sm:col-span-2">
+					<div className="flex flex-wrap items-center justify-between gap-3">
+						<div>
+							<h3 className="text-sm font-medium text-[#444]">Contacts</h3>
+							<p className="text-xs text-[#888]">
+								Add phone, mobile, WhatsApp, email, or website. Optional label
+								for roles (e.g. Reservations).
+							</p>
+						</div>
+						<Button
+							type="button"
+							variant="outline"
+							className="rounded-[2px]"
+							onClick={() =>
+								setContacts(prev => [...prev, newContactFormRow()])
+							}
+						>
+							Add contact
+						</Button>
+					</div>
+					{contacts.length === 0 ? (
+						<p className="text-xs text-[#999]">
+							No contacts yet — add one, or fill via Places lookup.
+						</p>
+					) : (
+						<ul className="space-y-2">
+							{contacts.map(row => (
+								<li
+									key={row.key}
+									className="grid gap-2 sm:grid-cols-[8.5rem_minmax(0,7rem)_1fr_auto]"
+								>
+									<select
+										aria-label="Contact kind"
+										value={row.kind}
+										onChange={e => {
+											const kind = e.target.value;
+											if (!isContactKind(kind)) return;
+											setContacts(prev =>
+												prev.map(c =>
+													c.key === row.key
+														? { ...c, kind: kind as ContactKind }
+														: c
+												)
+											);
+										}}
+										className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm"
+									>
+										{CONTACT_KINDS.map(kind => (
+											<option
+												key={kind}
+												value={kind}
+											>
+												{CONTACT_KIND_LABELS[kind]}
+											</option>
+										))}
+									</select>
+									<Input
+										aria-label="Contact label"
+										placeholder="Label"
+										value={row.label}
+										onChange={e =>
+											setContacts(prev =>
+												prev.map(c =>
+													c.key === row.key
+														? { ...c, label: e.target.value }
+														: c
+												)
+											)
+										}
+									/>
+									<Input
+										aria-label="Contact value"
+										placeholder={
+											row.kind === 'email'
+												? 'name@example.com'
+												: row.kind === 'website'
+													? 'https://'
+													: '+39 …'
+										}
+										type={row.kind === 'email' ? 'email' : 'text'}
+										value={row.value}
+										onChange={e =>
+											setContacts(prev =>
+												prev.map(c =>
+													c.key === row.key
+														? { ...c, value: e.target.value }
+														: c
+												)
+											)
+										}
+									/>
+									<Button
+										type="button"
+										variant="outline"
+										className="rounded-[2px]"
+										onClick={() =>
+											setContacts(prev => prev.filter(c => c.key !== row.key))
+										}
+									>
+										Remove
+									</Button>
+								</li>
+							))}
+						</ul>
+					)}
 				</div>
-				<div className="space-y-2">
-					<Label htmlFor="email">Email</Label>
-					<Input
-						id="email"
-						name="email"
-						type="email"
-						value={email}
-						onChange={e => setEmail(e.target.value)}
-					/>
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="website">Website</Label>
-					<Input
-						id="website"
-						name="website"
-						value={website}
-						onChange={e => setWebsite(e.target.value)}
-						placeholder="https://"
-					/>
-				</div>
-				<div className="space-y-2">
+				<div className="space-y-2 sm:col-span-2">
 					<Label htmlFor="source_url">Google Maps Link</Label>
 					<Input
 						id="source_url"
@@ -419,6 +514,10 @@ export default function ListingForm({
 						onChange={e => setTagsText(e.target.value)}
 						placeholder="Restaurant, Montaione, wine"
 					/>
+					<p className="text-xs text-[#888]">
+						Include spoken languages as tags when useful (e.g. German, English,
+						Italian).
+					</p>
 					{tagSuggestions.length > 0 ? (
 						<div className="flex flex-wrap gap-2 pt-1">
 							{tagSuggestions.map(tag => (

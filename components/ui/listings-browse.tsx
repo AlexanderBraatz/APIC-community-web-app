@@ -9,10 +9,27 @@ import {
 	suggest,
 	type Listing
 } from '@/lib/listings-search';
+import {
+	CONTACT_KIND_LABELS,
+	telHref,
+	websiteHref,
+	websiteLabel,
+	whatsappHref
+} from '@/lib/listings/contacts';
 import { formatOpeningHoursLines } from '@/lib/listings/opening-hours';
 import { fetchListingsForCategory } from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
-import { Clock, Globe, Mail, Map, MapPin, Phone, Search, X } from 'lucide-react';
+import {
+	Clock,
+	Globe,
+	Mail,
+	Map,
+	MapPin,
+	MessageCircle,
+	Phone,
+	Search,
+	X
+} from 'lucide-react';
 import {
 	useDeferredValue,
 	useEffect,
@@ -32,21 +49,37 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 
-function websiteHref(url: string): string {
-	return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+function ContactIcon({ kind }: { kind: Listing['contacts'][number]['kind'] }) {
+	const className = 'mt-0.5 size-4 shrink-0 text-[#7A5A32]';
+	if (kind === 'email') return <Mail className={className} aria-hidden="true" />;
+	if (kind === 'website')
+		return <Globe className={className} aria-hidden="true" />;
+	if (kind === 'whatsapp')
+		return <MessageCircle className={className} aria-hidden="true" />;
+	return <Phone className={className} aria-hidden="true" />;
 }
 
-function websiteLabel(url: string): string {
-	try {
-		return new URL(websiteHref(url)).hostname.replace(/^www\./, '');
-	} catch {
-		return url.replace(/^https?:\/\//i, '').replace(/\/$/, '');
+function contactHref(contact: Listing['contacts'][number]): string {
+	switch (contact.kind) {
+		case 'email':
+			return `mailto:${contact.value}`;
+		case 'website':
+			return websiteHref(contact.value);
+		case 'whatsapp':
+			return whatsappHref(contact.value);
+		default:
+			return telHref(contact.value);
 	}
+}
+
+function contactDisplay(contact: Listing['contacts'][number]): string {
+	if (contact.kind === 'website') return websiteLabel(contact.value);
+	return contact.value;
 }
 
 function ListingResultCard({ listing }: { listing: Listing }) {
 	const hoursLines = formatOpeningHoursLines(listing.openingHours);
-	const hasContact = Boolean(listing.phone || listing.email || listing.website);
+	const contacts = listing.contacts ?? [];
 
 	return (
 		<article className="pb-12 last:pb-0">
@@ -85,52 +118,35 @@ function ListingResultCard({ listing }: { listing: Listing }) {
 					</div>
 				) : null}
 
-				{hasContact ? (
+				{contacts.length > 0 ? (
 					<ul className="space-y-2">
-						{listing.phone ? (
-							<li className="font-heading flex items-start gap-2 text-base text-[#333333]">
-								<Phone
-									className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
-									aria-hidden="true"
-								/>
-								<a
-									href={`tel:${listing.phone.replace(/[^\d+]/g, '')}`}
-									className="underline-offset-2 hover:underline"
+						{contacts.map((contact, index) => {
+							const isExternal =
+								contact.kind === 'website' || contact.kind === 'whatsapp';
+							const label = contact.label?.trim();
+							return (
+								<li
+									key={`${contact.kind}-${contact.value}-${index}`}
+									className="font-heading flex items-start gap-2 text-base text-[#333333]"
 								>
-									{listing.phone}
-								</a>
-							</li>
-						) : null}
-						{listing.email ? (
-							<li className="font-heading flex items-start gap-2 text-base text-[#333333]">
-								<Mail
-									className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
-									aria-hidden="true"
-								/>
-								<a
-									href={`mailto:${listing.email}`}
-									className="underline-offset-2 hover:underline"
-								>
-									{listing.email}
-								</a>
-							</li>
-						) : null}
-						{listing.website ? (
-							<li className="font-heading flex items-start gap-2 text-base text-[#333333]">
-								<Globe
-									className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
-									aria-hidden="true"
-								/>
-								<a
-									href={websiteHref(listing.website)}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="underline-offset-2 hover:underline"
-								>
-									{websiteLabel(listing.website)}
-								</a>
-							</li>
-						) : null}
+									<ContactIcon kind={contact.kind} />
+									<a
+										href={contactHref(contact)}
+										{...(isExternal
+											? { target: '_blank', rel: 'noopener noreferrer' }
+											: {})}
+										className="underline-offset-2 hover:underline"
+									>
+										{label
+											? `${label}: ${contactDisplay(contact)}`
+											: contact.kind === 'whatsapp' ||
+												  contact.kind === 'mobile'
+												? `${CONTACT_KIND_LABELS[contact.kind]}: ${contactDisplay(contact)}`
+												: contactDisplay(contact)}
+									</a>
+								</li>
+							);
+						})}
 					</ul>
 				) : null}
 

@@ -1,4 +1,5 @@
 import type { CategorySlug, Listing } from '@/lib/listings-search';
+import { parseContacts } from '@/lib/listings/contacts';
 import { parseOpeningHours } from '@/lib/listings/opening-hours';
 import { createClient } from '@/lib/supabase/client';
 import type { Json } from '@/lib/supabase/database.types';
@@ -8,9 +9,7 @@ type ListingRow = {
 	name: string;
 	type: string | null;
 	address: string | null;
-	phone: string | null;
-	email: string | null;
-	website: string | null;
+	contacts: Json;
 	notes: string | null;
 	opening_hours: Json | null;
 	category: CategorySlug;
@@ -53,9 +52,7 @@ export function mapListingRow(row: ListingRow): Listing {
 		name: row.name,
 		type: row.type,
 		address: row.address,
-		phone: row.phone,
-		email: row.email,
-		website: row.website,
+		contacts: parseContacts(row.contacts),
 		notes: row.notes,
 		openingHours: parseOpeningHours(row.opening_hours),
 		category: row.category,
@@ -78,9 +75,7 @@ export async function fetchListingsForCategory(
 			name,
 			type,
 			address,
-			phone,
-			email,
-			website,
+			contacts,
 			notes,
 			opening_hours,
 			category,

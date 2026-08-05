@@ -2,6 +2,7 @@
 
 import { requireAdmin } from '@/lib/admin/require-admin';
 import { limitPlaces } from '@/lib/admin/rate-limit';
+import { placeAutofillToContacts } from '@/lib/listings/contacts';
 import { googleRegularHoursToOpeningHours } from '@/lib/listings/opening-hours';
 import {
 	CASTELFALFI_CENTER,
@@ -233,11 +234,13 @@ export async function placeDetails(
 		const place: PlaceAutofill = {
 			name: payload.displayName?.text?.trim() || null,
 			address: payload.formattedAddress?.trim() || null,
-			phone:
-				payload.internationalPhoneNumber?.trim() ||
-				payload.nationalPhoneNumber?.trim() ||
-				null,
-			website: payload.websiteUri?.trim() || null,
+			contacts: placeAutofillToContacts({
+				phone:
+					payload.internationalPhoneNumber?.trim() ||
+					payload.nationalPhoneNumber?.trim() ||
+					null,
+				website: payload.websiteUri?.trim() || null
+			}),
 			sourceUrl: payload.googleMapsUri?.trim() || null,
 			lat: hasCoords ? lat : null,
 			lng: hasCoords ? lng : null,

@@ -13,6 +13,11 @@ import {
 	type ListingInput
 } from '@/lib/listings/types';
 import {
+	contactsToJson,
+	parseContacts,
+	parseContactsForm
+} from '@/lib/listings/contacts';
+import {
 	openingHoursToJson,
 	parseOpeningHours
 } from '@/lib/listings/opening-hours';
@@ -23,9 +28,7 @@ type ListingRow = {
 	name: string;
 	type: string | null;
 	address: string | null;
-	phone: string | null;
-	email: string | null;
-	website: string | null;
+	contacts: Json;
 	notes: string | null;
 	opening_hours: Json | null;
 	category: CategorySlug;
@@ -67,9 +70,7 @@ function mapAdminListing(row: ListingRow): AdminListing {
 		name: row.name,
 		type: row.type,
 		address: row.address,
-		phone: row.phone,
-		email: row.email,
-		website: row.website,
+		contacts: parseContacts(row.contacts),
 		notes: row.notes,
 		openingHours: parseOpeningHours(row.opening_hours),
 		category: row.category,
@@ -86,9 +87,7 @@ const LISTING_SELECT = `
 	name,
 	type,
 	address,
-	phone,
-	email,
-	website,
+	contacts,
 	notes,
 	opening_hours,
 	category,
@@ -137,9 +136,7 @@ function listingPayload(input: ListingInput, userId: string) {
 		name: input.name,
 		type: input.type,
 		address: input.address,
-		phone: input.phone,
-		email: input.email,
-		website: input.website,
+		contacts: contactsToJson(input.contacts),
 		notes: input.notes,
 		opening_hours: openingHoursToJson(input.openingHours),
 		category: input.category,
@@ -230,24 +227,16 @@ function parseListingForm(formData: FormData): ListingInput | { error: string } 
 	}
 
 	const address = String(formData.get('address') ?? '').trim();
-	const websiteRaw = String(formData.get('website') ?? '').trim();
-	let website: string | null = websiteRaw || null;
-	if (website && !/^https?:\/\//i.test(website)) {
-		website = `https://${website}`;
-	}
-
-	const email = String(formData.get('email') ?? '').trim() || null;
-	if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-		return { error: 'Enter a valid email address.' };
-	}
+	const contactsParsed = parseContactsForm(
+		String(formData.get('contacts_json') ?? '').trim() || null
+	);
+	if ('error' in contactsParsed) return contactsParsed;
 
 	return {
 		name,
 		type: String(formData.get('type') ?? '').trim() || null,
 		address: address || null,
-		phone: String(formData.get('phone') ?? '').trim() || null,
-		email,
-		website,
+		contacts: contactsParsed,
 		notes: String(formData.get('notes') ?? '').trim() || null,
 		openingHours: parseOpeningHours(
 			String(formData.get('opening_hours') ?? '').trim() || null
@@ -294,8 +283,7 @@ export async function listAdminListings(opts?: {
 			row =>
 				row.name.toLowerCase().includes(q) ||
 				row.address?.toLowerCase().includes(q) ||
-				row.phone?.toLowerCase().includes(q) ||
-				row.email?.toLowerCase().includes(q) ||
+				row.contacts.some(c => c.value.toLowerCase().includes(q)) ||
 				row.tags.some(tag => tag.toLowerCase().includes(q))
 		);
 	}

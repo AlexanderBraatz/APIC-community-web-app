@@ -1,12 +1,11 @@
+import type { ListingContact } from '@/lib/listings/contacts';
 import type { OpeningHours } from '@/lib/listings/opening-hours';
 
 export type Listing = {
 	name: string;
 	type: string | null;
 	address: string | null;
-	phone: string | null;
-	email: string | null;
-	website: string | null;
+	contacts: ListingContact[];
 	notes: string | null;
 	openingHours: OpeningHours | null;
 	category: string;
