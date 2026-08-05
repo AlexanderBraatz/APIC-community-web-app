@@ -132,8 +132,8 @@ export default function LocationsMap({
 	if (!apiKey) {
 		return (
 			<div
-				className={`flex aspect-[2/1] w-full items-center justify-center border border-[#b8a99a]/40 bg-[#e8e4dc] px-6 text-center ${
-					className ?? ''
+				className={`flex w-full items-center justify-center border border-[#b8a99a]/40 bg-[#e8e4dc] px-6 text-center ${
+					className ?? 'aspect-[2/1]'
 				}`}
 				role="status"
 			>
@@ -150,7 +150,7 @@ export default function LocationsMap({
 
 	return (
 		<div
-			className={`aspect-[1.618/1] w-full overflow-hidden rounded-sm border border-[#b8a99a]/40 bg-[#e8e4dc] ${
+			className={`aspect-[1.618/1] w-full overflow-hidden rounded-sm border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)] ${
 				className ?? ''
 			}`}
 		>
