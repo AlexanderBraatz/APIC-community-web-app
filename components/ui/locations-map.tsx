@@ -303,7 +303,7 @@ export default function LocationsMap({
 
 	return (
 		<div
-			className={`aspect-[1.618/1] w-full overflow-hidden rounded-sm border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)] ${
+			className={`aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)] ${
 				className ?? ''
 			}`}
 		>

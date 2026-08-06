@@ -50,13 +50,34 @@ const CATEGORY_LABELS: Record<string, string> = {
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 
 function ContactIcon({ kind }: { kind: Listing['contacts'][number]['kind'] }) {
-	const className = 'mt-0.5 size-4 shrink-0 text-[#7A5A32]';
-	if (kind === 'email') return <Mail className={className} aria-hidden="true" />;
+	const className = 'size-4 shrink-0 text-[#7A5A32]';
+	if (kind === 'email')
+		return (
+			<Mail
+				className={className}
+				aria-hidden="true"
+			/>
+		);
 	if (kind === 'website')
-		return <Globe className={className} aria-hidden="true" />;
+		return (
+			<Globe
+				className={className}
+				aria-hidden="true"
+			/>
+		);
 	if (kind === 'whatsapp')
-		return <MessageCircle className={className} aria-hidden="true" />;
-	return <Phone className={className} aria-hidden="true" />;
+		return (
+			<MessageCircle
+				className={className}
+				aria-hidden="true"
+			/>
+		);
+	return (
+		<Phone
+			className={className}
+			aria-hidden="true"
+		/>
+	);
 }
 
 function contactHref(contact: Listing['contacts'][number]): string {
@@ -77,94 +98,101 @@ function contactDisplay(contact: Listing['contacts'][number]): string {
 	return contact.value;
 }
 
-function ListingResultCard({
-	listing,
-	highlighted
-}: {
-	listing: Listing;
-	highlighted: boolean;
-}) {
+function ListingResultCard({ listing }: { listing: Listing }) {
 	const hoursLines = formatOpeningHoursLines(listing.openingHours);
 	const contacts = listing.contacts ?? [];
+	const hasContactInfo =
+		Boolean(listing.address) || hoursLines.length > 0 || contacts.length > 0;
 
 	return (
-		<article
-			className={`-mx-3 rounded-sm px-3 py-4 transition-colors ${
-				highlighted ? 'bg-[#ebe4da]' : 'bg-transparent'
-			}`}
-		>
-			<div className="space-y-3">
-				<p className="font-heading text-sm tracking-wide text-[#7A5A32] uppercase">
-					{CATEGORY_LABELS[listing.category] ?? listing.category}
-				</p>
-				<h3 className="font-heading text-2xl font-semibold leading-snug text-[#333333]">
-					{listing.name}
-				</h3>
-				{listing.type ? (
-					<p className="font-heading text-sm text-[#666666]">{listing.type}</p>
-				) : null}
-
-				{listing.address ? (
-					<p className="font-heading flex items-start gap-2 text-base leading-relaxed text-[#333333]">
-						<MapPin
-							className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
-							aria-hidden="true"
-						/>
-						<span>{listing.address}</span>
+		<article>
+			<div className="space-y-8">
+				<div className="space-y-3">
+					{listing.type ? (
+						<h3 className="font-heading text-2xl font-semibold leading-snug text-[#333333]">
+							{listing.type}
+						</h3>
+					) : null}
+					<p className="font-heading text-xl font-thin  leading-snug text-[#333333]">
+						{listing.name}
 					</p>
-				) : null}
+				</div>
 
-				{hoursLines.length > 0 ? (
-					<div className="font-heading flex items-start gap-2 text-base leading-relaxed text-[#333333]">
-						<Clock
-							className="mt-0.5 size-4 shrink-0 text-[#7A5A32]"
-							aria-hidden="true"
-						/>
-						<div className="space-y-0.5">
-							{hoursLines.map(line => (
-								<p key={line}>{line}</p>
-							))}
-						</div>
-					</div>
-				) : null}
-
-				{contacts.length > 0 ? (
-					<ul className="space-y-2">
-						{contacts.map((contact, index) => {
-							const isExternal =
-								contact.kind === 'website' || contact.kind === 'whatsapp';
-							const label = contact.label?.trim();
-							return (
-								<li
-									key={`${contact.kind}-${contact.value}-${index}`}
-									className="font-heading flex items-start gap-2 text-base text-[#333333]"
-								>
-									<ContactIcon kind={contact.kind} />
-									<a
-										href={contactHref(contact)}
-										{...(isExternal
-											? { target: '_blank', rel: 'noopener noreferrer' }
-											: {})}
-										className="underline-offset-2 hover:underline"
-									>
-										{label
-											? `${label}: ${contactDisplay(contact)}`
-											: contact.kind === 'whatsapp' ||
-												  contact.kind === 'mobile'
-												? `${CONTACT_KIND_LABELS[contact.kind]}: ${contactDisplay(contact)}`
-												: contactDisplay(contact)}
-									</a>
-								</li>
-							);
-						})}
-					</ul>
-				) : null}
+				{/* <hr className="border-[#b8a99a]" /> */}
 
 				{listing.notes ? (
-					<p className="font-heading text-base leading-relaxed text-[#444444]">
+					<p className="font-sans text-base leading-loose text-[#444444]">
 						{listing.notes}
 					</p>
 				) : null}
+
+				{hasContactInfo ? (
+					<div className="space-y-3">
+						{listing.address ? (
+							<p className="font-sans flex items-start gap-2 text-base leading-snug text-[#333333]">
+								<span className="inline-flex h-[1lh] shrink-0 items-center">
+									<MapPin
+										className="size-4 text-[#7A5A32]"
+										aria-hidden="true"
+									/>
+								</span>
+								<span>{listing.address}</span>
+							</p>
+						) : null}
+
+						{hoursLines.length > 0 ? (
+							<div className="font-sans flex items-start gap-2 text-base leading-snug text-[#333333]">
+								<span className="inline-flex h-[1lh] shrink-0 items-center">
+									<Clock
+										className="size-4 text-[#7A5A32]"
+										aria-hidden="true"
+									/>
+								</span>
+								<div className="min-w-0 space-y-1.5">
+									{hoursLines.map(line => (
+										<p key={line}>{line}</p>
+									))}
+								</div>
+							</div>
+						) : null}
+
+						{contacts.length > 0 ? (
+							<ul className="space-y-2">
+								{contacts.map((contact, index) => {
+									const isExternal =
+										contact.kind === 'website' || contact.kind === 'whatsapp';
+									const label = contact.label?.trim();
+									return (
+										<li
+											key={`${contact.kind}-${contact.value}-${index}`}
+											className="font-sans flex items-center gap-2 py-1 text-base leading-none text-[#333333]"
+										>
+											<ContactIcon kind={contact.kind} />
+											<a
+												href={contactHref(contact)}
+												{...(isExternal
+													? { target: '_blank', rel: 'noopener noreferrer' }
+													: {})}
+												className="underline-offset-2 hover:underline"
+											>
+												{label
+													? `${label}: ${contactDisplay(contact)}`
+													: contact.kind === 'whatsapp' ||
+													  contact.kind === 'mobile'
+													? `${
+															CONTACT_KIND_LABELS[contact.kind]
+													  }: ${contactDisplay(contact)}`
+													: contactDisplay(contact)}
+											</a>
+										</li>
+									);
+								})}
+							</ul>
+						) : null}
+					</div>
+				) : null}
+
+				{/* {hasContactInfo ? <hr className="border-[#b8a99a]" /> : null} */}
 
 				{listing.sourceUrl ? (
 					<p>
@@ -172,9 +200,12 @@ function ListingResultCard({
 							href={listing.sourceUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="font-heading inline-flex items-center gap-2 rounded-[2px] border border-[#634627] px-3.5 py-2 text-sm font-medium text-[#805b32] transition-colors hover:bg-[#f7f2ec]"
+							className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#634627] px-3.5 py-2 text-sm font-medium text-[#805b32] transition-colors hover:bg-[#f7f2ec]"
 						>
-							<Map className="size-4 shrink-0" aria-hidden="true" />
+							<Map
+								className="size-4 shrink-0"
+								aria-hidden="true"
+							/>
 							Open in Google Maps
 						</a>
 					</p>
@@ -536,21 +567,25 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							<div>
 								<p className="font-heading mb-6 text-sm text-[#666666]">
 									{results.length} {results.length === 1 ? 'place' : 'places'}
+									{category
+										? ` in ${CATEGORY_LABELS[category] ?? category}`
+										: ''}
 								</p>
 								{results.map((listing, index) => (
-									<div
-										key={`${listing.category}-${listing.name}`}
-										onMouseEnter={() =>
-											setHighlightedPlaceName(listing.name)
-										}
-										onMouseLeave={() => setHighlightedPlaceName(null)}
-									>
-										<ListingResultCard
-											listing={listing}
-											highlighted={highlightedPlaceName === listing.name}
-										/>
+									<div key={`${listing.category}-${listing.name}`}>
+										<div
+											className={`-mx-3 rounded-3xl px-3 py-8 transition-colors duration-200 ease-in-out ${
+												highlightedPlaceName === listing.name
+													? 'bg-[#f7f3ec]'
+													: 'bg-transparent'
+											}`}
+											onMouseEnter={() => setHighlightedPlaceName(listing.name)}
+											onMouseLeave={() => setHighlightedPlaceName(null)}
+										>
+											<ListingResultCard listing={listing} />
+										</div>
 										{index < results.length - 1 ? (
-											<hr className="mt-12 border-[#b8a99a]" />
+											<hr className="border-[#b8a99a]" />
 										) : null}
 									</div>
 								))}
