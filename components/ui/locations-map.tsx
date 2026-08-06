@@ -125,8 +125,9 @@ function allPointsComfortablyVisible(
 }
 
 /**
- * Keeps the viewport fitted to Castelfalfi + active listing pins whenever
- * the displayed pin set changes. Marker rendering stays in MapPins.
+ * Fits the viewport to Castelfalfi + active listing pins whenever the
+ * displayed pin set changes (filter, tag, select, clear). Marker rendering
+ * stays in MapPins.
  */
 function FitBoundsToPins({ pins }: { pins: ListingWithCoords[] }) {
 	const map = useMap();
@@ -155,13 +156,10 @@ function FitBoundsToPins({ pins }: { pins: ListingWithCoords[] }) {
 			lastFitCornersRef.current !== null &&
 			boundsNearlyEqual(lastFitCornersRef.current, nextCorners);
 
-		// Skip when the target is unchanged and still on screen, or when a new /
-		// narrower pin set remains comfortably inside the current view.
+		// Only skip when the pin-set bounds are unchanged *and* still on screen.
+		// Always refit when the set shrinks or grows (tag filter, pin select, clear)
+		// so the map zooms to the new subset / full set even if pins were already visible.
 		if (sameAsLastFit && alreadyVisible) {
-			return;
-		}
-		if (alreadyVisible) {
-			lastFitCornersRef.current = nextCorners;
 			return;
 		}
 
