@@ -36,6 +36,113 @@ const CASTELFALFI_ICON = `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(
 	</svg>`
 )}`;
 
+/**
+ * Soft clay / Google-contrast map: cream land, sage water, olive parks,
+ * ivory roads, gold highways, lighter natural terrain, darker country borders.
+ */
+const MAP_STYLES = [
+	{ elementType: 'geometry', stylers: [{ color: '#ebe6dc' }] },
+	{ elementType: 'labels.text.fill', stylers: [{ color: '#5d4a35' }] },
+	{ elementType: 'labels.text.stroke', stylers: [{ color: '#f7f3ec' }] },
+	{
+		featureType: 'administrative',
+		elementType: 'geometry.stroke',
+		stylers: [{ color: '#c8b8a4' }]
+	},
+	{
+		featureType: 'administrative.country',
+		elementType: 'geometry.stroke',
+		stylers: [{ color: '#8a7a62' }, { weight: 1.2 }]
+	},
+	{
+		featureType: 'administrative.land_parcel',
+		elementType: 'labels',
+		stylers: [{ visibility: 'off' }]
+	},
+	{
+		featureType: 'landscape',
+		elementType: 'geometry',
+		stylers: [{ color: '#ebe6dc' }]
+	},
+	{
+		featureType: 'landscape.man_made',
+		elementType: 'geometry',
+		stylers: [{ color: '#e4ddd2' }]
+	},
+	{
+		featureType: 'landscape.natural',
+		elementType: 'geometry',
+		stylers: [{ color: '#efe9df' }]
+	},
+	{
+		featureType: 'landscape.natural.landcover',
+		elementType: 'geometry',
+		stylers: [{ color: '#f2ede4' }]
+	},
+	{
+		featureType: 'landscape.natural.terrain',
+		elementType: 'geometry',
+		stylers: [{ color: '#f7f3ec' }]
+	},
+	{
+		featureType: 'poi',
+		elementType: 'geometry',
+		stylers: [{ color: '#e0d8cc' }]
+	},
+	{
+		featureType: 'poi',
+		elementType: 'labels.text.fill',
+		stylers: [{ color: '#7a6548' }]
+	},
+	{ featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+	{
+		featureType: 'poi.park',
+		elementType: 'geometry',
+		stylers: [{ color: '#b4c49a' }]
+	},
+	{
+		featureType: 'poi.park',
+		elementType: 'labels.text.fill',
+		stylers: [{ color: '#5a6548' }]
+	},
+	{
+		featureType: 'road',
+		elementType: 'geometry',
+		stylers: [{ color: '#faf7f0' }]
+	},
+	{
+		featureType: 'road',
+		elementType: 'geometry.stroke',
+		stylers: [{ color: '#d4c8b8' }]
+	},
+	{
+		featureType: 'road',
+		elementType: 'labels.text.fill',
+		stylers: [{ color: '#7a6548' }]
+	},
+	{
+		featureType: 'road.highway',
+		elementType: 'geometry',
+		stylers: [{ color: '#e8c878' }]
+	},
+	{
+		featureType: 'road.highway',
+		elementType: 'geometry.stroke',
+		stylers: [{ color: '#c4a04a' }]
+	},
+	{ featureType: 'transit', stylers: [{ visibility: 'off' }] },
+	{
+		featureType: 'water',
+		elementType: 'geometry',
+		stylers: [{ color: '#c5cfc8' }]
+	},
+	{
+		featureType: 'water',
+		elementType: 'labels.text.fill',
+		stylers: [{ color: '#6a7a72' }]
+	}
+];
+
 type LocationsMapProps = {
 	/** Listings in the current data shape. Only entries with lat/lng become pins. */
 	locations: Listing[];
@@ -316,6 +423,7 @@ export default function LocationsMap({
 					mapTypeControl={false}
 					streetViewControl={false}
 					fullscreenControl={false}
+					styles={MAP_STYLES}
 					reuseMaps
 				>
 					<FitBoundsToPins pins={pins} />
