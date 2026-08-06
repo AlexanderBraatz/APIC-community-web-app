@@ -30,10 +30,11 @@ import {
 	Search,
 	X
 } from 'lucide-react';
-import {
+	import {
 	useDeferredValue,
 	useEffect,
 	useId,
+	useLayoutEffect,
 	useMemo,
 	useRef,
 	useState
@@ -234,7 +235,12 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const [panelOpen, setPanelOpen] = useState(false);
 	const deferredQuery = useDeferredValue(query);
 	const rootRef = useRef<HTMLDivElement>(null);
+	const pendingScrollToSearchRef = useRef(false);
 	const inputId = useId();
+
+	function requestScrollToSearch() {
+		pendingScrollToSearchRef.current = true;
+	}
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -338,7 +344,17 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		return () => document.removeEventListener('mousedown', onPointerDown);
 	}, []);
 
+	// After a filter that shortens the list, document height collapses and the
+	// browser clamps scroll — which makes the sticky search/map look like they
+	// jumped. Re-align the search bar to the top of the viewport after layout.
+	useLayoutEffect(() => {
+		if (!pendingScrollToSearchRef.current) return;
+		pendingScrollToSearchRef.current = false;
+		rootRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
+	}, [results, activeTags, selectedPlaceName]);
+
 	function addTag(tag: string) {
+		requestScrollToSearch();
 		setActiveTags(prev =>
 			prev.some(t => t.toLowerCase() === tag.toLowerCase())
 				? prev
@@ -357,6 +373,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	}
 
 	function selectPlace(listing: Listing) {
+		requestScrollToSearch();
 		setSelectedPlaceName(listing.name);
 		setQuery('');
 		setPanelOpen(false);
@@ -418,6 +435,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 			) : null}
 
 			<div
+				id="listings-browse-search"
 				ref={rootRef}
 				className="sticky top-0 z-40 w-full bg-[#eeeae4] px-4 py-5 sm:px-6 lg:px-8"
 			>

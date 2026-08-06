@@ -331,13 +331,21 @@ function MapPins({
 	onSelect?: (listing: ListingWithCoords) => void;
 	onClearSelect?: () => void;
 }) {
+	const [hoveredName, setHoveredName] = useState<string | null>(null);
+
 	const activePin = useMemo(() => {
-		const nameToShow = highlightedName || selectedName || null;
+		const nameToShow =
+			highlightedName || selectedName || hoveredName || null;
 		if (!nameToShow) return null;
 		return pins.find(pin => pin.name === nameToShow) ?? null;
-	}, [pins, highlightedName, selectedName]);
+	}, [pins, highlightedName, selectedName, hoveredName]);
 
 	const activeKey = activePin ? pinKey(activePin) : null;
+	// Selection keeps the closable info window; list/map hover uses a lean tooltip.
+	const isSelectedInfo =
+		Boolean(selectedName) &&
+		activePin?.name === selectedName &&
+		!highlightedName;
 
 	return (
 		<>
@@ -352,13 +360,19 @@ function MapPins({
 						title={pin.name}
 						zIndex={isActive ? 100 : 1}
 						onClick={() => onSelect?.(pin)}
+						onMouseOver={() => setHoveredName(pin.name)}
+						onMouseOut={() =>
+							setHoveredName(prev => (prev === pin.name ? null : prev))
+						}
 					/>
 				);
 			})}
 			{activePin ? (
 				<InfoWindow
 					position={{ lat: activePin.lat, lng: activePin.lng }}
-					disableAutoPan={Boolean(highlightedName)}
+					pixelOffset={[0, -36]}
+					disableAutoPan={!isSelectedInfo}
+					headerDisabled={!isSelectedInfo}
 					onCloseClick={() => onClearSelect?.()}
 				>
 					<div className="font-heading max-w-56 px-0.5 py-0.5 text-[#333333]">
