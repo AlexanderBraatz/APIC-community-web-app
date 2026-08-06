@@ -9,13 +9,22 @@ import {
 	APIProvider,
 	InfoWindow,
 	Map,
-	Marker
+	Marker,
+	useMap
 } from '@vis.gl/react-google-maps';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 /** Castelfalfi — default map center and fixed landmark pin. */
 const CASTELFALFI = { lat: 43.548442, lng: 10.856672 };
 const DEFAULT_ZOOM = 12;
+/** Padding (px) so markers are not flush against the map edge after fitBounds. */
+const FIT_PADDING = { top: 48, right: 48, bottom: 48, left: 48 };
+/** Cap zoom after fitBounds so single/nearby pins do not over-zoom. */
+const MAX_FIT_ZOOM = 15;
+/** Relative inset of current bounds used to decide if points are already "comfortably" visible. */
+const VISIBILITY_PAD_RATIO = 0.08;
+/** Degrees tolerance when comparing successive target bounds. */
+const BOUNDS_EPSILON = 1e-5;
 /** Matches site accent `#7A5A32` (golden brown). */
 const CASTELFALFI_PIN_COLOR = '#7A5A32';
 
@@ -41,6 +50,138 @@ type LocationsMapProps = {
 
 function pinKey(listing: ListingWithCoords) {
 	return `${listing.category}-${listing.name}-${listing.lat}-${listing.lng}`;
+}
+
+type LatLngLiteral = { lat: number; lng: number };
+
+type BoundsCorners = {
+	south: number;
+	west: number;
+	north: number;
+	east: number;
+};
+
+function pinSignature(pins: ListingWithCoords[]) {
+	return pins
+		.map(pin => `${pin.lat},${pin.lng}`)
+		.sort()
+		.join('|');
+}
+
+function buildTargetBounds(pins: ListingWithCoords[]) {
+	const bounds = new google.maps.LatLngBounds();
+	bounds.extend(CASTELFALFI);
+	for (const pin of pins) {
+		bounds.extend({ lat: pin.lat, lng: pin.lng });
+	}
+	return bounds;
+}
+
+function cornersFromBounds(bounds: google.maps.LatLngBounds): BoundsCorners {
+	const sw = bounds.getSouthWest();
+	const ne = bounds.getNorthEast();
+	return {
+		south: sw.lat(),
+		west: sw.lng(),
+		north: ne.lat(),
+		east: ne.lng()
+	};
+}
+
+function boundsNearlyEqual(a: BoundsCorners, b: BoundsCorners) {
+	return (
+		Math.abs(a.south - b.south) < BOUNDS_EPSILON &&
+		Math.abs(a.west - b.west) < BOUNDS_EPSILON &&
+		Math.abs(a.north - b.north) < BOUNDS_EPSILON &&
+		Math.abs(a.east - b.east) < BOUNDS_EPSILON
+	);
+}
+
+function targetPoints(pins: ListingWithCoords[]): LatLngLiteral[] {
+	return [CASTELFALFI, ...pins.map(pin => ({ lat: pin.lat, lng: pin.lng }))];
+}
+
+/** True when every point sits inside the current view inset by VISIBILITY_PAD_RATIO. */
+function allPointsComfortablyVisible(
+	mapBounds: google.maps.LatLngBounds,
+	points: LatLngLiteral[]
+) {
+	const sw = mapBounds.getSouthWest();
+	const ne = mapBounds.getNorthEast();
+	const latPad = (ne.lat() - sw.lat()) * VISIBILITY_PAD_RATIO;
+	const lngPad = (ne.lng() - sw.lng()) * VISIBILITY_PAD_RATIO;
+	const south = sw.lat() + latPad;
+	const north = ne.lat() - latPad;
+	const west = sw.lng() + lngPad;
+	const east = ne.lng() - lngPad;
+
+	return points.every(
+		point =>
+			point.lat >= south &&
+			point.lat <= north &&
+			point.lng >= west &&
+			point.lng <= east
+	);
+}
+
+/**
+ * Keeps the viewport fitted to Castelfalfi + active listing pins whenever
+ * the displayed pin set changes. Marker rendering stays in MapPins.
+ */
+function FitBoundsToPins({ pins }: { pins: ListingWithCoords[] }) {
+	const map = useMap();
+	const lastFitCornersRef = useRef<BoundsCorners | null>(null);
+	const mappedInstanceRef = useRef<ReturnType<typeof useMap>>(null);
+	// Stable across hover/selection noise: only lat/lng matter for fitting.
+	const signature = pinSignature(pins);
+
+	useEffect(() => {
+		if (!map) return;
+
+		if (mappedInstanceRef.current !== map) {
+			mappedInstanceRef.current = map;
+			lastFitCornersRef.current = null;
+		}
+
+		const bounds = buildTargetBounds(pins);
+		const nextCorners = cornersFromBounds(bounds);
+		const points = targetPoints(pins);
+
+		const currentBounds = map.getBounds();
+		const alreadyVisible =
+			Boolean(currentBounds) &&
+			allPointsComfortablyVisible(currentBounds!, points);
+		const sameAsLastFit =
+			lastFitCornersRef.current !== null &&
+			boundsNearlyEqual(lastFitCornersRef.current, nextCorners);
+
+		// Skip when the target is unchanged and still on screen, or when a new /
+		// narrower pin set remains comfortably inside the current view.
+		if (sameAsLastFit && alreadyVisible) {
+			return;
+		}
+		if (alreadyVisible) {
+			lastFitCornersRef.current = nextCorners;
+			return;
+		}
+
+		map.fitBounds(bounds, FIT_PADDING);
+		lastFitCornersRef.current = nextCorners;
+
+		const idleListener = map.addListener('idle', () => {
+			const zoom = map.getZoom();
+			if (zoom != null && zoom > MAX_FIT_ZOOM) {
+				map.setZoom(MAX_FIT_ZOOM);
+			}
+			idleListener.remove();
+		});
+
+		return () => {
+			idleListener.remove();
+		};
+	}, [map, signature, pins]);
+
+	return null;
 }
 
 function CastelfalfiPin() {
@@ -179,6 +320,7 @@ export default function LocationsMap({
 					fullscreenControl={false}
 					reuseMaps
 				>
+					<FitBoundsToPins pins={pins} />
 					<MapPins
 						pins={pins}
 						selectedName={selectedName}
