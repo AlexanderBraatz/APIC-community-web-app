@@ -121,7 +121,7 @@ function ListingResultCard({ listing }: { listing: Listing }) {
 				{/* <hr className="border-[#b8a99a]" /> */}
 
 				{listing.notes ? (
-					<p className="font-sans text-base leading-loose text-[#444444]">
+					<p className="font-sans text-base leading-loose text-[#333333]">
 						{listing.notes}
 					</p>
 				) : null}
@@ -200,7 +200,7 @@ function ListingResultCard({ listing }: { listing: Listing }) {
 							href={listing.sourceUrl}
 							target="_blank"
 							rel="noopener noreferrer"
-							className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#634627] px-3.5 py-2 text-sm font-medium text-[#805b32] transition-colors hover:bg-[#f7f2ec]"
+							className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#3d2a16] px-3.5 py-2 text-sm font-medium text-[#3d2a16] transition-colors duration-200 ease-in-out  hover:bg-[#3d2a16] hover:text-[#f7f2ec]"
 						>
 							<Map
 								className="size-4 shrink-0"
