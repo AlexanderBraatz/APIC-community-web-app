@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { signOut } from '@/app/auth/actions';
 import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +17,7 @@ export default function AuthHeaderActions({
 }: AuthHeaderActionsProps) {
 	const pathname = usePathname();
 	const [signedIn, setSignedIn] = useState<boolean | null>(null);
+	const [isAdmin, setIsAdmin] = useState(false);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -25,8 +25,37 @@ export default function AuthHeaderActions({
 
 		async function syncFromCookies() {
 			const { data } = await supabase.auth.getClaims();
+			const hasSession = Boolean(data?.claims);
+
+			if (!hasSession) {
+				if (!cancelled) {
+					setSignedIn(false);
+					setIsAdmin(false);
+				}
+				return;
+			}
+
+			const {
+				data: { user }
+			} = await supabase.auth.getUser();
+
+			if (!user) {
+				if (!cancelled) {
+					setSignedIn(false);
+					setIsAdmin(false);
+				}
+				return;
+			}
+
+			const { data: profile } = await supabase
+				.from('profiles')
+				.select('role')
+				.eq('id', user.id)
+				.maybeSingle();
+
 			if (!cancelled) {
-				setSignedIn(Boolean(data?.claims));
+				setSignedIn(true);
+				setIsAdmin(profile?.role === 'admin');
 			}
 		}
 
@@ -37,9 +66,14 @@ export default function AuthHeaderActions({
 		const {
 			data: { subscription }
 		} = supabase.auth.onAuthStateChange((_event, session) => {
-			if (!cancelled) {
-				setSignedIn(Boolean(session));
+			if (!session) {
+				if (!cancelled) {
+					setSignedIn(false);
+					setIsAdmin(false);
+				}
+				return;
 			}
+			void syncFromCookies();
 		});
 
 		return () => {
@@ -83,41 +117,30 @@ export default function AuthHeaderActions({
 			<Link href="/place" className={linkClass} onClick={onNavigate}>
 				Member Dashboard
 			</Link>
+			{isAdmin ? (
+				<Link
+					href="/members/admin"
+					className={linkClass}
+					onClick={onNavigate}
+				>
+					Admin Dashboard
+				</Link>
+			) : null}
 			{mobile ? (
-				<>
-					<Link
-						href="/account"
-						className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium text-white underline"
-						onClick={onNavigate}
-					>
-						Account
-					</Link>
-					<form action={signOut} className="w-full">
-						<button
-							type="submit"
-							className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium text-white/90"
-						>
-							Sign out
-						</button>
-					</form>
-				</>
+				<Link
+					href="/account"
+					className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium text-white underline"
+					onClick={onNavigate}
+				>
+					Account
+				</Link>
 			) : (
-				<>
-					<Link
-						href="/account"
-						className="rounded-[2px] border border-[#634627] px-3 py-2 text-sm font-medium text-[#805b32] hover:bg-[#f7f2ec]"
-					>
-						Account
-					</Link>
-					<form action={signOut}>
-						<button
-							type="submit"
-							className="rounded-[2px] px-2 py-2 text-sm font-medium text-[#805b32] underline-offset-2 hover:underline"
-						>
-							Sign out
-						</button>
-					</form>
-				</>
+				<Link
+					href="/account"
+					className="rounded-[2px] border border-[#634627] px-3 py-2 text-sm font-medium text-[#805b32] hover:bg-[#f7f2ec]"
+				>
+					Account
+				</Link>
 			)}
 		</div>
 	);

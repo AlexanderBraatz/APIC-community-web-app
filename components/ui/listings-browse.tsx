@@ -30,7 +30,7 @@ import {
 	Search,
 	X
 } from 'lucide-react';
-	import {
+import {
 	useDeferredValue,
 	useEffect,
 	useId,
@@ -235,6 +235,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const [panelOpen, setPanelOpen] = useState(false);
 	const deferredQuery = useDeferredValue(query);
 	const rootRef = useRef<HTMLDivElement>(null);
+	// Non-sticky sentinel: scrollIntoView on the sticky bar is a no-op while it is
+	// already stuck at the top of the viewport, which is exactly when we need to scroll.
+	const scrollAnchorRef = useRef<HTMLDivElement>(null);
 	const pendingScrollToSearchRef = useRef(false);
 	const inputId = useId();
 
@@ -346,11 +349,21 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 
 	// After a filter that shortens the list, document height collapses and the
 	// browser clamps scroll — which makes the sticky search/map look like they
-	// jumped. Re-align the search bar to the top of the viewport after layout.
+	// jumped. Scroll the in-flow anchor (not the sticky bar) to the top.
 	useLayoutEffect(() => {
 		if (!pendingScrollToSearchRef.current) return;
 		pendingScrollToSearchRef.current = false;
-		rootRef.current?.scrollIntoView({ block: 'start', behavior: 'auto' });
+		const anchor = scrollAnchorRef.current;
+		if (!anchor) return;
+
+		const scrollAnchorToTop = () => {
+			const top = anchor.getBoundingClientRect().top + window.scrollY;
+			window.scrollTo({ top, behavior: 'auto' });
+		};
+
+		scrollAnchorToTop();
+		// Map/list height can settle a frame later; re-apply so clamp doesn't win.
+		requestAnimationFrame(scrollAnchorToTop);
 	}, [results, activeTags, selectedPlaceName]);
 
 	function addTag(tag: string) {
@@ -436,6 +449,11 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 
 			<div
 				id="listings-browse-search"
+				ref={scrollAnchorRef}
+				className="h-0 scroll-mt-0"
+				aria-hidden="true"
+			/>
+			<div
 				ref={rootRef}
 				className="sticky top-0 z-40 w-full bg-[#eeeae4] px-4 py-5 sm:px-6 lg:px-8"
 			>
@@ -574,7 +592,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 					</div>
 
 					{/* List — second on mobile, left column on desktop */}
-					<div className="relative order-2 lg:order-1 pt-5">
+					<div className="relative order-2 [overflow-anchor:none] lg:order-1 pt-5">
 						{isFiltered && results.length === 0 ? (
 							<p className="font-heading text-base text-[#666666]">
 								No places match your search.
