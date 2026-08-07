@@ -434,9 +434,11 @@ export default function LocationsMap({
 					defaultCenter={CASTELFALFI}
 					defaultZoom={DEFAULT_ZOOM}
 					gestureHandling="greedy"
+					zoomControl={true}
+					cameraControl={false}
 					mapTypeControl={false}
 					streetViewControl={false}
-					fullscreenControl={false}
+					fullscreenControl={true}
 					styles={MAP_STYLES}
 					reuseMaps
 				>
