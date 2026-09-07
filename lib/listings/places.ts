@@ -50,6 +50,10 @@ type PlaceDetailsResponse = {
 	internationalPhoneNumber?: string;
 	websiteUri?: string;
 	googleMapsUri?: string;
+	types?: string[];
+	primaryType?: string;
+	primaryTypeDisplayName?: { text?: string } | string;
+	editorialSummary?: { text?: string };
 	regularOpeningHours?: {
 		periods?: {
 			open?: { day?: number; hour?: number; minute?: number };
@@ -193,7 +197,11 @@ export async function placeDetails(
 			'internationalPhoneNumber',
 			'websiteUri',
 			'regularOpeningHours',
-			'googleMapsUri'
+			'googleMapsUri',
+			'types',
+			'primaryType',
+			'primaryTypeDisplayName',
+			'editorialSummary'
 		].join(',');
 
 		const response = await fetch(
@@ -231,8 +239,26 @@ export async function placeDetails(
 
 		const hasCoords = lat !== null && lng !== null;
 
+		const placesTypes = Array.isArray(payload.types)
+			? payload.types.filter(
+					(item): item is string =>
+						typeof item === 'string' && Boolean(item.trim())
+				)
+			: [];
+		const placesPrimaryType =
+			typeof payload.primaryType === 'string' && payload.primaryType.trim()
+				? payload.primaryType.trim()
+				: null;
+		const type =
+			typeof payload.primaryTypeDisplayName === 'string'
+				? payload.primaryTypeDisplayName.trim() || null
+				: payload.primaryTypeDisplayName?.text?.trim() || null;
+		const editorialSummary =
+			payload.editorialSummary?.text?.trim() || null;
+
 		const place: PlaceAutofill = {
 			name: payload.displayName?.text?.trim() || null,
+			type,
 			address: payload.formattedAddress?.trim() || null,
 			contacts: placeAutofillToContacts({
 				phone:
@@ -244,7 +270,10 @@ export async function placeDetails(
 			sourceUrl: payload.googleMapsUri?.trim() || null,
 			lat: hasCoords ? lat : null,
 			lng: hasCoords ? lng : null,
-			openingHours: googleRegularHoursToOpeningHours(payload.regularOpeningHours)
+			openingHours: googleRegularHoursToOpeningHours(payload.regularOpeningHours),
+			placesPrimaryType,
+			placesTypes,
+			editorialSummary
 		};
 
 		return { ok: true, place };

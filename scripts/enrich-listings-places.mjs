@@ -143,7 +143,9 @@ async function placeDetails(placeId, key) {
 		'location',
 		'googleMapsUri',
 		'regularOpeningHours',
-		'primaryTypeDisplayName'
+		'primaryTypeDisplayName',
+		'primaryType',
+		'types'
 	].join(',');
 
 	const response = await fetch(
@@ -180,6 +182,13 @@ async function placeDetails(placeId, key) {
 		typeof payload.primaryTypeDisplayName === 'string'
 			? payload.primaryTypeDisplayName.trim()
 			: payload.primaryTypeDisplayName?.text?.trim() || null;
+	const placesPrimaryType =
+		typeof payload.primaryType === 'string' && payload.primaryType.trim()
+			? payload.primaryType.trim()
+			: null;
+	const placesTypes = Array.isArray(payload.types)
+		? payload.types.filter((item) => typeof item === 'string' && item.trim())
+		: [];
 
 	return {
 		ok: true,
@@ -193,7 +202,9 @@ async function placeDetails(placeId, key) {
 			openingHours: googleRegularHoursToOpeningHours(
 				payload.regularOpeningHours
 			),
-			primaryType: primaryType || null
+			primaryType: primaryType || null,
+			placesPrimaryType,
+			placesTypes
 		}
 	};
 }
@@ -423,7 +434,9 @@ async function main() {
 			longitude: place.lng,
 			source_url: place.sourceUrl,
 			places_enrichment_status: 'updated',
-			places_enrichment_notes: notes
+			places_enrichment_notes: notes,
+			places_primary_type: place.placesPrimaryType,
+			places_types: place.placesTypes
 		};
 		if (fillType) patch.type = place.primaryType;
 		if (fillHours) patch.opening_hours = place.openingHours;

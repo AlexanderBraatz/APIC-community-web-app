@@ -1,8 +1,8 @@
 import ListingForm from '@/components/admin/listing-form';
-import { listAllTagNames } from '@/lib/listings/admin-actions';
+import { listKnownTags } from '@/lib/listings/admin-actions';
 
 export default async function NewListingPage() {
-	const knownTags = await listAllTagNames();
+	const knownTags = await listKnownTags();
 
 	return (
 		<div className="space-y-6">

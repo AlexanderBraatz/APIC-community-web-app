@@ -15,7 +15,9 @@
 		"migrate:listings-fields": "node --env-file=.env.local scripts/migrate-listings-fields.mjs",
 		"enrich:listings-places": "node --env-file=.env.local scripts/enrich-listings-places.mjs",
 		"seed:attendance": "node --env-file=.env.local scripts/seed-attendance.mjs",
-		"supabase:types": "supabase gen types typescript --project-id umvlotfvnnpttaddjwna --schema public > lib/supabase/database.types.ts"
+		"supabase:types": "supabase gen types typescript --project-id umvlotfvnnpttaddjwna --schema public > lib/supabase/database.types.ts",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"dependencies": {
 		"@base-ui/react": "^1.6.0",
@@ -28,6 +30,7 @@
 		"clsx": "^2.1.1",
 		"lucide-react": "^1.27.0",
 		"next": "16.2.11",
+		"openai": "^7.4.0",
 		"react": "19.2.4",
 		"react-dom": "19.2.4",
 		"shadcn": "^4.15.0",
@@ -45,6 +48,7 @@
 		"eslint-config-next": "16.2.11",
 		"supabase": "^2.111.0",
 		"tailwindcss": "^4",
-		"typescript": "^5"
+		"typescript": "^5",
+		"vitest": "^4.1.10"
 	}
 }

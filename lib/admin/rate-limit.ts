@@ -56,3 +56,8 @@ export function limitGeocodeBatch(adminUserId: string): RateLimitResult {
 export function limitPlaces(adminUserId: string): RateLimitResult {
 	return checkRateLimit(`places:${adminUserId}`, 60, 60 * 1000);
 }
+
+/** Tag suggest / alias backfill: 20 per admin per minute. */
+export function limitTagSuggest(adminUserId: string): RateLimitResult {
+	return checkRateLimit(`tag-suggest:${adminUserId}`, 20, 60 * 1000);
+}

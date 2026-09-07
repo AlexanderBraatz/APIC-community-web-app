@@ -101,12 +101,31 @@ export function fuzzyScore(query: string, text: string): number {
 	return 0;
 }
 
-export function listingMatchesQuery(listing: Listing, query: string): boolean {
+export function listingMatchesQuery(
+	listing: Listing,
+	query: string,
+	aliasMap?: Map<string, string[]>
+): boolean {
 	if (!normalize(query)) return true;
 
 	if (fuzzyScore(query, listing.name) > 0) return true;
 	if (listing.type && fuzzyScore(query, listing.type) > 0) return true;
-	return listing.tags.some(tag => fuzzyScore(query, tag) > 0);
+	if (listing.tags.some(tag => fuzzyScore(query, tag) > 0)) return true;
+
+	if (aliasMap && aliasMap.size > 0) {
+		for (const [aliasKey, canonicals] of aliasMap) {
+			if (fuzzyScore(query, aliasKey) <= 0) continue;
+			if (
+				canonicals.some(canonical =>
+					listing.tags.some(tag => tag.toLowerCase() === canonical.toLowerCase())
+				)
+			) {
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 export function listingHasAllTags(listing: Listing, activeTags: string[]): boolean {
@@ -119,11 +138,13 @@ export function listingHasAllTags(listing: Listing, activeTags: string[]): boole
 export function filterListings(
 	listings: Listing[],
 	activeTags: string[],
-	query = ''
+	query = '',
+	aliasMap?: Map<string, string[]>
 ): Listing[] {
 	return listings.filter(
 		listing =>
-			listingHasAllTags(listing, activeTags) && listingMatchesQuery(listing, query)
+			listingHasAllTags(listing, activeTags) &&
+			listingMatchesQuery(listing, query, aliasMap)
 	);
 }
 
@@ -132,7 +153,8 @@ const SUGGESTION_LIMIT = 6;
 export function suggest(
 	query: string,
 	listings: Listing[],
-	activeTags: string[] = []
+	activeTags: string[] = [],
+	aliasMap?: Map<string, string[]>
 ): { tags: string[]; places: Listing[] } {
 	const q = normalize(query);
 	if (!q) return { tags: [], places: [] };
@@ -143,10 +165,32 @@ export function suggest(
 		tag => !activeKeys.has(tag.toLowerCase())
 	);
 
-	const rankedTags = availableTags
-		.map(tag => ({ tag, score: fuzzyScore(query, tag) }))
+	const aliasCanonicalHits = new Set<string>();
+	if (aliasMap) {
+		for (const [aliasKey, canonicals] of aliasMap) {
+			if (fuzzyScore(query, aliasKey) <= 0) continue;
+			for (const canonical of canonicals) {
+				if (activeKeys.has(canonical.toLowerCase())) continue;
+				if (availableTags.some(tag => tag.toLowerCase() === canonical.toLowerCase())) {
+					aliasCanonicalHits.add(canonical);
+				}
+			}
+		}
+	}
+
+	const rankedTags = [
+		...availableTags.map(tag => ({ tag, score: fuzzyScore(query, tag) })),
+		...[...aliasCanonicalHits].map(tag => ({
+			tag,
+			score: Math.max(35, fuzzyScore(query, tag))
+		}))
+	]
 		.filter(item => item.score > 0)
 		.sort((a, b) => b.score - a.score || a.tag.localeCompare(b.tag))
+		.filter((item, index, arr) =>
+			arr.findIndex(other => other.tag.toLowerCase() === item.tag.toLowerCase()) ===
+			index
+		)
 		.slice(0, SUGGESTION_LIMIT)
 		.map(item => item.tag);
 
@@ -156,7 +200,19 @@ export function suggest(
 			score: Math.max(
 				fuzzyScore(query, listing.name),
 				listing.type ? fuzzyScore(query, listing.type) : 0,
-				...listing.tags.map(tag => fuzzyScore(query, tag) * 0.5)
+				...listing.tags.map(tag => fuzzyScore(query, tag) * 0.5),
+				...(aliasMap
+					? [...aliasMap.entries()].flatMap(([aliasKey, canonicals]) => {
+							const aliasHit = fuzzyScore(query, aliasKey);
+							if (aliasHit <= 0) return [0];
+							const onListing = canonicals.some(canonical =>
+								listing.tags.some(
+									tag => tag.toLowerCase() === canonical.toLowerCase()
+								)
+							);
+							return onListing ? [aliasHit * 0.45] : [0];
+						})
+					: [0])
 			)
 		}))
 		.filter(item => item.score > 0)

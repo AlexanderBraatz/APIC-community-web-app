@@ -11,7 +11,10 @@ export const AUDIT_ACTIONS = [
 	'listing.update',
 	'listing.delete',
 	'listing.geocode',
-	'tag.create'
+	'tag.create',
+	'tag.update',
+	'tag.delete',
+	'tag.aliases_backfill'
 ] as const;
 
 export const AUDIT_TARGET_TYPES = [

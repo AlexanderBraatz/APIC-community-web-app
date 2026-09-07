@@ -3,7 +3,7 @@ import DeleteListingButton from '@/components/admin/delete-listing-button';
 import ListingForm from '@/components/admin/listing-form';
 import {
 	getAdminListing,
-	listAllTagNames
+	listKnownTags
 } from '@/lib/listings/admin-actions';
 
 export default async function EditListingPage({
@@ -17,7 +17,7 @@ export default async function EditListingPage({
 	const query = await searchParams;
 	const [listing, knownTags] = await Promise.all([
 		getAdminListing(id),
-		listAllTagNames()
+		listKnownTags()
 	]);
 
 	if (!listing) notFound();

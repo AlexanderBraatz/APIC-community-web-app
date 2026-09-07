@@ -10,6 +10,7 @@ import {
 	parseTags,
 	type AdminListing,
 	type GeocodeCandidate,
+	type KnownTag,
 	type ListingInput
 } from '@/lib/listings/types';
 import {
@@ -21,6 +22,16 @@ import {
 	openingHoursToJson,
 	parseOpeningHours
 } from '@/lib/listings/opening-hours';
+import {
+	arrayToPendingMerges
+} from '@/lib/listings/tag-suggest';
+import { mergeAliasesIntoTags } from '@/lib/listings/tag-alias-persist';
+import { backfillEmptyAliasesForNames } from '@/lib/listings/tag-suggest-actions';
+import {
+	normalizeLabel,
+	resolveTagInputs,
+	type TagRecord
+} from '@/lib/listings/tag-resolution';
 import type { CategorySlug } from '@/lib/listings-search';
 
 type ListingRow = {
@@ -35,6 +46,8 @@ type ListingRow = {
 	source_url: string | null;
 	latitude: number | null;
 	longitude: number | null;
+	places_primary_type: string | null;
+	places_types: string[] | null;
 	updated_at: string;
 	listing_tag_assignments:
 		| {
@@ -78,6 +91,8 @@ function mapAdminListing(row: ListingRow): AdminListing {
 		lat: row.latitude,
 		lng: row.longitude,
 		tags: tagsFromAssignments(row.listing_tag_assignments),
+		placesPrimaryType: row.places_primary_type ?? null,
+		placesTypes: Array.isArray(row.places_types) ? row.places_types : [],
 		updatedAt: row.updated_at
 	};
 }
@@ -94,6 +109,8 @@ const LISTING_SELECT = `
 	source_url,
 	latitude,
 	longitude,
+	places_primary_type,
+	places_types,
 	updated_at,
 	listing_tag_assignments (
 		listing_tags ( name )
@@ -143,8 +160,45 @@ function listingPayload(input: ListingInput, userId: string) {
 		source_url: input.sourceUrl,
 		latitude: input.lat,
 		longitude: input.lng,
+		places_primary_type: input.placesPrimaryType,
+		places_types: input.placesTypes,
 		updated_by: userId
 	};
+}
+
+function parsePlacesTypesField(raw: string): string[] {
+	if (!raw.trim()) return [];
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		if (!Array.isArray(parsed)) return [];
+		return parsed
+			.filter((item): item is string => typeof item === 'string')
+			.map(normalizeLabel)
+			.filter(Boolean);
+	} catch {
+		return [];
+	}
+}
+
+function parsePendingAliasMerges(
+	raw: string
+): Map<string, string[]> {
+	if (!raw.trim()) return new Map();
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		if (!Array.isArray(parsed)) return new Map();
+		return arrayToPendingMerges(
+			parsed.filter(
+				(item): item is { canonical: string; aliases: string[] } =>
+					Boolean(item) &&
+					typeof item === 'object' &&
+					typeof (item as { canonical?: unknown }).canonical === 'string' &&
+					Array.isArray((item as { aliases?: unknown }).aliases)
+			)
+		);
+	} catch {
+		return new Map();
+	}
 }
 
 async function syncListingTags(
@@ -152,29 +206,49 @@ async function syncListingTags(
 	listingId: string,
 	tags: string[],
 	userId: string
-) {
+): Promise<{ createdNames: string[] }> {
 	const { error: clearError } = await supabase
 		.from('listing_tag_assignments')
 		.delete()
 		.eq('listing_id', listingId);
 	if (clearError) throw new Error(clearError.message);
 
-	if (tags.length === 0) return;
+	if (tags.length === 0) return { createdNames: [] };
 
 	const { data: existingTags, error: listError } = await supabase
 		.from('listing_tags')
-		.select('id, name');
+		.select('id, name, aliases');
 	if (listError) throw new Error(listError.message);
 
-	const idByLower = new Map(
-		(existingTags ?? []).map(row => [row.name.trim().toLowerCase(), row.id])
-	);
+	const vocabulary: TagRecord[] = (existingTags ?? []).map(row => ({
+		id: row.id,
+		name: row.name,
+		aliases: Array.isArray(row.aliases) ? row.aliases : []
+	}));
 
-	const toInsert: { name: string; created_by: string }[] = [];
-	for (const tag of tags) {
-		const key = tag.toLowerCase();
-		if (!idByLower.has(key)) {
-			toInsert.push({ name: tag, created_by: userId });
+	const resolved = resolveTagInputs(tags, vocabulary);
+	const invalid = resolved.find(r => r.status === 'invalid');
+	if (invalid && invalid.status === 'invalid') {
+		throw new Error(`Invalid tag “${invalid.raw}”: ${invalid.reason}`);
+	}
+
+	const tagIds: string[] = [];
+	const toInsert: { name: string; created_by: string; aliases: string[] }[] =
+		[];
+	const createdNames: string[] = [];
+
+	for (const result of resolved) {
+		if (result.status === 'matched') {
+			tagIds.push(result.tag.id);
+			continue;
+		}
+		if (result.status === 'unresolved') {
+			toInsert.push({
+				name: result.normalized,
+				created_by: userId,
+				aliases: []
+			});
+			createdNames.push(result.normalized);
 		}
 	}
 
@@ -185,7 +259,7 @@ async function syncListingTags(
 			.select('id, name');
 		if (insertError) throw new Error(insertError.message);
 		for (const row of inserted ?? []) {
-			idByLower.set(row.name.trim().toLowerCase(), row.id);
+			tagIds.push(row.id);
 		}
 
 		await writeAudit(supabase, {
@@ -196,16 +270,16 @@ async function syncListingTags(
 		});
 	}
 
-	const assignments = tags.map(tag => {
-		const id = idByLower.get(tag.toLowerCase());
-		if (!id) throw new Error(`Missing tag id for ${tag}`);
-		return { listing_id: listingId, tag_id: id };
-	});
+	const uniqueAssignments = [
+		...new Map(tagIds.map(id => [id, { listing_id: listingId, tag_id: id }]))
+	].map(([, row]) => row);
 
 	const { error: assignError } = await supabase
 		.from('listing_tag_assignments')
-		.insert(assignments);
+		.insert(uniqueAssignments);
 	if (assignError) throw new Error(assignError.message);
+
+	return { createdNames };
 }
 
 function parseListingForm(formData: FormData): ListingInput | { error: string } {
@@ -245,7 +319,12 @@ function parseListingForm(formData: FormData): ListingInput | { error: string } 
 		sourceUrl: String(formData.get('source_url') ?? '').trim() || null,
 		lat,
 		lng,
-		tags: parseTags(String(formData.get('tags') ?? ''))
+		tags: parseTags(String(formData.get('tags') ?? '')),
+		placesPrimaryType:
+			String(formData.get('places_primary_type') ?? '').trim() || null,
+		placesTypes: parsePlacesTypesField(
+			String(formData.get('places_types') ?? '')
+		)
 	};
 }
 
@@ -302,13 +381,52 @@ export async function getAdminListing(id: string): Promise<AdminListing | null> 
 }
 
 export async function listAllTagNames(): Promise<string[]> {
+	const tags = await listKnownTags();
+	return tags.map(tag => tag.name);
+}
+
+export async function listKnownTags(): Promise<KnownTag[]> {
 	const { supabase } = await requireAdmin();
 	const { data, error } = await supabase
 		.from('listing_tags')
-		.select('name')
+		.select('id, name, aliases')
 		.order('name', { ascending: true });
 	if (error) throw new Error(error.message);
-	return (data ?? []).map(row => row.name);
+	return (data ?? []).map(row => ({
+		id: row.id,
+		name: row.name,
+		aliases: Array.isArray(row.aliases) ? row.aliases : []
+	}));
+}
+
+async function persistListingTagsAndAliases(
+	supabase: Awaited<ReturnType<typeof requireAdmin>>['supabase'],
+	listingId: string,
+	parsed: ListingInput,
+	userId: string,
+	formData: FormData
+) {
+	const { createdNames } = await syncListingTags(
+		supabase,
+		listingId,
+		parsed.tags,
+		userId
+	);
+
+	const pendingMerges = parsePendingAliasMerges(
+		String(formData.get('pending_alias_merges') ?? '')
+	);
+	try {
+		await mergeAliasesIntoTags(supabase, pendingMerges);
+	} catch {
+		// Alias merge must not fail the listing save.
+	}
+
+	try {
+		await backfillEmptyAliasesForNames(supabase, createdNames);
+	} catch {
+		// Save-time alias generation is best-effort.
+	}
 }
 
 export async function createListing(
@@ -329,7 +447,13 @@ export async function createListing(
 			.single();
 		if (error) return { ok: false, error: error.message };
 
-		await syncListingTags(supabase, data.id, parsed.tags, user.id);
+		await persistListingTagsAndAliases(
+			supabase,
+			data.id,
+			parsed,
+			user.id,
+			formData
+		);
 		await writeAudit(supabase, {
 			action: 'listing.create',
 			targetId: data.id,
@@ -364,7 +488,13 @@ export async function updateListing(
 			.eq('id', id);
 		if (error) return { ok: false, error: error.message };
 
-		await syncListingTags(supabase, id, parsed.tags, user.id);
+		await persistListingTagsAndAliases(
+			supabase,
+			id,
+			parsed,
+			user.id,
+			formData
+		);
 		await writeAudit(supabase, {
 			action: 'listing.update',
 			targetId: id,

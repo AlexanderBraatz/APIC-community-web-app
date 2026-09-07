@@ -17,13 +17,13 @@ import {
 	whatsappHref
 } from '@/lib/listings/contacts';
 import { formatOpeningHoursLines } from '@/lib/listings/opening-hours';
-import { fetchListingsForCategory } from '@/lib/listings/fetch-client';
+import { fetchListingsForCategory, fetchTagAliasMap } from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
 import {
 	Clock,
 	Globe,
 	Mail,
-	Map,
+	Map as MapIcon,
 	MapPin,
 	MessageCircle,
 	Phone,
@@ -203,7 +203,7 @@ function ListingResultCard({ listing }: { listing: Listing }) {
 							rel="noopener noreferrer"
 							className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#3d2a16] px-3.5 py-2 text-sm font-medium text-[#3d2a16] transition-colors duration-200 ease-in-out  hover:bg-[#3d2a16] hover:text-[#f7f2ec]"
 						>
-							<Map
+							<MapIcon
 								className="size-4 shrink-0"
 								aria-hidden="true"
 							/>
@@ -222,6 +222,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 
 	const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
 	const [listings, setListings] = useState<Listing[]>([]);
+	const [aliasMap, setAliasMap] = useState<Map<string, string[]>>(
+		() => new Map()
+	);
 	const [loadError, setLoadError] = useState<string | null>(null);
 
 	const [query, setQuery] = useState('');
@@ -272,6 +275,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	useEffect(() => {
 		if (authStatus !== 'signed_in') {
 			setListings([]);
+			setAliasMap(new Map());
 			setLoadError(null);
 			return;
 		}
@@ -280,14 +284,19 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 
 		async function load() {
 			try {
-				const rows = await fetchListingsForCategory(category);
+				const [rows, aliases] = await Promise.all([
+					fetchListingsForCategory(category),
+					fetchTagAliasMap()
+				]);
 				if (!cancelled) {
 					setListings(rows);
+					setAliasMap(aliases);
 					setLoadError(null);
 				}
 			} catch (error) {
 				if (!cancelled) {
 					setListings([]);
+					setAliasMap(new Map());
 					setLoadError(
 						error instanceof Error ? error.message : 'Could not load listings.'
 					);
@@ -302,8 +311,8 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	}, [authStatus, category]);
 
 	const suggestions = useMemo(
-		() => suggest(deferredQuery, listings, activeTags),
-		[deferredQuery, listings, activeTags]
+		() => suggest(deferredQuery, listings, activeTags, aliasMap),
+		[deferredQuery, listings, activeTags, aliasMap]
 	);
 
 	const results = useMemo(() => {
@@ -315,8 +324,8 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 			return listings;
 		}
 
-		return filterListings(listings, activeTags, deferredQuery);
-	}, [listings, activeTags, deferredQuery, selectedPlaceName]);
+		return filterListings(listings, activeTags, deferredQuery, aliasMap);
+	}, [listings, activeTags, deferredQuery, selectedPlaceName, aliasMap]);
 
 	const mapLocations = useMemo(() => {
 		const scoped =

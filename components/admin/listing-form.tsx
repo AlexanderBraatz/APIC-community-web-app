@@ -1,11 +1,14 @@
 'use client';
 
-import { useMemo, useState, useTransition, type FormEvent } from 'react';
+import { useState, useTransition, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import AdminPinMap from '@/components/admin/pin-map';
 import PlacesLookup, {
 	type PlacesLookupStep
 } from '@/components/admin/places-lookup';
+import ListingTagsEditor, {
+	type SelectedTagChip
+} from '@/components/admin/listing-tags-editor';
 import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,7 +36,11 @@ import {
 	type DayKey,
 	type OpeningHoursFormState
 } from '@/lib/listings/opening-hours';
-import type { AdminListing, PlaceAutofill } from '@/lib/listings/types';
+import type {
+	AdminListing,
+	KnownTag,
+	PlaceAutofill
+} from '@/lib/listings/types';
 import { CATEGORY_SLUGS } from '@/lib/listings-search';
 
 const CATEGORY_LABELS: Record<(typeof CATEGORY_SLUGS)[number], string> = {
@@ -46,7 +53,7 @@ const CATEGORY_LABELS: Record<(typeof CATEGORY_SLUGS)[number], string> = {
 type ListingFormProps = {
 	mode: 'create' | 'edit';
 	listing?: AdminListing;
-	knownTags: string[];
+	knownTags: KnownTag[];
 };
 
 type FormPhase = 'lookup' | 'details';
@@ -96,7 +103,18 @@ export default function ListingForm({
 	);
 	const [category, setCategory] = useState(listing?.category ?? 'food-dining');
 	const [sourceUrl, setSourceUrl] = useState(listing?.sourceUrl ?? '');
-	const [tagsText, setTagsText] = useState((listing?.tags ?? []).join(', '));
+	const [selectedTags, setSelectedTags] = useState<SelectedTagChip[]>(() =>
+		(listing?.tags ?? []).map(name => ({ name, isNew: false }))
+	);
+	const [pendingAliasMerges, setPendingAliasMerges] = useState<
+		{ canonical: string; aliases: string[] }[]
+	>([]);
+	const [placesPrimaryType, setPlacesPrimaryType] = useState<string | null>(
+		listing?.placesPrimaryType ?? null
+	);
+	const [placesTypes, setPlacesTypes] = useState<string[]>(
+		listing?.placesTypes ?? []
+	);
 	const [lat, setLat] = useState<number | null>(listing?.lat ?? null);
 	const [lng, setLng] = useState<number | null>(listing?.lng ?? null);
 	const [latInput, setLatInput] = useState(
@@ -107,25 +125,6 @@ export default function ListingForm({
 	);
 
 	const pinLocked = lat !== null && lng !== null;
-
-	const tagSuggestions = useMemo(() => {
-		const active = new Set(
-			tagsText
-				.split(',')
-				.map(t => t.trim().toLowerCase())
-				.filter(Boolean)
-		);
-		return knownTags.filter(tag => !active.has(tag.toLowerCase())).slice(0, 24);
-	}, [knownTags, tagsText]);
-
-	function addTag(tag: string) {
-		const current = tagsText
-			.split(',')
-			.map(t => t.trim())
-			.filter(Boolean);
-		if (current.some(t => t.toLowerCase() === tag.toLowerCase())) return;
-		setTagsText([...current, tag].join(', '));
-	}
 
 	function setPin(nextLat: number, nextLng: number) {
 		setLat(nextLat);
@@ -169,6 +168,7 @@ export default function ListingForm({
 
 	function applyPlaceAutofill(place: PlaceAutofill) {
 		if (place.name) setName(place.name);
+		if (place.type) setType(place.type);
 		if (place.address) setAddress(place.address);
 		if (place.contacts.length) {
 			setContacts(prev => {
@@ -187,6 +187,8 @@ export default function ListingForm({
 		if (place.lat !== null && place.lng !== null) {
 			setPin(place.lat, place.lng);
 		}
+		setPlacesPrimaryType(place.placesPrimaryType);
+		setPlacesTypes(place.placesTypes);
 		setPhase('details');
 		setMessage(
 			place.lat !== null && place.lng !== null
@@ -208,7 +210,10 @@ export default function ListingForm({
 		const formData = new FormData(event.currentTarget);
 		formData.set('latitude', lat === null ? '' : String(lat));
 		formData.set('longitude', lng === null ? '' : String(lng));
-		formData.set('tags', tagsText);
+		formData.set('tags', selectedTags.map(tag => tag.name).join(', '));
+		formData.set('places_primary_type', placesPrimaryType ?? '');
+		formData.set('places_types', JSON.stringify(placesTypes));
+		formData.set('pending_alias_merges', JSON.stringify(pendingAliasMerges));
 		const opening = formStateToOpeningHours(hours);
 		formData.set('opening_hours', opening ? JSON.stringify(opening) : '');
 		formData.set(
@@ -359,7 +364,7 @@ export default function ListingForm({
 					</select>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="type">Type</Label>
+					<Label htmlFor="type">{'Place type (what it is)'}</Label>
 					<Input
 						id="type"
 						name="type"
@@ -456,8 +461,8 @@ export default function ListingForm({
 											row.kind === 'email'
 												? 'name@example.com'
 												: row.kind === 'website'
-													? 'https://'
-													: '+39 …'
+												? 'https://'
+												: '+39 …'
 										}
 										type={row.kind === 'email' ? 'email' : 'text'}
 										value={row.value}
@@ -506,34 +511,35 @@ export default function ListingForm({
 						rows={4}
 					/>
 				</div>
-				<div className="space-y-2 sm:col-span-2">
-					<Label htmlFor="tags">Tags (comma-separated)</Label>
-					<Input
-						id="tags"
-						name="tags"
-						value={tagsText}
-						onChange={e => setTagsText(e.target.value)}
-						placeholder="Restaurant, Montaione, wine"
-					/>
-					<p className="text-xs text-[#888]">
-						Include spoken languages as tags when useful (e.g. German, English,
-						Italian).
-					</p>
-					{tagSuggestions.length > 0 ? (
-						<div className="flex flex-wrap gap-2 pt-1">
-							{tagSuggestions.map(tag => (
-								<button
-									key={tag}
-									type="button"
-									onClick={() => addTag(tag)}
-									className="border border-[#b8a99a] px-2 py-1 text-xs text-[#444] hover:bg-[#f7f2ec]"
-								>
-									+ {tag}
-								</button>
-							))}
-						</div>
-					) : null}
-				</div>
+				<ListingTagsEditor
+					knownTags={knownTags}
+					selected={selectedTags}
+					onChange={setSelectedTags}
+					pendingAliasMerges={pendingAliasMerges}
+					onPendingAliasMergesChange={setPendingAliasMerges}
+					category={category}
+					name={name}
+					type={type}
+					address={address}
+					notes={notes}
+					placesPrimaryType={placesPrimaryType}
+					placesTypes={placesTypes}
+				/>
+				<input
+					type="hidden"
+					name="places_primary_type"
+					value={placesPrimaryType ?? ''}
+				/>
+				<input
+					type="hidden"
+					name="places_types"
+					value={JSON.stringify(placesTypes)}
+				/>
+				<input
+					type="hidden"
+					name="pending_alias_merges"
+					value={JSON.stringify(pendingAliasMerges)}
+				/>
 			</section>
 
 			<section className="space-y-3">

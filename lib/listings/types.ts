@@ -16,6 +16,8 @@ export type AdminListing = {
 	lat: number | null;
 	lng: number | null;
 	tags: string[];
+	placesPrimaryType: string | null;
+	placesTypes: string[];
 	updatedAt: string;
 };
 
@@ -36,12 +38,23 @@ export type PlaceSuggestion = {
 
 export type PlaceAutofill = {
 	name: string | null;
+	/** Human-readable Places primary type → listing `type` field. */
+	type: string | null;
 	address: string | null;
 	contacts: ListingContact[];
 	sourceUrl: string | null;
 	lat: number | null;
 	lng: number | null;
 	openingHours: OpeningHours | null;
+	placesPrimaryType: string | null;
+	placesTypes: string[];
+	editorialSummary: string | null;
+};
+
+export type KnownTag = {
+	id: string;
+	name: string;
+	aliases: string[];
 };
 
 export type ListingInput = {
@@ -56,6 +69,8 @@ export type ListingInput = {
 	lat: number | null;
 	lng: number | null;
 	tags: string[];
+	placesPrimaryType: string | null;
+	placesTypes: string[];
 };
 
 export function isCategorySlug(value: string): value is CategorySlug {

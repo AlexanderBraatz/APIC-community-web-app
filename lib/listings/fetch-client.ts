@@ -100,3 +100,32 @@ export async function fetchListingsForCategory(
 
 	return ((data ?? []) as ListingRow[]).map(mapListingRow);
 }
+
+/** Alias key → canonical tag names (aliases never rendered as chips). */
+export async function fetchTagAliasMap(): Promise<Map<string, string[]>> {
+	const supabase = createClient();
+	const { data, error } = await supabase
+		.from('listing_tags')
+		.select('name, aliases');
+	if (error) {
+		throw new Error(error.message);
+	}
+
+	const map = new Map<string, string[]>();
+	for (const row of data ?? []) {
+		const aliases = Array.isArray(row.aliases) ? row.aliases : [];
+		for (const alias of aliases) {
+			const key = alias
+				.trim()
+				.replace(/\s+/g, ' ')
+				.toLowerCase();
+			if (!key) continue;
+			const list = map.get(key) ?? [];
+			if (!list.some(n => n.toLowerCase() === row.name.toLowerCase())) {
+				list.push(row.name);
+			}
+			map.set(key, list);
+		}
+	}
+	return map;
+}

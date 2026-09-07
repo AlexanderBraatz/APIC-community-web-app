@@ -152,18 +152,21 @@ export type Database = {
       }
       listing_tags: {
         Row: {
+          aliases: string[]
           created_at: string
           created_by: string | null
           id: string
           name: string
         }
         Insert: {
+          aliases?: string[]
           created_at?: string
           created_by?: string | null
           id?: string
           name: string
         }
         Update: {
+          aliases?: string[]
           created_at?: string
           created_by?: string | null
           id?: string
@@ -215,6 +218,8 @@ export type Database = {
           opening_hours: Json | null
           places_enrichment_notes: string | null
           places_enrichment_status: Database["public"]["Enums"]["places_enrichment_status"]
+          places_primary_type: string | null
+          places_types: string[]
           source_url: string | null
           type: string | null
           updated_at: string
@@ -234,6 +239,8 @@ export type Database = {
           opening_hours?: Json | null
           places_enrichment_notes?: string | null
           places_enrichment_status?: Database["public"]["Enums"]["places_enrichment_status"]
+          places_primary_type?: string | null
+          places_types?: string[]
           source_url?: string | null
           type?: string | null
           updated_at?: string
@@ -253,6 +260,8 @@ export type Database = {
           opening_hours?: Json | null
           places_enrichment_notes?: string | null
           places_enrichment_status?: Database["public"]["Enums"]["places_enrichment_status"]
+          places_primary_type?: string | null
+          places_types?: string[]
           source_url?: string | null
           type?: string | null
           updated_at?: string
