@@ -1,6 +1,13 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import {
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+	useTransition,
+	type KeyboardEvent
+} from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,6 +32,11 @@ export type SelectedTagChip = {
 	isNew: boolean;
 };
 
+const EXISTING_CHIP_CLASS =
+	'border-amber-300 bg-amber-50 text-amber-950';
+const NEW_CHIP_CLASS =
+	'border-emerald-300 bg-emerald-50 text-emerald-900';
+
 type ListingTagsEditorProps = {
 	knownTags: KnownTag[];
 	selected: SelectedTagChip[];
@@ -42,6 +54,27 @@ type ListingTagsEditorProps = {
 	placesTypes: string[];
 };
 
+function mergePendingAliases(
+	current: { canonical: string; aliases: string[] }[],
+	incoming: { canonical: string; aliases: string[] }[]
+) {
+	const merged = [...current];
+	for (const item of incoming) {
+		const idx = merged.findIndex(
+			row => tagKey(row.canonical) === tagKey(item.canonical)
+		);
+		if (idx >= 0) {
+			merged[idx] = {
+				canonical: merged[idx].canonical,
+				aliases: [...new Set([...merged[idx].aliases, ...item.aliases])]
+			};
+		} else {
+			merged.push(item);
+		}
+	}
+	return merged;
+}
+
 export default function ListingTagsEditor({
 	knownTags,
 	selected,
@@ -57,14 +90,11 @@ export default function ListingTagsEditor({
 	placesTypes
 }: ListingTagsEditorProps) {
 	const [search, setSearch] = useState('');
-	const [addNew, setAddNew] = useState('');
 	const [removeCandidate, setRemoveCandidate] = useState<string | null>(null);
 	const [suggestPending, startSuggest] = useTransition();
 	const [suggestError, setSuggestError] = useState<string | null>(null);
-	const [tray, setTray] = useState<{
-		reuse: string[];
-		proposeNew: { name: string; aliases: string[] }[];
-	} | null>(null);
+	const [suggestAttempted, setSuggestAttempted] = useState(false);
+	const hasAutoSuggested = useRef(false);
 
 	const vocabulary: TagRecord[] = useMemo(
 		() =>
@@ -100,6 +130,23 @@ export default function ListingTagsEditor({
 			.map(item => item.name);
 	}, [search, vocabulary, selectedKeys]);
 
+	const typedTag = search.trim().replace(/\s+/g, ' ');
+	const exactVocabularyMatch = useMemo(() => {
+		if (!typedTag) return null;
+		const key = tagKey(typedTag);
+		const byName = vocabulary.find(tag => tagKey(tag.name) === key);
+		if (byName) return byName.name;
+		const byAlias = vocabulary.find(tag =>
+			tag.aliases.some(alias => tagKey(alias) === key)
+		);
+		return byAlias?.name ?? null;
+	}, [typedTag, vocabulary]);
+
+	const showCreateChip =
+		Boolean(typedTag) &&
+		!exactVocabularyMatch &&
+		!selectedKeys.has(tagKey(typedTag));
+
 	const deterministicHints = useMemo(
 		() =>
 			mapPlacesTypesToTagNames({
@@ -114,7 +161,9 @@ export default function ListingTagsEditor({
 		const normalized = nameValue.trim().replace(/\s+/g, ' ');
 		if (!normalized) return;
 		if (selectedKeys.has(tagKey(normalized))) return;
-		const existing = vocabulary.find(tag => tagKey(tag.name) === tagKey(normalized));
+		const existing = vocabulary.find(
+			tag => tagKey(tag.name) === tagKey(normalized)
+		);
 		onChange([
 			...selected,
 			{
@@ -123,7 +172,6 @@ export default function ListingTagsEditor({
 			}
 		]);
 		setSearch('');
-		setAddNew('');
 	}
 
 	function confirmRemove() {
@@ -134,19 +182,51 @@ export default function ListingTagsEditor({
 		setRemoveCandidate(null);
 	}
 
-	function acceptSuggestion(nameValue: string, isNew: boolean, aliases: string[] = []) {
-		addCanonical(nameValue, isNew);
-		if (aliases.length) {
-			const canonical =
-				vocabulary.find(tag => tagKey(tag.name) === tagKey(nameValue))?.name ??
-				nameValue.trim().replace(/\s+/g, ' ');
-			const without = pendingAliasMerges.filter(
-				item => tagKey(item.canonical) !== tagKey(canonical)
+	function applySuggestions(
+		reuse: string[],
+		proposeNew: { name: string; aliases: string[] }[],
+		aliasMerges: { canonical: string; aliases: string[] }[] = []
+	) {
+		const next: SelectedTagChip[] = [...selected];
+		const keys = new Set(selectedKeys);
+
+		for (const tagName of reuse) {
+			const key = tagKey(tagName);
+			if (keys.has(key)) continue;
+			const existing = vocabulary.find(tag => tagKey(tag.name) === key);
+			next.push({
+				name: existing?.name ?? tagName.trim().replace(/\s+/g, ' '),
+				isNew: false
+			});
+			keys.add(key);
+		}
+
+		for (const item of proposeNew) {
+			const key = tagKey(item.name);
+			if (keys.has(key)) continue;
+			const existing = vocabulary.find(tag => tagKey(tag.name) === key);
+			next.push({
+				name: existing?.name ?? item.name.trim().replace(/\s+/g, ' '),
+				isNew: existing ? false : true
+			});
+			keys.add(key);
+		}
+
+		onChange(next);
+
+		const fromPropose = proposeNew
+			.filter(item => item.aliases.length > 0)
+			.map(item => ({
+				canonical:
+					vocabulary.find(tag => tagKey(tag.name) === tagKey(item.name))
+						?.name ?? item.name.trim().replace(/\s+/g, ' '),
+				aliases: item.aliases
+			}));
+		const combinedAliases = [...aliasMerges, ...fromPropose];
+		if (combinedAliases.length) {
+			onPendingAliasMergesChange(
+				mergePendingAliases(pendingAliasMerges, combinedAliases)
 			);
-			onPendingAliasMergesChange([
-				...without,
-				{ canonical, aliases }
-			]);
 		}
 	}
 
@@ -163,80 +243,105 @@ export default function ListingTagsEditor({
 				placesTypes,
 				selectedTags: selected.map(tag => tag.name)
 			});
+			setSuggestAttempted(true);
 			if (!result.ok) {
 				setSuggestError(result.error);
-				setTray({
-					reuse: deterministicHints.filter(
-						hint => !selectedKeys.has(tagKey(hint))
-					),
-					proposeNew: []
-				});
+				applySuggestions(
+					deterministicHints.filter(hint => !selectedKeys.has(tagKey(hint))),
+					[]
+				);
 				return;
 			}
-			setTray({
-				reuse: result.suggest.reuse,
-				proposeNew: result.suggest.proposeNew
-			});
-			if (result.pendingAliasMerges.length) {
-				const merged = [...pendingAliasMerges];
-				for (const item of result.pendingAliasMerges) {
-					const idx = merged.findIndex(
-						row => tagKey(row.canonical) === tagKey(item.canonical)
-					);
-					if (idx >= 0) {
-						merged[idx] = {
-							canonical: merged[idx].canonical,
-							aliases: [
-								...new Set([...merged[idx].aliases, ...item.aliases])
-							]
-						};
-					} else {
-						merged.push(item);
-					}
-				}
-				onPendingAliasMergesChange(merged);
-			}
+			applySuggestions(
+				result.suggest.reuse,
+				result.suggest.proposeNew,
+				result.pendingAliasMerges
+			);
 		});
 	}
 
+	useEffect(() => {
+		if (hasAutoSuggested.current) return;
+		if (selected.length > 0) {
+			hasAutoSuggested.current = true;
+			return;
+		}
+		hasAutoSuggested.current = true;
+		runSuggest();
+		// Only auto-run once on mount when empty.
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional mount-only auto-suggest
+	}, []);
+
+	function handleSearchKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
+		if (showCreateChip) {
+			addCanonical(typedTag, true);
+			return;
+		}
+		if (exactVocabularyMatch && !selectedKeys.has(tagKey(exactVocabularyMatch))) {
+			addCanonical(exactVocabularyMatch, false);
+			return;
+		}
+		if (searchHits[0]) {
+			addCanonical(searchHits[0], false);
+		}
+	}
+
+	const showEmptyAfterSuggest =
+		!suggestPending &&
+		suggestAttempted &&
+		selected.length === 0 &&
+		!suggestError;
+
+	const showRetry = !suggestPending && suggestAttempted;
+
 	return (
-		<div className="space-y-3 sm:col-span-2">
-			<div className="flex flex-wrap items-end justify-between gap-3">
-				<div>
-					<Label>Tags</Label>
-					<p className="text-xs text-[#888]">
-						Selected chips only — aliases stay hidden. Include languages when
-						useful.
-					</p>
-				</div>
-				<Button
-					type="button"
-					variant="outline"
-					className="rounded-[2px]"
-					onClick={runSuggest}
-					disabled={suggestPending}
-				>
-					{suggestPending ? 'Suggesting…' : 'Suggest tags'}
-				</Button>
+		<div className="space-y-4 sm:col-span-2">
+			<div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#666]">
+				<span className="inline-flex items-center gap-1.5">
+					<span
+						className="size-2 shrink-0 rounded-full bg-amber-400"
+						aria-hidden
+					/>
+					Existing tag
+				</span>
+				<span className="inline-flex items-center gap-1.5">
+					<span
+						className="size-2 shrink-0 rounded-full bg-emerald-500"
+						aria-hidden
+					/>
+					New tag (created on save)
+				</span>
 			</div>
 
-			{selected.length > 0 ? (
+			{suggestPending ? (
+				<div className="space-y-3" role="status" aria-live="polite">
+					<p className="text-xs text-[#666]">
+						Matching this listing against known tags and Places data, then
+						asking AI for the best existing tags — or new ones when needed…
+					</p>
+					<div className="flex flex-wrap gap-2">
+						{[0, 1, 2].map(i => (
+							<span
+								key={i}
+								className="h-7 w-16 animate-pulse rounded-[2px] bg-amber-100/80"
+								style={{ animationDelay: `${i * 120}ms` }}
+							/>
+						))}
+						<span className="h-7 w-20 animate-pulse rounded-[2px] bg-emerald-100/80" />
+					</div>
+				</div>
+			) : selected.length > 0 ? (
 				<div className="flex flex-wrap gap-2">
 					{selected.map(tag => (
 						<span
 							key={tag.name}
 							className={`inline-flex items-center gap-1 border px-2 py-1 text-xs ${
-								tag.isNew
-									? 'border-amber-700 bg-amber-50 text-amber-950'
-									: 'border-[#b8a99a] text-[#444]'
+								tag.isNew ? NEW_CHIP_CLASS : EXISTING_CHIP_CLASS
 							}`}
 						>
 							{tag.name}
-							{tag.isNew ? (
-								<span className="text-[10px] uppercase tracking-wide">
-									new
-								</span>
-							) : null}
 							<button
 								type="button"
 								aria-label={`Remove ${tag.name}`}
@@ -248,98 +353,77 @@ export default function ListingTagsEditor({
 						</span>
 					))}
 				</div>
+			) : showEmptyAfterSuggest ? (
+				<p className="text-xs text-[#999]">
+					No strong matches found. Type below to add tags.
+				</p>
 			) : (
 				<p className="text-xs text-[#999]">No tags selected yet.</p>
 			)}
 
-			<div className="grid gap-3 sm:grid-cols-2">
-				<div className="space-y-2">
-					<Label htmlFor="tag_search">Search existing</Label>
-					<Input
-						id="tag_search"
-						value={search}
-						onChange={e => setSearch(e.target.value)}
-						placeholder="Match name or alias…"
-					/>
-					{searchHits.length > 0 ? (
-						<div className="flex flex-wrap gap-2">
-							{searchHits.map(tag => (
-								<button
-									key={tag}
-									type="button"
-									onClick={() => addCanonical(tag)}
-									className="border border-[#b8a99a] px-2 py-1 text-xs text-[#444] hover:bg-[#f7f2ec]"
-								>
-									+ {tag}
-								</button>
-							))}
-						</div>
-					) : null}
-				</div>
-				<div className="space-y-2">
-					<Label htmlFor="tag_add_new">Add new tag</Label>
-					<div className="flex gap-2">
-						<Input
-							id="tag_add_new"
-							value={addNew}
-							onChange={e => setAddNew(e.target.value)}
-							placeholder="New canonical name"
-							onKeyDown={e => {
-								if (e.key === 'Enter') {
-									e.preventDefault();
-									addCanonical(addNew, true);
-								}
-							}}
-						/>
-						<Button
-							type="button"
-							variant="outline"
-							className="rounded-[2px]"
-							onClick={() => addCanonical(addNew, true)}
-						>
-							Add
-						</Button>
-					</div>
-				</div>
-			</div>
-
 			{suggestError ? (
 				<p className="text-xs text-amber-800" role="status">
-					{suggestError} Showing deterministic Places hints when available.
+					{suggestError} Applied Places-based hints when available.
 				</p>
 			) : null}
 
-			{tray && (tray.reuse.length > 0 || tray.proposeNew.length > 0) ? (
-				<div className="space-y-2 border border-[#e5e5e5] p-3">
-					<p className="text-xs font-medium text-[#444]">Suggestions</p>
+			{showRetry ? (
+				<button
+					type="button"
+					onClick={runSuggest}
+					className="text-xs text-[#805b32] underline-offset-2 hover:underline"
+				>
+					{suggestError || selected.length === 0
+						? 'Try again'
+						: 'Suggest again'}
+				</button>
+			) : null}
+
+			<div className="space-y-2">
+				<Label htmlFor="tag_search">Add a tag</Label>
+				<Input
+					id="tag_search"
+					value={search}
+					onChange={e => setSearch(e.target.value)}
+					onKeyDown={handleSearchKeyDown}
+					placeholder="Match name or alias, or type a new tag…"
+					disabled={suggestPending}
+				/>
+				{typedTag ? (
 					<div className="flex flex-wrap gap-2">
-						{tray.reuse.map(tag => (
+						{showCreateChip ? (
 							<button
-								key={`reuse-${tag}`}
 								type="button"
-								disabled={selectedKeys.has(tagKey(tag))}
-								onClick={() => acceptSuggestion(tag, false)}
-								className="border border-[#b8a99a] px-2 py-1 text-xs text-[#444] hover:bg-[#f7f2ec] disabled:opacity-40"
+								onClick={() => addCanonical(typedTag, true)}
+								className={`border px-2 py-1 text-xs hover:opacity-90 ${NEW_CHIP_CLASS}`}
+							>
+								+ {typedTag}
+							</button>
+						) : null}
+						{exactVocabularyMatch &&
+						!selectedKeys.has(tagKey(exactVocabularyMatch)) &&
+						!searchHits.includes(exactVocabularyMatch) ? (
+							<button
+								type="button"
+								onClick={() => addCanonical(exactVocabularyMatch, false)}
+								className={`border px-2 py-1 text-xs hover:opacity-90 ${EXISTING_CHIP_CLASS}`}
+							>
+								+ {exactVocabularyMatch}
+							</button>
+						) : null}
+						{searchHits.map(tag => (
+							<button
+								key={tag}
+								type="button"
+								onClick={() => addCanonical(tag)}
+								className={`border px-2 py-1 text-xs hover:opacity-90 ${EXISTING_CHIP_CLASS}`}
 							>
 								+ {tag}
 							</button>
 						))}
-						{tray.proposeNew.map(item => (
-							<button
-								key={`new-${item.name}`}
-								type="button"
-								disabled={selectedKeys.has(tagKey(item.name))}
-								onClick={() =>
-									acceptSuggestion(item.name, true, item.aliases)
-								}
-								className="border border-amber-700 bg-amber-50 px-2 py-1 text-xs text-amber-950 hover:bg-amber-100 disabled:opacity-40"
-							>
-								+ {item.name} (new)
-							</button>
-						))}
 					</div>
-				</div>
-			) : null}
+				) : null}
+			</div>
 
 			<input
 				type="hidden"

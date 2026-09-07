@@ -141,19 +141,40 @@ export async function suggestListingTags(
 		const vocabPayload = serializeVocabularyForPrompt(vocabulary);
 		const completion = await client.chat.completions.create({
 			model: OPENAI_MODEL,
-			temperature: 0.2,
+			temperature: 0.5,
 			response_format: { type: 'json_object' },
 			messages: [
 				{
 					role: 'system',
-					content: `You suggest listing tags for a private community directory near Castelfalfi, Tuscany.
-Prefer reusing existing tags from the vocabulary (match by name or aliases).
-Only proposeNew when nothing suitable exists.
-Never invent tags from empty Places data.
-Do not rediscover tags already covered by deterministicHints.
+					content: `You suggest listing tags for guests staying in the Castelfalfi holiday community (Tuscany).
+Tags help members filter by what a place offers or is known for: cuisine, diet, products for sale, services/treatments, languages spoken, family-friendliness, outdoors, and practical needs.
+
+ALWAYS read listing.notes (APIC description). Pull concrete, searchable attributes from what guests can eat, buy, do, or experience — even when Places data is only generic (e.g. store, spa, restaurant).
+From notes, extract offering types and specialties, for example:
+- Products: gifts, souvenirs, local crafts, wine, olive oil, ceramics, fashion, books
+- Care / wellness: creams, skincare, beauty treatments, massage, spa
+- Food traits: vegan, vegetarian, gluten-free, pizza, gelato
+- Languages: German-speaking, English-speaking, etc.
+Turn those into short filter tags (reuse vocabulary when the same idea already exists; otherwise proposeNew).
+
+Important distinctions:
+- vegan is NOT the same as vegetarian — if notes say vegan, put "vegan" in proposeNew (unless it already exists in vocabulary).
+- Language cues ("speak German", "English spoken") → proposeNew like "German-speaking", "English-speaking".
+- Prefer specific guest-facing labels ("gifts", "skincare") over vague ones ("shopping", "nice shop").
+
+Reuse vocabulary when name/aliases already match that exact idea. Still add proposeNew for distinct guest-facing attributes missing from vocabulary.
+Skip vague fluff ("great place", "best", "nice owner"). Do not invent unsupported attributes.
+Do not rediscover deterministicHints or selectedTags.
+
+Example A — notes "vegan food and speak german with the owner" plus Places restaurant:
+{"reuse":["restaurant","vegetarian"],"proposeNew":[{"name":"vegan","aliases":["vegan food"]},{"name":"German-speaking","aliases":["speaks German","Deutsch"]}],"aliasesForExisting":[]}
+
+Example B — notes mention creams/treatments and Tuscany-themed gifts (Places may be store/beauty):
+{"reuse":["beauty"],"proposeNew":[{"name":"gifts","aliases":["souvenirs","gift shop","Tuscany gifts"]},{"name":"skincare","aliases":["creams","treatments","cosmetics"]}],"aliasesForExisting":[]}
+(Reuse beauty/shop tags only if they exist in vocabulary; still propose gifts and skincare-style tags when notes support them and vocabulary lacks them.)
+
 Return JSON: {"reuse":string[],"proposeNew":[{"name":string,"aliases":string[]}],"aliasesForExisting":[{"alias":string,"canonical":string}]}
-reuse/proposeNew names must be short English or Italian labels (max 100 chars).
-aliasesForExisting only for useful alternate spellings of existing vocabulary tags.`
+reuse/proposeNew names must be short English or Italian labels (max 100 chars).`
 				},
 				{
 					role: 'user',

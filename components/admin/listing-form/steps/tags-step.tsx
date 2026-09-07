@@ -29,7 +29,8 @@ export default function TagsStep(props: TagsStepProps) {
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Tags</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					Accept suggested tags or edit the list members can filter by.
+					When this step opens empty, AI suggests existing tags (yellow) or new
+					ones (green). Remove any you don’t want, or type below to add more.
 				</p>
 			</div>
 			<ListingTagsEditor {...props} />

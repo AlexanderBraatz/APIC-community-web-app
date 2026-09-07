@@ -15,6 +15,8 @@ export default function InspectStep({ preview }: InspectStepProps) {
 		typeof preview.lng === 'number' &&
 		Number.isFinite(preview.lng);
 
+	const tags = preview.tags ?? [];
+
 	return (
 		<section className="space-y-4">
 			<div>
@@ -49,6 +51,26 @@ export default function InspectStep({ preview }: InspectStepProps) {
 						</div>
 					)}
 				</div>
+			</div>
+
+			<div className="space-y-2">
+				<h4 className="text-sm font-medium text-[#444]">
+					Tags used to search for this place
+				</h4>
+				{tags.length > 0 ? (
+					<div className="flex flex-wrap gap-2">
+						{tags.map(tag => (
+							<span
+								key={tag}
+								className="border border-[#b8a99a]/50 bg-[#f7f2ec] px-2 py-1 text-xs text-[#444]"
+							>
+								{tag}
+							</span>
+						))}
+					</div>
+				) : (
+					<p className="text-xs text-[#999]">No tags selected yet.</p>
+				)}
 			</div>
 		</section>
 	);

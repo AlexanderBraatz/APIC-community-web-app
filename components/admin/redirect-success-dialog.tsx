@@ -44,12 +44,14 @@ export default function RedirectSuccessDialog({
 			}}
 		>
 			<DialogContent
-				className="sm:max-w-md"
+				className="overflow-hidden sm:max-w-md"
 				showCloseButton={false}
 			>
-				<DialogHeader>
-					<DialogTitle className="font-sans">{title}</DialogTitle>
-					<DialogDescription className="font-sans">
+				<DialogHeader className="-mx-4 -mt-4 rounded-t-xl border-b border-emerald-200/80 bg-emerald-50 px-4 py-5">
+					<DialogTitle className="font-sans text-emerald-950">
+						{title}
+					</DialogTitle>
+					<DialogDescription className="font-sans text-emerald-900/70">
 						{description}
 					</DialogDescription>
 				</DialogHeader>
