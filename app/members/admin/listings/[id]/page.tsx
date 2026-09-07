@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import DeleteListingButton from '@/components/admin/delete-listing-button';
-import ListingForm from '@/components/admin/listing-form';
+import ListingFormStepper from '@/components/admin/listing-form-stepper';
 import {
 	getAdminListing,
 	listKnownTags
@@ -41,7 +41,11 @@ export default async function EditListingPage({
 				</p>
 			) : null}
 
-			<ListingForm mode="edit" listing={listing} knownTags={knownTags} />
+			<ListingFormStepper
+				mode="edit"
+				listing={listing}
+				knownTags={knownTags}
+			/>
 		</div>
 	);
 }

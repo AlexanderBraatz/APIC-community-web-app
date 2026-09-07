@@ -117,7 +117,9 @@ export function listingMatchesQuery(
 			if (fuzzyScore(query, aliasKey) <= 0) continue;
 			if (
 				canonicals.some(canonical =>
-					listing.tags.some(tag => tag.toLowerCase() === canonical.toLowerCase())
+					listing.tags.some(
+						tag => tag.toLowerCase() === canonical.toLowerCase()
+					)
 				)
 			) {
 				return true;
@@ -128,7 +130,10 @@ export function listingMatchesQuery(
 	return false;
 }
 
-export function listingHasAllTags(listing: Listing, activeTags: string[]): boolean {
+export function listingHasAllTags(
+	listing: Listing,
+	activeTags: string[]
+): boolean {
 	if (activeTags.length === 0) return true;
 
 	const listingKeys = new Set(listing.tags.map(tag => tag.toLowerCase()));
@@ -160,7 +165,9 @@ export function suggest(
 	if (!q) return { tags: [], places: [] };
 
 	const activeKeys = new Set(activeTags.map(tag => tag.toLowerCase()));
-	const scoped = listings.filter(listing => listingHasAllTags(listing, activeTags));
+	const scoped = listings.filter(listing =>
+		listingHasAllTags(listing, activeTags)
+	);
 	const availableTags = collectTags(scoped).filter(
 		tag => !activeKeys.has(tag.toLowerCase())
 	);
@@ -171,7 +178,11 @@ export function suggest(
 			if (fuzzyScore(query, aliasKey) <= 0) continue;
 			for (const canonical of canonicals) {
 				if (activeKeys.has(canonical.toLowerCase())) continue;
-				if (availableTags.some(tag => tag.toLowerCase() === canonical.toLowerCase())) {
+				if (
+					availableTags.some(
+						tag => tag.toLowerCase() === canonical.toLowerCase()
+					)
+				) {
 					aliasCanonicalHits.add(canonical);
 				}
 			}
@@ -187,9 +198,11 @@ export function suggest(
 	]
 		.filter(item => item.score > 0)
 		.sort((a, b) => b.score - a.score || a.tag.localeCompare(b.tag))
-		.filter((item, index, arr) =>
-			arr.findIndex(other => other.tag.toLowerCase() === item.tag.toLowerCase()) ===
-			index
+		.filter(
+			(item, index, arr) =>
+				arr.findIndex(
+					other => other.tag.toLowerCase() === item.tag.toLowerCase()
+				) === index
 		)
 		.slice(0, SUGGESTION_LIMIT)
 		.map(item => item.tag);
@@ -211,12 +224,15 @@ export function suggest(
 								)
 							);
 							return onListing ? [aliasHit * 0.45] : [0];
-						})
+					  })
 					: [0])
 			)
 		}))
 		.filter(item => item.score > 0)
-		.sort((a, b) => b.score - a.score || a.listing.name.localeCompare(b.listing.name))
+		.sort(
+			(a, b) =>
+				b.score - a.score || a.listing.name.localeCompare(b.listing.name)
+		)
 		.slice(0, SUGGESTION_LIMIT)
 		.map(item => item.listing);
 

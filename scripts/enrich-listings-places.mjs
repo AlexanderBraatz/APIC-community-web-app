@@ -24,7 +24,11 @@ const CASTELFALFI_CENTER = {
 	longitude: 10.856672
 };
 const PLACES_RADIUS_DEFAULT_M = 30_000;
-const PLACES_RADIUS_EXPANDED_M = 60_000;
+/** ~200 km × 200 km viewport (±100 km) centered on Castelfalfi. */
+const PLACES_BIAS_EXPANDED_RECTANGLE = {
+	low: { latitude: 42.650131, longitude: 9.617267 },
+	high: { latitude: 44.446753, longitude: 12.096077 }
+};
 const REQUEST_DELAY_MS = 250;
 
 function requireEnv(name) {
@@ -67,20 +71,22 @@ function sleep(ms) {
 
 /**
  * @param {string} input
- * @param {number} radiusMeters
+ * @param {boolean} expanded
  * @param {string} key
  * @returns {Promise<{ ok: true; suggestions: { placeId: string; primaryText: string; secondaryText: string }[] } | { ok: false; error: string }>}
  */
-async function placesAutocomplete(input, radiusMeters, key) {
+async function placesAutocomplete(input, expanded, key) {
 	const body = {
 		input,
 		includedRegionCodes: ['it'],
-		locationBias: {
-			circle: {
-				center: CASTELFALFI_CENTER,
-				radius: radiusMeters
-			}
-		}
+		locationBias: expanded
+			? { rectangle: PLACES_BIAS_EXPANDED_RECTANGLE }
+			: {
+					circle: {
+						center: CASTELFALFI_CENTER,
+						radius: PLACES_RADIUS_DEFAULT_M
+					}
+				}
 	};
 
 	const response = await fetch(
@@ -210,37 +216,33 @@ async function placeDetails(placeId, key) {
 }
 
 /**
- * Find first autocomplete hit, expanding radius if needed.
+ * Find first autocomplete hit, widening to the expanded rectangle if needed.
  * @param {string} name
  * @param {string} key
  */
 async function findPlaceForName(name, key) {
-	const first = await placesAutocomplete(name, PLACES_RADIUS_DEFAULT_M, key);
+	const first = await placesAutocomplete(name, false, key);
 	if (!first.ok) return first;
 	if (first.suggestions.length > 0) {
 		return {
 			ok: true,
 			suggestion: first.suggestions[0],
-			radiusMeters: PLACES_RADIUS_DEFAULT_M
+			expanded: false
 		};
 	}
 
 	await sleep(REQUEST_DELAY_MS);
-	const second = await placesAutocomplete(
-		name,
-		PLACES_RADIUS_EXPANDED_M,
-		key
-	);
+	const second = await placesAutocomplete(name, true, key);
 	if (!second.ok) return second;
 	if (second.suggestions.length > 0) {
 		return {
 			ok: true,
 			suggestion: second.suggestions[0],
-			radiusMeters: PLACES_RADIUS_EXPANDED_M
+			expanded: true
 		};
 	}
 
-	return { ok: true, suggestion: null, radiusMeters: PLACES_RADIUS_EXPANDED_M };
+	return { ok: true, suggestion: null, expanded: true };
 }
 
 function buildUpdatedNotes(listing, place, extras) {
@@ -358,7 +360,7 @@ async function main() {
 		}
 
 		if (!found.suggestion) {
-			const notes = `No Place found for name “${name}” within ${PLACES_RADIUS_EXPANDED_M / 1000}km of Castelfalfi.`;
+			const notes = `No Place found for name “${name}” within ~100 km of Castelfalfi (200×200 km bias).`;
 			console.log(`--- ${name}: not_found`);
 			tally.not_found += 1;
 			if (!dryRun) {

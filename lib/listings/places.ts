@@ -6,8 +6,8 @@ import { placeAutofillToContacts } from '@/lib/listings/contacts';
 import { googleRegularHoursToOpeningHours } from '@/lib/listings/opening-hours';
 import {
 	CASTELFALFI_CENTER,
-	PLACES_RADIUS_DEFAULT_M,
-	PLACES_RADIUS_EXPANDED_M
+	PLACES_BIAS_EXPANDED_RECTANGLE,
+	PLACES_RADIUS_DEFAULT_M
 } from '@/lib/listings/places-constants';
 import type {
 	PlaceAutofill,
@@ -24,9 +24,16 @@ function placesApiKey() {
 	);
 }
 
-function normalizeRadius(radiusMeters: number | undefined): number {
-	if (radiusMeters === PLACES_RADIUS_EXPANDED_M) return PLACES_RADIUS_EXPANDED_M;
-	return PLACES_RADIUS_DEFAULT_M;
+function locationBias(expanded: boolean) {
+	if (expanded) {
+		return { rectangle: PLACES_BIAS_EXPANDED_RECTANGLE };
+	}
+	return {
+		circle: {
+			center: CASTELFALFI_CENTER,
+			radius: PLACES_RADIUS_DEFAULT_M
+		}
+	};
 }
 
 type AutocompleteSuggestion = {
@@ -74,7 +81,8 @@ function includedPrimaryTypes(mode: PlacesAutocompleteMode): string[] | undefine
 export async function placesAutocomplete(opts: {
 	input: string;
 	mode: PlacesAutocompleteMode;
-	radiusMeters?: number;
+	/** When true, bias with a ~200×200 km rectangle instead of the 30 km circle. */
+	expanded?: boolean;
 }): Promise<
 	{ ok: true; suggestions: PlaceSuggestion[] } | { ok: false; error: string }
 > {
@@ -97,16 +105,10 @@ export async function placesAutocomplete(opts: {
 			};
 		}
 
-		const radius = normalizeRadius(opts.radiusMeters);
 		const body: Record<string, unknown> = {
 			input,
 			includedRegionCodes: ['it'],
-			locationBias: {
-				circle: {
-					center: CASTELFALFI_CENTER,
-					radius
-				}
-			}
+			locationBias: locationBias(Boolean(opts.expanded))
 		};
 		const types = includedPrimaryTypes(opts.mode);
 		if (types) body.includedPrimaryTypes = types;

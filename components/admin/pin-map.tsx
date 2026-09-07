@@ -10,22 +10,26 @@ type PinMapProps = {
 	lat: number | null;
 	lng: number | null;
 	onChange: (coords: { lat: number; lng: number }) => void;
+	/** When false, map is view-only: no click-to-pin and marker is not draggable. */
+	interactive?: boolean;
 	className?: string;
 };
 
 function ClickToPin({
 	lat,
 	lng,
-	onChange
+	onChange,
+	interactive
 }: {
 	lat: number | null;
 	lng: number | null;
 	onChange: (coords: { lat: number; lng: number }) => void;
+	interactive: boolean;
 }) {
 	const map = useMap();
 
 	useEffect(() => {
-		if (!map) return;
+		if (!map || !interactive) return;
 
 		const listener = map.addListener(
 			'click',
@@ -39,7 +43,7 @@ function ClickToPin({
 		return () => {
 			listener.remove();
 		};
-	}, [map, onChange]);
+	}, [map, onChange, interactive]);
 
 	useEffect(() => {
 		if (!map || lat === null || lng === null) return;
@@ -56,6 +60,7 @@ export default function AdminPinMap({
 	lat,
 	lng,
 	onChange,
+	interactive = true,
 	className
 }: PinMapProps) {
 	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -72,6 +77,12 @@ export default function AdminPinMap({
 			</div>
 		);
 	}
+
+	const footerHint = !hasPin
+		? 'Click the map to place a pin, or enter coordinates above.'
+		: interactive
+			? 'Click the map to move the pin, or drag the marker.'
+			: 'Pin is locked. Use Adjust pin to move it.';
 
 	return (
 		<div
@@ -95,12 +106,14 @@ export default function AdminPinMap({
 							lat={lat}
 							lng={lng}
 							onChange={onChange}
+							interactive={interactive}
 						/>
 						{hasPin ? (
 							<Marker
 								position={{ lat: lat!, lng: lng! }}
-								draggable
+								draggable={interactive}
 								onDragEnd={event => {
+									if (!interactive) return;
 									const position = event.latLng;
 									if (!position) return;
 									onChange({ lat: position.lat(), lng: position.lng() });
@@ -124,7 +137,7 @@ export default function AdminPinMap({
 				) : null}
 			</div>
 			<p className="border-t border-[#b8a99a]/40 bg-white px-3 py-2 text-xs text-[#666]">
-				Click the map to place a pin, or drag the marker.
+				{footerHint}
 			</p>
 		</div>
 	);

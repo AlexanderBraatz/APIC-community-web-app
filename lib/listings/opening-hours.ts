@@ -148,8 +148,10 @@ export function formatOpeningHoursLines(hours: OpeningHours | null): string[] {
 	return lines;
 }
 
+export type DayFormStatus = 'unset' | 'open' | 'open_lunch' | 'closed';
+
 export type DayFormState = {
-	closed: boolean;
+	status: DayFormStatus;
 	open1: string;
 	close1: string;
 	open2: string;
@@ -161,6 +163,73 @@ export type OpeningHoursFormState = {
 	note: string;
 };
 
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export function isValidTimeInput(value: string): boolean {
+	return TIME_PATTERN.test(value.trim());
+}
+
+export function timeToMinutes(value: string): number | null {
+	if (!isValidTimeInput(value)) return null;
+	const [hours, minutes] = value.trim().split(':').map(Number);
+	return hours * 60 + minutes;
+}
+
+function validatePeriod(
+	open: string,
+	close: string,
+	labels: { both: string; order: string }
+): string | null {
+	const openTrimmed = open.trim();
+	const closeTrimmed = close.trim();
+	if (!openTrimmed && !closeTrimmed) return null;
+	if (!openTrimmed || !closeTrimmed) return labels.both;
+	if (!isValidTimeInput(openTrimmed) || !isValidTimeInput(closeTrimmed)) {
+		return 'Use 24-hour times like 09:00.';
+	}
+	const openMins = timeToMinutes(openTrimmed);
+	const closeMins = timeToMinutes(closeTrimmed);
+	if (openMins == null || closeMins == null || closeMins <= openMins) {
+		return labels.order;
+	}
+	return null;
+}
+
+/** Empty fields are fine (incomplete). Filled fields must be valid HH:MM and ordered. */
+export function dayHoursValidationMessage(row: DayFormState): string | null {
+	if (row.status !== 'open' && row.status !== 'open_lunch') return null;
+
+	const firstError = validatePeriod(row.open1, row.close1, {
+		both: 'Enter both open and close for the first period.',
+		order: 'Closing time must be after opening time.'
+	});
+	if (firstError) return firstError;
+
+	if (row.status === 'open_lunch') {
+		const secondError = validatePeriod(row.open2, row.close2, {
+			both: 'Enter both open and close for the after-lunch period.',
+			order: 'After-lunch closing time must be after its opening time.'
+		});
+		if (secondError) return secondError;
+
+		const p1Close = row.close1.trim();
+		const p2Open = row.open2.trim();
+		if (p1Close && p2Open && isValidTimeInput(p1Close) && isValidTimeInput(p2Open)) {
+			const close1Mins = timeToMinutes(p1Close);
+			const open2Mins = timeToMinutes(p2Open);
+			if (close1Mins != null && open2Mins != null && open2Mins < close1Mins) {
+				return 'After-lunch period must start after the first period ends.';
+			}
+		}
+	}
+
+	return null;
+}
+
+function emptyDayFormState(): DayFormState {
+	return { status: 'unset', open1: '', close1: '', open2: '', close2: '' };
+}
+
 export function openingHoursToFormState(
 	hours: OpeningHours | null
 ): OpeningHoursFormState {
@@ -168,12 +237,19 @@ export function openingHoursToFormState(
 	for (const key of DAY_KEYS) {
 		const entry = hours?.days[key];
 		if (!entry) {
-			days[key] = { closed: false, open1: '', close1: '', open2: '', close2: '' };
+			days[key] = emptyDayFormState();
 		} else if (entry.status === 'closed') {
-			days[key] = { closed: true, open1: '', close1: '', open2: '', close2: '' };
-		} else {
 			days[key] = {
-				closed: false,
+				status: 'closed',
+				open1: '',
+				close1: '',
+				open2: '',
+				close2: ''
+			};
+		} else {
+			const hasLunch = Boolean(entry.periods[1]);
+			days[key] = {
+				status: hasLunch ? 'open_lunch' : 'open',
 				open1: entry.periods[0]?.open ?? '',
 				close1: entry.periods[0]?.close ?? '',
 				open2: entry.periods[1]?.open ?? '',
@@ -190,15 +266,22 @@ export function formStateToOpeningHours(
 	const days: OpeningHours['days'] = {};
 	for (const key of DAY_KEYS) {
 		const row = state.days[key];
-		if (row.closed) {
+		if (row.status === 'closed') {
 			days[key] = { status: 'closed' };
 			continue;
 		}
+		if (row.status !== 'open' && row.status !== 'open_lunch') continue;
+		if (dayHoursValidationMessage(row)) continue;
+
 		const periods: OpeningPeriod[] = [];
-		if (row.open1.trim() && row.close1.trim()) {
+		if (isValidTimeInput(row.open1) && isValidTimeInput(row.close1)) {
 			periods.push({ open: row.open1.trim(), close: row.close1.trim() });
 		}
-		if (row.open2.trim() && row.close2.trim()) {
+		if (
+			row.status === 'open_lunch' &&
+			isValidTimeInput(row.open2) &&
+			isValidTimeInput(row.close2)
+		) {
 			periods.push({ open: row.open2.trim(), close: row.close2.trim() });
 		}
 		if (periods.length) days[key] = { status: 'open', periods };
