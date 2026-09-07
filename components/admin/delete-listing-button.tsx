@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { X } from 'lucide-react';
 import { deleteListing } from '@/lib/listings/admin-actions';
 import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
+import { CLEAR_ACTION_BUTTON_CLASS } from '@/components/admin/listing-form/constants';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -42,11 +44,12 @@ export default function DeleteListingButton({
 		<>
 			<Button
 				type="button"
-				variant="outline"
-				className="rounded-[2px]"
+				size="icon"
+				className={CLEAR_ACTION_BUTTON_CLASS}
+				aria-label={`Delete ${name}`}
 				onClick={() => setOpen(true)}
 			>
-				Delete
+				<X className="size-4" />
 			</Button>
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent className="sm:max-w-md" showCloseButton={false}>

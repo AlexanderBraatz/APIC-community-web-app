@@ -145,7 +145,6 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead className="w-[220px]">ID</TableHead>
 						<TableHead>Name</TableHead>
 						<TableHead>Aliases</TableHead>
 						<TableHead className="w-[160px]">Actions</TableHead>
@@ -154,9 +153,6 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 				<TableBody>
 					{tags.map(tag => (
 						<TableRow key={tag.id}>
-							<TableCell className="font-mono text-xs text-[#888]">
-								{tag.id}
-							</TableCell>
 							<TableCell className="font-medium text-[#444]">{tag.name}</TableCell>
 							<TableCell className="text-[#666]">
 								{tag.aliases.length ? tag.aliases.join(', ') : '—'}

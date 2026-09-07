@@ -2,8 +2,10 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
-import { changeUserRole, deleteUser } from '@/lib/admin/users-actions';
+import {
+	cancelInvitation,
+	resendInvitation
+} from '@/lib/invitations/actions';
 import {
 	CLEAR_ACTION_BUTTON_CLASS,
 	SECONDARY_ACTION_BUTTON_CLASS
@@ -18,18 +20,14 @@ import {
 	DialogTitle
 } from '@/components/ui/dialog';
 
-type ConfirmKind = 'promote' | 'demote' | 'delete';
+type ConfirmKind = 'resend' | 'cancel';
 
-export default function UserRoleActions({
-	userId,
-	fullName,
-	role,
-	isSelf
+export default function InvitationActions({
+	invitationId,
+	email
 }: {
-	userId: string;
-	fullName: string;
-	role: 'user' | 'admin';
-	isSelf: boolean;
+	invitationId: string;
+	email: string;
 }) {
 	const router = useRouter();
 	const [kind, setKind] = useState<ConfirmKind | null>(null);
@@ -40,14 +38,10 @@ export default function UserRoleActions({
 		if (!kind) return;
 		startTransition(async () => {
 			setError(null);
-			let result: { ok: true } | { ok: false; error: string };
-			if (kind === 'promote') {
-				result = await changeUserRole(userId, 'admin');
-			} else if (kind === 'demote') {
-				result = await changeUserRole(userId, 'user');
-			} else {
-				result = await deleteUser(userId);
-			}
+			const result =
+				kind === 'resend'
+					? await resendInvitation(invitationId)
+					: await cancelInvitation(invitationId);
 
 			if (!result.ok) {
 				setError(result.error);
@@ -59,59 +53,36 @@ export default function UserRoleActions({
 		});
 	}
 
-	const title =
-		kind === 'promote'
-			? 'Promote to admin?'
-			: kind === 'demote'
-				? 'Demote to member?'
-				: 'Delete user?';
-
-	const description =
-		kind === 'promote'
-			? `“${fullName}” will get full app-admin access.`
-			: kind === 'demote'
-				? `“${fullName}” will lose admin access. The last remaining admin cannot be demoted.`
-				: `Permanently remove “${fullName}”, their auth account, and attendance. Audit and invitation history are kept. This cannot be undone.`;
-
 	return (
 		<>
 			<div className="flex flex-wrap gap-2">
-				{role === 'user' ? (
-					<Button
-						type="button"
-						className={SECONDARY_ACTION_BUTTON_CLASS}
-						disabled={isSelf}
-						onClick={() => setKind('promote')}
-					>
-						Promote
-					</Button>
-				) : (
-					<Button
-						type="button"
-						className={CLEAR_ACTION_BUTTON_CLASS}
-						disabled={isSelf}
-						onClick={() => setKind('demote')}
-					>
-						Demote
-					</Button>
-				)}
 				<Button
 					type="button"
-					size="icon"
-					className={CLEAR_ACTION_BUTTON_CLASS}
-					disabled={isSelf}
-					aria-label={`Delete ${fullName}`}
-					onClick={() => setKind('delete')}
+					className={SECONDARY_ACTION_BUTTON_CLASS}
+					onClick={() => setKind('resend')}
 				>
-					<X className="size-4" />
+					Resend
+				</Button>
+				<Button
+					type="button"
+					className={CLEAR_ACTION_BUTTON_CLASS}
+					onClick={() => setKind('cancel')}
+				>
+					Cancel
 				</Button>
 			</div>
 
 			<Dialog open={kind !== null} onOpenChange={open => !open && setKind(null)}>
 				<DialogContent className="sm:max-w-md" showCloseButton={false}>
 					<DialogHeader>
-						<DialogTitle>{title}</DialogTitle>
-						<DialogDescription>{description}</DialogDescription>
+						<DialogTitle>
+							{kind === 'resend' ? 'Resend invitation?' : 'Cancel invitation?'}
+						</DialogTitle>
+						<DialogDescription>
+							{kind === 'resend'
+								? `Send another invitation email to “${email}”.`
+								: `Cancel the pending invitation for “${email}”. They will no longer be able to accept it.`}
+						</DialogDescription>
 					</DialogHeader>
 					{error ? (
 						<p className="text-sm text-red-700" role="alert">
@@ -126,12 +97,12 @@ export default function UserRoleActions({
 							disabled={pending}
 							onClick={() => setKind(null)}
 						>
-							Cancel
+							Back
 						</Button>
 						<Button
 							type="button"
 							className={
-								kind === 'delete' || kind === 'demote'
+								kind === 'cancel'
 									? 'rounded-[2px] border border-red-800 bg-red-700 text-white hover:bg-red-800'
 									: 'rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]'
 							}
@@ -140,11 +111,9 @@ export default function UserRoleActions({
 						>
 							{pending
 								? 'Working…'
-								: kind === 'promote'
-									? 'Promote'
-									: kind === 'demote'
-										? 'Demote'
-										: 'Delete'}
+								: kind === 'resend'
+									? 'Resend'
+									: 'Cancel invitation'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

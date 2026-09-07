@@ -1,10 +1,6 @@
 import { redirect } from 'next/navigation';
-import {
-	cancelInvitation,
-	inviteUser,
-	listInvitations,
-	resendInvitation
-} from '@/lib/invitations/actions';
+import InvitationActions from '@/components/admin/invitation-actions';
+import { inviteUser, listInvitations } from '@/lib/invitations/actions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -24,34 +20,6 @@ async function inviteAction(formData: FormData) {
 	}
 	redirect(
 		`/members/admin/invitations?message=${encodeURIComponent('Invitation sent.')}`
-	);
-}
-
-async function resendAction(formData: FormData) {
-	'use server';
-	const id = String(formData.get('id') ?? '');
-	const result = await resendInvitation(id);
-	if (!result.ok) {
-		redirect(
-			`/members/admin/invitations?error=${encodeURIComponent(result.error)}`
-		);
-	}
-	redirect(
-		`/members/admin/invitations?message=${encodeURIComponent('Invitation resent.')}`
-	);
-}
-
-async function cancelAction(formData: FormData) {
-	'use server';
-	const id = String(formData.get('id') ?? '');
-	const result = await cancelInvitation(id);
-	if (!result.ok) {
-		redirect(
-			`/members/admin/invitations?error=${encodeURIComponent(result.error)}`
-		);
-	}
-	redirect(
-		`/members/admin/invitations?message=${encodeURIComponent('Invitation cancelled.')}`
 	);
 }
 
@@ -135,28 +103,10 @@ export default async function AdminInvitationsPage({
 										Last sent {formatWhen(item.last_sent_at)}
 									</p>
 								</div>
-								<div className="flex gap-2">
-									<form action={resendAction}>
-										<input type="hidden" name="id" value={item.id} />
-										<Button
-											type="submit"
-											variant="outline"
-											className="rounded-[2px]"
-										>
-											Resend
-										</Button>
-									</form>
-									<form action={cancelAction}>
-										<input type="hidden" name="id" value={item.id} />
-										<Button
-											type="submit"
-											variant="outline"
-											className="rounded-[2px]"
-										>
-											Cancel
-										</Button>
-									</form>
-								</div>
+								<InvitationActions
+									invitationId={item.id}
+									email={item.email}
+								/>
 							</li>
 						))}
 					</ul>
