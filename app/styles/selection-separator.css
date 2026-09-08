@@ -88,14 +88,18 @@
 .brown_theme_rowheader.resource-name-cell-selected,
 .brown_theme_rowheader.resource-name-cell-selected
 	.brown_theme_rowheader_inner {
-	background: #3d8b5a !important;
+	background: var(--scheme-row-selected, #6b512b) !important;
 	color: #fff !important;
 }
 
 .brown_theme_rowheader.resource-name-cell-selected:hover,
 .brown_theme_rowheader.resource-name-cell-selected:hover
 	.brown_theme_rowheader_inner {
-	background: #347a4e !important;
+	background: color-mix(
+		in srgb,
+		var(--scheme-row-selected, #6b512b) 82%,
+		black
+	) !important;
 	filter: none;
 }
 

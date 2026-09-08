@@ -390,6 +390,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          event_bar_color: string | null
           full_name: string
           id: string
           role: Database["public"]["Enums"]["user_role"]
@@ -398,6 +399,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          event_bar_color?: string | null
           full_name?: string
           id: string
           role?: Database["public"]["Enums"]["user_role"]
@@ -406,12 +408,45 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          event_bar_color?: string | null
           full_name?: string
           id?: string
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
         }
         Relationships: []
+      }
+      scheduler_preferences: {
+        Row: {
+          created_at: string
+          font_size: string
+          pinned_member_ids: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          font_size?: string
+          pinned_member_ids?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          font_size?: string
+          pinned_member_ids?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduler_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_invitations: {
         Row: {
@@ -479,6 +514,7 @@ export type Database = {
         Returns: {
           avatar_url: string | null
           created_at: string
+          event_bar_color: string | null
           full_name: string
           id: string
           role: Database["public"]["Enums"]["user_role"]

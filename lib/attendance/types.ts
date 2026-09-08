@@ -2,6 +2,14 @@ export type ProfileResource = {
 	id: string;
 	full_name: string;
 	avatar_url: string | null;
+	event_bar_color: string | null;
+};
+
+export type SchedulerFontSize = 'small' | 'medium' | 'large';
+
+export type SchedulerPreferences = {
+	fontSize: SchedulerFontSize;
+	pinnedMemberIds: string[];
 };
 
 export type AttendanceRow = {

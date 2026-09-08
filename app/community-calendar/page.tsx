@@ -8,6 +8,7 @@ export default async function CommunityCalendarPage() {
 		<Scheduler
 			profiles={data.profiles}
 			attendance={data.attendance}
+			preferences={data.preferences}
 			currentUserId={data.currentUserId}
 			isAdmin={data.isAdmin}
 		/>

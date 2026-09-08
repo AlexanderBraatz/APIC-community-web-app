@@ -100,9 +100,9 @@ const BASE_COLOR_SCHEMES: Record<BaseColorSchemeId, ColorScheme> = {
 		eventColor: '#333333',
 		cellLoggedInBiz: '#fef6d9',
 		cellLoggedInWeekend: '#fffbec',
-		cellSelectedBiz: '#e5f2e9',
-		cellSelectedWeekend: '#f3faf6',
-		rowSelected: '#3d8b5a',
+		cellSelectedBiz: '#ebe6dc',
+		cellSelectedWeekend: '#f3efe6',
+		rowSelected: '#6b512b',
 		rowLoggedIn: '#c9a227'
 	},
 	'linen-suite': {
@@ -236,6 +236,7 @@ export function schemeToCssVars(scheme: ColorScheme): Record<string, string> {
 		'--scheme-event-bg-top-hover': scheme.eventBgTopHover,
 		'--scheme-event-bg-bottom-hover': scheme.eventBgBottomHover,
 		'--scheme-event-border': scheme.eventBorder,
-		'--scheme-event-color': scheme.eventColor
+		'--scheme-event-color': scheme.eventColor,
+		'--scheme-row-selected': scheme.rowSelected
 	};
 }

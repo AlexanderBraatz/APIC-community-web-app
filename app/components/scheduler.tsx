@@ -12,7 +12,13 @@ import {
 	AvailabilityModal,
 	ReadOnlyAvailabilityModal
 } from '@/app/components/availability-modal';
-import { CalendarDays, ChevronDown, ChevronUp, Search, Settings } from 'lucide-react';
+import {
+	CalendarDays,
+	ChevronDown,
+	ChevronUp,
+	Search,
+	Settings
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -37,14 +43,22 @@ import {
 } from '@/app/lib/color-schemes';
 import { saveAttendanceBatch } from '@/lib/attendance/actions';
 import {
+	updateEventBarColor,
+	updateSchedulerPreferences
+} from '@/lib/attendance/preference-actions';
+import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
+import {
 	attendanceToEvent,
 	dayPilotEndToModalInclusive,
 	eventToAttendanceStay,
 	modalInclusiveEndToDayPilotEnd
 } from '@/lib/attendance/adapters';
-import type { AttendanceRow, ProfileResource } from '@/lib/attendance/types';
-
-const MEMBER_SELECTIONS_STORAGE_KEY = 'scheduler-member-selections-v1';
+import type {
+	AttendanceRow,
+	ProfileResource,
+	SchedulerFontSize,
+	SchedulerPreferences
+} from '@/lib/attendance/types';
 
 function filterPinnedMemberIds(
 	ids: string[],
@@ -61,82 +75,6 @@ const defaultDays = new DayPilot.Duration(
 	defaultStart,
 	defaultEnd.addDays(1)
 ).totalDays();
-
-function readOrSeedLocalStorage<T>(key: string, seed: T): T {
-	if (typeof window === 'undefined') {
-		return seed;
-	}
-	const raw = localStorage.getItem(key);
-	if (raw != null) {
-		try {
-			return JSON.parse(raw) as T;
-		} catch {
-			// Corrupted value — fall through and re-seed.
-		}
-	}
-	localStorage.setItem(key, JSON.stringify(seed));
-	return seed;
-}
-
-const localStorageCache = new Map<string, unknown>();
-const localStorageListeners = new Map<string, Set<() => void>>();
-
-function subscribeLocalStorage(key: string, onStoreChange: () => void) {
-	let listeners = localStorageListeners.get(key);
-	if (!listeners) {
-		listeners = new Set();
-		localStorageListeners.set(key, listeners);
-	}
-	listeners.add(onStoreChange);
-
-	const onStorage = (event: StorageEvent) => {
-		if (event.key === key || event.key === null) {
-			localStorageCache.delete(key);
-			onStoreChange();
-		}
-	};
-	window.addEventListener('storage', onStorage);
-	return () => {
-		listeners.delete(onStoreChange);
-		window.removeEventListener('storage', onStorage);
-	};
-}
-
-function getLocalStorageSnapshot<T>(key: string, seed: T): T {
-	const cached = localStorageCache.get(key);
-	if (cached !== undefined) {
-		return cached as T;
-	}
-	const value = readOrSeedLocalStorage(key, seed);
-	localStorageCache.set(key, value);
-	return value;
-}
-
-function writeLocalStorage<T>(key: string, value: T) {
-	localStorage.setItem(key, JSON.stringify(value));
-	localStorageCache.set(key, value);
-	localStorageListeners.get(key)?.forEach(listener => listener());
-}
-
-function useLocalStorageState<T>(
-	key: string,
-	seed: T
-): [T, (update: T | ((prev: T) => T)) => void] {
-	const value = useSyncExternalStore(
-		onStoreChange => subscribeLocalStorage(key, onStoreChange),
-		() => getLocalStorageSnapshot(key, seed),
-		() => seed
-	);
-
-	const setValue = (update: T | ((prev: T) => T)) => {
-		const prev = getLocalStorageSnapshot(key, seed);
-		const next =
-			typeof update === 'function' ? (update as (prev: T) => T)(prev) : update;
-		writeLocalStorage(key, next);
-	};
-
-	return [value, setValue];
-}
 
 function useIsNarrowScreen(breakpointPx = 640) {
 	return useSyncExternalStore(
@@ -268,7 +206,7 @@ function withMarkedForDeletion(
 			markedForDeletion,
 			saveStatus: markedForDeletion
 				? 'unsaved'
-				: (event.tags?.saveStatus ?? 'unsaved')
+				: event.tags?.saveStatus ?? 'unsaved'
 		}
 	};
 }
@@ -300,8 +238,6 @@ function fuzzyMatch(query: string, name: string) {
 	});
 }
 
-type SchedulerFontSize = 'small' | 'medium' | 'large';
-
 const SCHEDULER_FONT_SIZE: Record<SchedulerFontSize, { cellWidth: number }> = {
 	small: { cellWidth: 28 },
 	medium: { cellWidth: 32 },
@@ -311,6 +247,7 @@ const SCHEDULER_FONT_SIZE: Record<SchedulerFontSize, { cellWidth: number }> = {
 type SchedulerProps = {
 	profiles: ProfileResource[];
 	attendance: AttendanceRow[];
+	preferences: SchedulerPreferences;
 	currentUserId: string;
 	isAdmin: boolean;
 };
@@ -318,6 +255,7 @@ type SchedulerProps = {
 const Scheduler = ({
 	profiles,
 	attendance,
+	preferences,
 	currentUserId,
 	isAdmin
 }: SchedulerProps) => {
@@ -329,6 +267,16 @@ const Scheduler = ({
 			})),
 		[profiles]
 	);
+
+	const eventBarColorByUserId = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const profile of profiles) {
+			if (profile.event_bar_color) {
+				map.set(profile.id, profile.event_bar_color);
+			}
+		}
+		return map;
+	}, [profiles]);
 
 	/** Persisted attendance snapshot from Supabase (loaded props + after Save). */
 	const [dbEvents, setDbEvents] = useState<DayPilot.EventData[]>(() =>
@@ -366,9 +314,9 @@ const Scheduler = ({
 		null
 	);
 	const [schedulerMountKey, setSchedulerMountKey] = useState(0);
-	const [memberSelectionsByUser, setMemberSelectionsByUser] = useLocalStorageState<
-		Record<string, string[]>
-	>(MEMBER_SELECTIONS_STORAGE_KEY, {});
+	const [ownEventBarColorOverride, setOwnEventBarColorOverride] = useState<
+		string | null
+	>(null);
 	const [saveUiState, setSaveUiState] = useState<SaveUiState>('idle');
 	const [savedThisSession, setSavedThisSession] = useState(false);
 	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
@@ -384,7 +332,9 @@ const Scheduler = ({
 	const allowLeaveRef = useRef(false);
 	const isNarrow = useIsNarrowScreen();
 	const [namesCollapsed, setNamesCollapsed] = useState(true);
-	const [fontSize, setFontSize] = useState<SchedulerFontSize>('medium');
+	const [fontSizeOverride, setFontSizeOverride] =
+		useState<SchedulerFontSize | null>(null);
+	const fontSize = fontSizeOverride ?? preferences.fontSize;
 	const [colorScheme, setColorScheme] = useState<ColorSchemeId>('sandstone');
 	const [colorSchemeOpen, setColorSchemeOpen] = useState(true);
 	const [hiddenColorSchemes, setHiddenColorSchemes] = useState<ColorSchemeId[]>(
@@ -396,40 +346,56 @@ const Scheduler = ({
 	);
 	const activeScheme = COLOR_SCHEMES[colorScheme];
 
+	const profileEventBarColor =
+		profiles.find(profile => profile.id === currentUserId)?.event_bar_color ??
+		null;
+	const ownEventBarColor = ownEventBarColorOverride ?? profileEventBarColor;
+
 	const storedPinnedIds = useMemo(
 		() =>
 			filterPinnedMemberIds(
-				memberSelectionsByUser[currentUserId] ?? [],
+				preferences.pinnedMemberIds,
 				currentUserId,
 				resources
 			),
-		[memberSelectionsByUser, currentUserId, resources]
+		[preferences.pinnedMemberIds, currentUserId, resources]
 	);
 	const selectedIds = selectedIdsDraft ?? storedPinnedIds;
+
+	const resolveEventBarColor = (userId: string) => {
+		if (userId === currentUserId && ownEventBarColor) {
+			return ownEventBarColor;
+		}
+		return eventBarColorByUserId.get(userId) ?? activeScheme.eventBar;
+	};
+
+	const currentUserBarColor = resolveEventBarColor(currentUserId);
 
 	const updateSelectedIds = (
 		update: string[] | ((prev: string[]) => string[])
 	) => {
-		setSelectedIdsDraft(prev => {
-			const base = prev ?? storedPinnedIds;
-			return typeof update === 'function' ? update(base) : update;
+		const base = selectedIdsDraft ?? storedPinnedIds;
+		const next = typeof update === 'function' ? update(base) : update;
+		setSelectedIdsDraft(next);
+		void updateSchedulerPreferences({ pinnedMemberIds: next }).catch(error => {
+			console.error(error);
 		});
 	};
 
-	useEffect(() => {
-		setMemberSelectionsByUser(prev => {
-			const current = prev[currentUserId] ?? [];
-			if (
-				current.length === selectedIds.length &&
-				current.every((id, index) => id === selectedIds[index])
-			) {
-				return prev;
-			}
-			return { ...prev, [currentUserId]: selectedIds };
+	const persistFontSize = (next: SchedulerFontSize) => {
+		setFontSizeOverride(next);
+		void updateSchedulerPreferences({ fontSize: next }).catch(error => {
+			console.error(error);
 		});
-	}, [selectedIds, currentUserId, setMemberSelectionsByUser]);
+	};
 
-
+	const persistEventBarColor = (color: string) => {
+		setOwnEventBarColorOverride(color);
+		setSchedulerMountKey(key => key + 1);
+		void updateEventBarColor(color).catch(error => {
+			console.error(error);
+		});
+	};
 	const hideColorScheme = (id: ColorSchemeId) => {
 		const nextHidden = [...hiddenColorSchemes, id];
 		setHiddenColorSchemes(nextHidden);
@@ -501,12 +467,15 @@ const Scheduler = ({
 			.map(event => String(event.id));
 
 		const baselineOwnedIds = new Set(
-			(isAdmin ? dbEvents : dbEvents.filter(e => String(e.resource) === currentUserId)).map(
-				event => String(event.id)
-			)
+			(isAdmin
+				? dbEvents
+				: dbEvents.filter(e => String(e.resource) === currentUserId)
+			).map(event => String(event.id))
 		);
 		const keptIds = new Set(eventsToSave.map(event => String(event.id)));
-		const droppedFromScope = [...baselineOwnedIds].filter(id => !keptIds.has(id));
+		const droppedFromScope = [...baselineOwnedIds].filter(
+			id => !keptIds.has(id)
+		);
 		const deleteIds = [...new Set([...softDeletedIds, ...droppedFromScope])];
 
 		setSaveUiState('loading');
@@ -554,8 +523,8 @@ const Scheduler = ({
 		note: string;
 	}) => {
 		const resourceName =
-			resources.find(resource => String(resource.id) === currentUserId)
-				?.name ?? '';
+			resources.find(resource => String(resource.id) === currentUserId)?.name ??
+			'';
 		const title = payload.title.trim() || resourceName;
 		const note = payload.note.trim();
 		const start = `${payload.startValue}T00:00:00`;
@@ -579,15 +548,15 @@ const Scheduler = ({
 							),
 							'unsaved'
 						)
-					]
+				  ]
 				: current.map(event =>
 						String(event.id) === payload.eventId
 							? withEventSaveStatus(
 									withEventContent({ ...event, start, end }, { title, note }),
 									'unsaved'
-								)
+							  )
 							: event
-					);
+				  );
 
 		setAvailabilityOpen(false);
 		setAvailabilityFocusId(null);
@@ -743,7 +712,7 @@ const Scheduler = ({
 						toolTip: 'Deselect',
 						action: 'None'
 					}
-				]
+			  ]
 			: [];
 	};
 
@@ -806,7 +775,7 @@ const Scheduler = ({
 								resource: args.newResource
 							},
 							'unsaved'
-						)
+					  )
 					: event
 			)
 		);
@@ -864,6 +833,10 @@ const Scheduler = ({
 			.filter(Boolean)
 			.join(' ');
 		args.data.cssClass = classNames;
+
+		const barColor = resolveEventBarColor(String(args.data.resource ?? ''));
+		args.data.barColor = barColor;
+		args.data.barBackColor = `${barColor}33`;
 
 		if (editable && saveStatus === 'unsaved' && !markedForDeletion) {
 			args.data.backColor = '#fff3b0';
@@ -1032,11 +1005,49 @@ const Scheduler = ({
 					<DialogHeader>
 						<DialogTitle>Settings</DialogTitle>
 						<DialogDescription>
-							Adjust the calendar date range and text size.
+							Adjust text size, date range, and your attendance bar colour.
+							Preferences are saved to your account.
 						</DialogDescription>
 					</DialogHeader>
 
 					<div className="grid gap-4">
+						<div className="grid gap-1.5">
+							<Label id="scheduler-event-bar-color-label">
+								Your attendance bar colour
+							</Label>
+							<p className="text-xs text-muted-foreground">
+								Colours the top strip on your calendar events. Others see this
+								colour on your stays.
+							</p>
+							<div
+								role="radiogroup"
+								aria-labelledby="scheduler-event-bar-color-label"
+								className="flex flex-wrap gap-2 pt-1"
+							>
+								{EVENT_BAR_PALETTE.map(color => {
+									const selected = currentUserBarColor === color;
+									return (
+										<button
+											key={color}
+											type="button"
+											role="radio"
+											aria-checked={selected}
+											aria-label={`Bar colour ${color}`}
+											title={color}
+											onClick={() => persistEventBarColor(color)}
+											className={cn(
+												'size-8 rounded-full border-2 transition-[box-shadow,transform]',
+												selected
+													? 'scale-105 border-[#333] shadow-sm'
+													: 'border-transparent hover:scale-105'
+											)}
+											style={{ background: color }}
+										/>
+									);
+								})}
+							</div>
+						</div>
+
 						<div className="grid gap-1.5">
 							<Label id="scheduler-font-size-label">Text size</Label>
 							<ToggleGroup
@@ -1051,7 +1062,7 @@ const Scheduler = ({
 										next === 'medium' ||
 										next === 'large'
 									) {
-										setFontSize(next);
+										persistFontSize(next);
 									}
 								}}
 							>
@@ -1363,7 +1374,7 @@ const Scheduler = ({
 				</div>
 			) : null}
 
-			<h1 className="py-3 text-center text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+			<h1 className="font-heading py-3 text-center text-4xl font-normal tracking-tight sm:text-5xl">
 				Attendance Calendar
 			</h1>
 
@@ -1392,7 +1403,9 @@ const Scheduler = ({
 								}
 								aria-activedescendant={
 									highlightedSuggestion?.id != null
-										? `scheduler-search-option-${String(highlightedSuggestion.id)}`
+										? `scheduler-search-option-${String(
+												highlightedSuggestion.id
+										  )}`
 										: undefined
 								}
 								onChange={event => {
@@ -1624,7 +1637,6 @@ const Scheduler = ({
 					</div>
 				) : null}
 			</div>
-
 		</div>
 	);
 };
