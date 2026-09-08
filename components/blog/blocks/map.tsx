@@ -159,12 +159,13 @@ export default function BlogMap(props: BlogBlocksMap) {
 		<section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-3xl">
 				{location ? (
-					<>
+					<div className="overflow-hidden rounded-3xl border border-[#968778]">
 						<LocationsMap
 							locations={mapListings}
-							className="aspect-[1.618/1] lg:aspect-[1.618/1] lg:h-auto"
+							showTooltipsByDefault
+							className="aspect-[1.618/1] rounded-none border-0 lg:aspect-[1.618/1] lg:h-auto"
 						/>
-						<footer className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+						<footer className="flex flex-col gap-3 border-t border-[#968778] bg-[#fffdfa] px-2 py-4 sm:flex-row sm:items-center sm:justify-between">
 							<p className="font-sans text-sm leading-relaxed text-[#555555]">
 								{legendText(location)}
 							</p>
@@ -173,7 +174,7 @@ export default function BlogMap(props: BlogBlocksMap) {
 									href={googleMapsHref(location)}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#3d2a16] px-3.5 py-2 text-sm font-medium text-[#3d2a16] transition-colors duration-200 ease-in-out hover:bg-[#3d2a16] hover:text-[#f7f2ec]"
+									className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#634627] bg-[#805b32] px-3.5 py-2 text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 hover:bg-[#ebe6dc] hover:text-[#805b32]"
 								>
 									<MapIcon
 										className="size-4 shrink-0"
@@ -181,7 +182,7 @@ export default function BlogMap(props: BlogBlocksMap) {
 									/>
 									Open in Google Maps
 								</a>
-								{isAdmin ? (
+								{false ? (
 									<button
 										type="button"
 										onClick={() => setModalOpen(true)}
@@ -196,7 +197,7 @@ export default function BlogMap(props: BlogBlocksMap) {
 								) : null}
 							</div>
 						</footer>
-					</>
+					</div>
 				) : (
 					<div className="relative aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc]">
 						<div

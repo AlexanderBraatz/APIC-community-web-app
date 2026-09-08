@@ -151,6 +151,8 @@ type LocationsMapProps = {
 	selectedName?: string | null;
 	/** Temporary highlight from list hover — opens info window without filtering. */
 	highlightedName?: string | null;
+	/** When true, keep the first pin’s tooltip open without hover/selection (e.g. blog map). */
+	showTooltipsByDefault?: boolean;
 	onSelect?: (listing: ListingWithCoords) => void;
 	onClearSelect?: () => void;
 	className?: string;
@@ -323,23 +325,33 @@ function MapPins({
 	pins,
 	selectedName,
 	highlightedName,
+	showTooltipsByDefault = false,
 	onSelect,
 	onClearSelect
 }: {
 	pins: ListingWithCoords[];
 	selectedName?: string | null;
 	highlightedName?: string | null;
+	showTooltipsByDefault?: boolean;
 	onSelect?: (listing: ListingWithCoords) => void;
 	onClearSelect?: () => void;
 }) {
 	const [hoveredName, setHoveredName] = useState<string | null>(null);
 
 	const activePin = useMemo(() => {
+		const defaultName =
+			showTooltipsByDefault && pins.length > 0 ? pins[0].name : null;
 		const nameToShow =
-			highlightedName || selectedName || hoveredName || null;
+			highlightedName || selectedName || hoveredName || defaultName;
 		if (!nameToShow) return null;
 		return pins.find(pin => pin.name === nameToShow) ?? null;
-	}, [pins, highlightedName, selectedName, hoveredName]);
+	}, [
+		pins,
+		highlightedName,
+		selectedName,
+		hoveredName,
+		showTooltipsByDefault
+	]);
 
 	const activeKey = activePin ? pinKey(activePin) : null;
 	// Selection keeps the closable info window; list/map hover uses a lean tooltip.
@@ -397,6 +409,7 @@ export default function LocationsMap({
 	locations,
 	selectedName = null,
 	highlightedName = null,
+	showTooltipsByDefault = false,
 	onSelect,
 	onClearSelect,
 	className
@@ -449,6 +462,7 @@ export default function LocationsMap({
 						pins={pins}
 						selectedName={selectedName}
 						highlightedName={highlightedName}
+						showTooltipsByDefault={showTooltipsByDefault}
 						onSelect={onSelect}
 						onClearSelect={onClearSelect}
 					/>
