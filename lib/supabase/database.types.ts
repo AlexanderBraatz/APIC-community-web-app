@@ -105,6 +105,57 @@ export type Database = {
           },
         ]
       }
+      blog_map_locations: {
+        Row: {
+          address: string | null
+          created_at: string
+          created_by: string | null
+          latitude: number
+          longitude: number
+          post_id: string
+          source_url: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          latitude: number
+          longitude: number
+          post_id: string
+          source_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          created_by?: string | null
+          latitude?: number
+          longitude?: number
+          post_id?: string
+          source_url?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_map_locations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_map_locations_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_tag_assignments: {
         Row: {
           listing_id: string

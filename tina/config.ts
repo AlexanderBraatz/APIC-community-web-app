@@ -1,6 +1,7 @@
 import { defineConfig } from 'tinacms';
 import { BlogIdField } from './blog-id-field';
 import { BlogImageField } from './blog-image-field';
+import { BlogMapPostIdField } from './blog-map-post-id-field';
 import { isNumericPostId, resolveBlogPostId } from './blog-post-id';
 
 const COMMUNITY_FEATURE_ICONS = ['Users', 'Mic', 'Heart', 'FileText'];
@@ -473,6 +474,26 @@ export default defineConfig({
 									},
 									{ name: 'buttonLabel', label: 'Button Label', type: 'string' },
 									{ name: 'buttonLink', label: 'Button Link', type: 'string' }
+								]
+							},
+							{
+								name: 'map',
+								label: 'Map',
+								ui: {
+									previewSrc: '/images/blocks/map.svg',
+									defaultItem: {
+										postId: ''
+									}
+								},
+								fields: [
+									{
+										name: 'postId',
+										label: 'Post ID',
+										type: 'string',
+										ui: {
+											component: BlogMapPostIdField
+										}
+									}
 								]
 							}
 						]

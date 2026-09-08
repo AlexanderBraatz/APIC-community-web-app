@@ -12,6 +12,7 @@ import {
 	Marker,
 	useMap
 } from '@vis.gl/react-google-maps';
+import { cn } from '@/lib/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 /** Castelfalfi — default map center and fixed landmark pin. */
@@ -424,9 +425,10 @@ export default function LocationsMap({
 
 	return (
 		<div
-			className={`aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)] ${
-				className ?? ''
-			}`}
+			className={cn(
+				'aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)]',
+				className
+			)}
 		>
 			<APIProvider apiKey={apiKey}>
 				<Map

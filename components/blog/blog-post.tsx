@@ -5,6 +5,7 @@ import BlogDivider from '@/components/blog/blocks/divider';
 import BlogEmbed from '@/components/blog/blocks/embed';
 import BlogImage from '@/components/blog/blocks/image';
 import BlogImageGallery from '@/components/blog/blocks/image-gallery';
+import BlogMap from '@/components/blog/blocks/map';
 import BlogPullQuote from '@/components/blog/blocks/pull-quote';
 import BlogRichText from '@/components/blog/blocks/rich-text';
 import { BlogQuery } from '@/tina/__generated__/types';
@@ -123,6 +124,14 @@ export default function BlogPost(props: {
 							<BlogCta
 								key={i}
 								{...block}
+							/>
+						);
+					case 'BlogBlocksMap':
+						return (
+							<BlogMap
+								key={i}
+								{...block}
+								postId={block.postId || post.postId}
 							/>
 						);
 					default:
