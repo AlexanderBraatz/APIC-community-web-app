@@ -32,7 +32,7 @@ blocks:
   - title: APIC Events
     description: 'Stay updated with upcoming APIC community events, meetings, activities, and gatherings. This section helps members easily see what is happening, when it takes place, and how they can participate.'
     buttonLabel: Events
-    buttonLink: /events
+    buttonLink: /blog
     _template: ctaSection
   - title: APIC Community
     description: 'APIC is a community of property owners in Castelfalfi united by a shared commitment to connection, collaboration, and the Tuscan way of life. We foster a vibrant social network where members build lasting friendships and come together to enjoy exceptional food, wine, culture, history and fellowship.'
