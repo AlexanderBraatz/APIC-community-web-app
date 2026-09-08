@@ -182,7 +182,7 @@ export default function BlogMap(props: BlogBlocksMap) {
 									/>
 									Open in Google Maps
 								</a>
-								{false ? (
+								{isAdmin ? (
 									<button
 										type="button"
 										onClick={() => setModalOpen(true)}
@@ -192,7 +192,7 @@ export default function BlogMap(props: BlogBlocksMap) {
 											className="size-3.5"
 											aria-hidden="true"
 										/>
-										Edit
+										Edit as Admin
 									</button>
 								) : null}
 							</div>
