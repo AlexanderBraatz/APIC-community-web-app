@@ -9,11 +9,12 @@ import AuthHeaderActions from './auth-header-actions';
 import SiteLogo from './site-logo';
 
 const NAV_ITEMS = [
+	{ label: 'Attendance Calendar', href: '/community-calendar' },
 	{ label: 'Food & Dining', href: '/food-dining' },
 	{ label: 'Services & Maintenance', href: '/services-maintenance' },
 	{ label: 'Health & Wellness', href: '/health-wellness' },
 	{ label: 'Shop & Market', href: '/shop-market' },
-	{ label: 'Blog', href: '/blog' },
+	{ label: 'Events & Activities', href: '/blog' },
 	{ label: 'About Us', href: '/about' }
 ] as const;
 
@@ -35,14 +36,12 @@ function NavLink({
 			href={href}
 			onClick={onClick}
 			className={cn(
-				'flex min-h-[50px] w-full items-center text-base font-medium text-white transition-[background-color,box-shadow] duration-100',
+				'flex min-h-[50px] w-full items-center py-2 text-base text-center font-medium text-white transition-[background-color,box-shadow] duration-100',
 				vertical
 					? 'justify-start px-4'
 					: 'justify-center px-5 border-r border-[#6a4b29] shadow-[inset_1px_0_0_rgba(255,255,255,0.1)]',
 				active ? 'bg-[#966b3b]' : 'hover:bg-[#6a4b29]',
-				!vertical &&
-					!active &&
-					'hover:shadow-[-1px_0_0_0_rgba(0,0,0,0.15)]'
+				!vertical && !active && 'hover:shadow-[-1px_0_0_0_rgba(0,0,0,0.15)]'
 			)}
 		>
 			{label}
@@ -111,13 +110,15 @@ export default function SiteHeader() {
 				<nav
 					className="border-b border-[#6a4b29] bg-[#805b32]"
 					style={{
-						backgroundImage:
-							'linear-gradient(2deg, #7c5831, #845e33)'
+						backgroundImage: 'linear-gradient(2deg, #7c5831, #845e33)'
 					}}
 				>
 					<ul className="flex w-full items-stretch border-l border-[#6a4b29] shadow-[inset_1px_0_0_rgba(255,255,255,0.1)]">
 						{NAV_ITEMS.map(item => (
-							<li key={item.href} className="flex flex-1">
+							<li
+								key={item.href}
+								className="flex flex-1"
+							>
 								<NavLink
 									href={item.href}
 									label={item.label}
@@ -151,7 +152,10 @@ export default function SiteHeader() {
 						</ul>
 					</nav>
 					<div className="border-t border-[#6a4b29] px-4 py-3">
-						<AuthHeaderActions mobile onNavigate={() => setOpen(false)} />
+						<AuthHeaderActions
+							mobile
+							onNavigate={() => setOpen(false)}
+						/>
 					</div>
 				</div>
 			) : null}
