@@ -1,7 +1,7 @@
 'use client';
 
 import { BlogIndexQuery } from '@/tina/__generated__/types';
-import { Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useTina } from 'tinacms/react';
@@ -13,6 +13,8 @@ export type BlogIndexItem = {
 	shortDescription?: string | null;
 	author?: string | null;
 	publishedAt?: string | null;
+	image?: string | null;
+	imageAlt?: string | null;
 };
 
 function formatPublishedAt(value?: string | null) {
@@ -116,6 +118,22 @@ export default function BlogIndex({
 												{post.shortDescription}
 											</p>
 										) : null}
+										{post.image ? (
+											<img
+												src={post.image}
+												alt={post.imageAlt || ''}
+												className="mt-5 w-full object-cover"
+											/>
+										) : null}
+										<span className="mt-5 flex justify-end">
+											<span className="inline-flex items-center gap-2 rounded-[2px] border border-[#634627] bg-[#805b32] px-5 py-2.5 font-sans text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 group-hover:bg-[#ebe6dc] group-hover:text-[#805b32]">
+												Read article
+												<ArrowRight
+													className="size-4"
+													aria-hidden="true"
+												/>
+											</span>
+										</span>
 									</Link>
 								</li>
 							);

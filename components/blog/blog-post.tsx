@@ -9,8 +9,15 @@ import BlogMap from '@/components/blog/blocks/map';
 import BlogPullQuote from '@/components/blog/blocks/pull-quote';
 import BlogRichText from '@/components/blog/blocks/rich-text';
 import { BlogQuery } from '@/tina/__generated__/types';
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
 import { useTina } from 'tinacms/react';
+
+export type BlogNeighbor = {
+	slug: string;
+	title: string;
+};
 
 function formatPublishedAt(value?: string | null) {
 	if (!value) return null;
@@ -23,12 +30,24 @@ function formatPublishedAt(value?: string | null) {
 	});
 }
 
-export default function BlogPost(props: {
+const lightButtonClassName =
+	'inline-flex items-center gap-1.5 rounded-[2px] border border-[#c4b5a4] bg-[#ebe6dc] px-4 py-2.5 font-sans text-sm font-medium text-[#805b32] transition-[color,background-color,border-color] duration-100 hover:border-[#634627] hover:bg-[#805b32] hover:text-white';
+
+const lightButtonDisabledClassName =
+	'inline-flex cursor-not-allowed items-center gap-1.5 rounded-[2px] border border-[#e8e0d6] bg-[#f7f4ef] px-4 py-2.5 font-sans text-sm font-medium text-[#b5a898]';
+
+export default function BlogPost({
+	previousPost,
+	nextPost,
+	...tinaProps
+}: {
+	previousPost?: BlogNeighbor | null;
+	nextPost?: BlogNeighbor | null;
 	data: BlogQuery;
 	variables: { relativePath: string };
 	query: string;
 }) {
-	const { data } = useTina(props);
+	const { data } = useTina(tinaProps);
 	const post = data.blog;
 	const metaBits = [post.author, formatPublishedAt(post.publishedAt)].filter(
 		Boolean
@@ -36,8 +55,67 @@ export default function BlogPost(props: {
 
 	return (
 		<article>
-			<header className="bg-white px-4 pb-6 pt-14 sm:px-6 lg:px-8 lg:pt-20">
+			<header className="bg-white px-4 pb-6 pt-6 sm:px-6 lg:px-8 lg:pt-8">
 				<div className="mx-auto max-w-3xl">
+					<nav
+						aria-label="Blog post navigation"
+						className="mb-8 flex flex-wrap items-center justify-between gap-3"
+					>
+						<Link
+							href="/blog"
+							className={lightButtonClassName}
+						>
+							<ArrowLeft
+								className="size-4"
+								aria-hidden="true"
+							/>
+							Back To Articles
+						</Link>
+						<div className="flex flex-wrap items-center gap-3">
+							{previousPost ? (
+								<Link
+									href={`/blog/${previousPost.slug}`}
+									className={lightButtonClassName}
+									aria-label={`Back to article: ${previousPost.title}`}
+								>
+									<ChevronLeft
+										className="size-4"
+										aria-hidden="true"
+									/>
+									Back
+								</Link>
+							) : (
+								<span className={lightButtonDisabledClassName}>
+									<ChevronLeft
+										className="size-4"
+										aria-hidden="true"
+									/>
+									Back
+								</span>
+							)}
+							{nextPost ? (
+								<Link
+									href={`/blog/${nextPost.slug}`}
+									className={lightButtonClassName}
+									aria-label={`Next article: ${nextPost.title}`}
+								>
+									Next
+									<ChevronRight
+										className="size-4"
+										aria-hidden="true"
+									/>
+								</Link>
+							) : (
+								<span className={lightButtonDisabledClassName}>
+									Next
+									<ChevronRight
+										className="size-4"
+										aria-hidden="true"
+									/>
+								</span>
+							)}
+						</div>
+					</nav>
 					<h1
 						data-tina-field={tinaField(post, 'title')}
 						className="font-heading text-4xl font-normal text-[#333333] sm:text-5xl"
