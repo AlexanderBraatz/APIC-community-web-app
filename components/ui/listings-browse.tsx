@@ -9,7 +9,10 @@ import {
 	suggest,
 	type Listing
 } from '@/lib/listings-search';
-import { fetchListingsForCategory, fetchTagAliasMap } from '@/lib/listings/fetch-client';
+import {
+	fetchListingsForCategory,
+	fetchTagAliasMap
+} from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
 import { Search, X } from 'lucide-react';
 import {
@@ -281,7 +284,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 			/>
 			<div
 				ref={rootRef}
-				className="sticky top-0 z-40 w-full bg-[#eeeae4] px-4 py-5 sm:px-6 lg:px-8"
+				className="sticky top-0 z-40 w-full bg-[#eeeae4] px-4 py-8 sm:px-6 lg:px-8"
 			>
 				<div className="relative mx-auto w-full max-w-[33vw]">
 					<label
@@ -374,7 +377,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 					) : null}
 
 					{activeTags.length > 0 ? (
-						<div className="mt-3 flex flex-wrap gap-2">
+						<div className="mt-3  flex flex-wrap gap-2">
 							{activeTags.map(tag => (
 								<button
 									key={tag}
@@ -393,21 +396,21 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						</div>
 					) : null}
 
-					{!isFiltered ? (
+					{/* {!isFiltered ? (
 						<p className="font-heading mt-3 text-center text-sm text-[#666666]">
-							Search by tag or place name
+							Search by tag or place namecc
 							{mapLocations.length === 0
 								? ' · Map pins appear for places that have coordinates (more after geocoding).'
 								: null}
 						</p>
-					) : null}
+					) : null} */}
 				</div>
 			</div>
 
 			<div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
 				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8">
 					{/* Map — first on mobile, right column on desktop */}
-					<div className="order-1 self-start lg:sticky lg:top-[146px] h-fit  lg:order-2 pt-5">
+					<div className="order-1 self-start lg:sticky lg:top-[120px] h-fit  lg:order-2 pt-5">
 						<LocationsMap
 							locations={mapLocations}
 							selectedName={selectedPlaceName}
