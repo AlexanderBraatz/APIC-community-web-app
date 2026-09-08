@@ -2,8 +2,12 @@ import BlogIndex, { BlogIndexItem } from '@/components/blog/blog-index';
 import client from '@/tina/__generated__/client';
 
 export default async function BlogPage() {
-	const result = await client.queries.blogConnection();
-	const posts: BlogIndexItem[] = (result.data.blogConnection.edges ?? [])
+	const [postsResult, indexResult] = await Promise.all([
+		client.queries.blogConnection(),
+		client.queries.blogIndex({ relativePath: 'index.json' })
+	]);
+
+	const posts: BlogIndexItem[] = (postsResult.data.blogConnection.edges ?? [])
 		.map(edge => edge?.node)
 		.filter((node): node is NonNullable<typeof node> => Boolean(node))
 		.map(node => ({
@@ -19,5 +23,5 @@ export default async function BlogPage() {
 			return bTime - aTime;
 		});
 
-	return <BlogIndex posts={posts} />;
+	return <BlogIndex posts={posts} {...indexResult} />;
 }

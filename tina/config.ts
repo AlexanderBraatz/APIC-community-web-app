@@ -290,6 +290,39 @@ export default defineConfig({
 				]
 			},
 			{
+				name: 'blogIndex',
+				label: 'Blog Index',
+				path: 'content/blog-index',
+				format: 'json',
+				ui: {
+					allowedActions: {
+						create: false,
+						delete: false
+					},
+					router: () => '/blog'
+				},
+				fields: [
+					{
+						name: 'title',
+						label: 'Title',
+						type: 'string',
+						required: true,
+						isTitle: true,
+						ui: {
+							component: 'textarea',
+							description:
+								'Use a line break where the heading should wrap (for example after “Events, Activities &”).'
+						}
+					},
+					{
+						name: 'description',
+						label: 'Description',
+						type: 'string',
+						ui: { component: 'textarea' }
+					}
+				]
+			},
+			{
 				name: 'blog',
 				label: 'Blog',
 				path: 'content/blog',

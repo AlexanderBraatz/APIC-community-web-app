@@ -1,7 +1,11 @@
 'use client';
 
+import { BlogIndexQuery } from '@/tina/__generated__/types';
+import { Search } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { useTina } from 'tinacms/react';
+import { tinaField } from 'tinacms/tina-field';
 
 export type BlogIndexItem = {
 	slug: string;
@@ -22,7 +26,17 @@ function formatPublishedAt(value?: string | null) {
 	});
 }
 
-export default function BlogIndex({ posts }: { posts: BlogIndexItem[] }) {
+export default function BlogIndex({
+	posts,
+	...tinaProps
+}: {
+	posts: BlogIndexItem[];
+	data: BlogIndexQuery;
+	variables: { relativePath: string };
+	query: string;
+}) {
+	const { data } = useTina(tinaProps);
+	const page = data.blogIndex;
 	const [query, setQuery] = useState('');
 
 	const filtered = useMemo(() => {
@@ -38,18 +52,33 @@ export default function BlogIndex({ posts }: { posts: BlogIndexItem[] }) {
 	return (
 		<main className="bg-white px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
 			<div className="mx-auto max-w-3xl">
-				<h1 className="font-heading text-4xl font-normal text-[#333333] sm:text-5xl">
-					Blog
+				<h1
+					data-tina-field={tinaField(page, 'title')}
+					className="font-heading whitespace-pre-line text-4xl font-normal leading-[120%] text-[#333333] sm:text-5xl"
+				>
+					{page.title}
 				</h1>
+				{page.description ? (
+					<p
+						data-tina-field={tinaField(page, 'description')}
+						className="mt-5 max-w-2xl font-sans text-base leading-relaxed text-[#555555] sm:text-lg"
+					>
+						{page.description}
+					</p>
+				) : null}
 
-				<label className="mt-8 block">
+				<label className="relative mt-8 block">
 					<span className="sr-only">Search posts</span>
+					<Search
+						className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
+						aria-hidden="true"
+					/>
 					<input
 						type="search"
 						value={query}
 						onChange={e => setQuery(e.target.value)}
 						placeholder="Search by title or short description"
-						className="w-full border border-[#d9cfc2] bg-white px-4 py-3 font-sans text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#805b32]"
+						className="w-full border border-[#d9cfc2] bg-white py-3 pr-4 pl-12 font-sans text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#805b32]"
 					/>
 				</label>
 
