@@ -1,12 +1,3 @@
-.scheduler-shell-header {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-end;
-	gap: 1rem 1.25rem;
-
-	padding: 1rem 0;
-}
-
 .scheduler-shell-well {
 	background: var(--scheme-well, #6b512b);
 	padding: 6px;

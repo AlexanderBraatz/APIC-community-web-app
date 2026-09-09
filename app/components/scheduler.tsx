@@ -12,13 +12,7 @@ import {
 	AvailabilityModal,
 	ReadOnlyAvailabilityModal
 } from '@/app/components/availability-modal';
-import {
-	CalendarDays,
-	ChevronDown,
-	ChevronUp,
-	Search,
-	Settings
-} from 'lucide-react';
+import { CalendarDays, Search, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -35,12 +29,8 @@ import { cn } from '@/lib/utils';
 import '../styles/brown_theme.css';
 import '../styles/selection-separator.css';
 import '../styles/color-schemes.css';
-import {
-	COLOR_SCHEME_IDS,
-	COLOR_SCHEMES,
-	schemeToCssVars,
-	type ColorSchemeId
-} from '@/app/lib/color-schemes';
+import '../styles/scheduler-header-layouts.css';
+import { SCHEDULER_SCHEME, schemeToCssVars } from '@/app/lib/color-schemes';
 import { saveAttendanceBatch } from '@/lib/attendance/actions';
 import {
 	updateEventBarColor,
@@ -335,16 +325,7 @@ const Scheduler = ({
 	const [fontSizeOverride, setFontSizeOverride] =
 		useState<SchedulerFontSize | null>(null);
 	const fontSize = fontSizeOverride ?? preferences.fontSize;
-	const [colorScheme, setColorScheme] = useState<ColorSchemeId>('sandstone');
-	const [colorSchemeOpen, setColorSchemeOpen] = useState(true);
-	const [hiddenColorSchemes, setHiddenColorSchemes] = useState<ColorSchemeId[]>(
-		[]
-	);
-	const visibleColorSchemeIds = useMemo(
-		() => COLOR_SCHEME_IDS.filter(id => !hiddenColorSchemes.includes(id)),
-		[hiddenColorSchemes]
-	);
-	const activeScheme = COLOR_SCHEMES[colorScheme];
+	const activeScheme = SCHEDULER_SCHEME;
 
 	const profileEventBarColor =
 		profiles.find(profile => profile.id === currentUserId)?.event_bar_color ??
@@ -396,19 +377,6 @@ const Scheduler = ({
 			console.error(error);
 		});
 	};
-	const hideColorScheme = (id: ColorSchemeId) => {
-		const nextHidden = [...hiddenColorSchemes, id];
-		setHiddenColorSchemes(nextHidden);
-		if (colorScheme === id) {
-			const remaining = COLOR_SCHEME_IDS.filter(
-				schemeId => !nextHidden.includes(schemeId)
-			);
-			if (remaining[0]) {
-				setColorScheme(remaining[0]);
-			}
-		}
-	};
-
 	const canEditResource = (resourceId: string) =>
 		isAdmin || resourceId === currentUserId;
 
@@ -953,7 +921,7 @@ const Scheduler = ({
 
 	return (
 		<div
-			data-scheduler-scheme={colorScheme}
+			data-scheduler-scheme="sandstone-flat"
 			style={schemeToCssVars(activeScheme)}
 		>
 			{hasUnsavedChanges ? (
@@ -1156,7 +1124,7 @@ const Scheduler = ({
 				</DialogContent>
 			</Dialog>
 
-			{availabilityOpen && !isAdmin ? (
+			{availabilityOpen ? (
 				<AvailabilityModal
 					open
 					userEvents={userAvailabilityEvents}
@@ -1221,9 +1189,7 @@ const Scheduler = ({
 									Saving changes…
 								</p>
 								<p style={{ margin: 0, color: '#5c5348' }}>
-									{isAdmin
-										? 'Writing all events to the database.'
-										: 'Writing your events to the database.'}
+									Saving availability…
 								</p>
 							</>
 						) : null}
@@ -1239,9 +1205,7 @@ const Scheduler = ({
 									Changes saved
 								</p>
 								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-									{isAdmin
-										? 'All event updates were written successfully.'
-										: 'Your event updates were written successfully.'}
+									Availability has been updated.
 								</p>
 								<button
 									type="button"
@@ -1374,98 +1338,15 @@ const Scheduler = ({
 				</div>
 			) : null}
 
-			<h1 className="font-heading py-3 text-center text-4xl font-normal tracking-tight sm:text-5xl">
-				Attendance Calendar
-			</h1>
+			<h1 className="scheduler-page-title">Attendance Calendar</h1>
 
 			<section
 				aria-label="Availability calendar"
 				className="scheduler-shell"
 			>
-				<div className="scheduler-shell-header">
-					<div className="relative min-w-64 flex-1 basis-64 max-w-md">
-						<div className="relative">
-							<Search
-								aria-hidden
-								className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-							/>
-							<Input
-								id="scheduler-search-people"
-								type="search"
-								value={query}
-								placeholder="Find people to compare availability"
-								aria-label="Find people to compare availability"
-								aria-autocomplete="list"
-								aria-controls={
-									suggestions.length > 0
-										? 'scheduler-search-suggestions'
-										: undefined
-								}
-								aria-activedescendant={
-									highlightedSuggestion?.id != null
-										? `scheduler-search-option-${String(
-												highlightedSuggestion.id
-										  )}`
-										: undefined
-								}
-								onChange={event => {
-									setQuery(event.target.value);
-									setActiveSuggestionIndex(0);
-								}}
-								onKeyDown={event => {
-									if (event.key !== 'Enter') {
-										return;
-									}
-									if (highlightedSuggestion?.id == null) {
-										return;
-									}
-									event.preventDefault();
-									addSelected(String(highlightedSuggestion.id));
-								}}
-								autoComplete="off"
-								className="h-11 bg-muted pl-8"
-							/>
-						</div>
-						{suggestions.length > 0 ? (
-							<ul
-								id="scheduler-search-suggestions"
-								role="listbox"
-								className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md"
-								onMouseLeave={() => setActiveSuggestionIndex(0)}
-							>
-								{suggestions.map((resource, index) => {
-									const id = String(resource.id);
-									const isHighlighted = index === highlightedSuggestionIndex;
-									return (
-										<li
-											key={id}
-											id={`scheduler-search-option-${id}`}
-											role="option"
-											aria-selected={isHighlighted}
-											onMouseEnter={() => setActiveSuggestionIndex(index)}
-										>
-											<button
-												type="button"
-												tabIndex={-1}
-												onClick={() => addSelected(id)}
-												className={cn(
-													'block w-full cursor-pointer px-3 py-2 text-left text-sm',
-													'focus-visible:outline-none',
-													isHighlighted
-														? 'bg-accent text-accent-foreground'
-														: null
-												)}
-											>
-												{resource.name}
-											</button>
-										</li>
-									);
-								})}
-							</ul>
-						) : null}
-					</div>
-					<div className="flex flex-wrap items-center gap-3 sm:ml-auto">
-						{!isAdmin ? (
+				<div className="scheduler-chrome">
+					<div className="scheduler-header-island">
+						<div className="scheduler-ctrl-primary">
 							<Button
 								type="button"
 								size="lg"
@@ -1474,169 +1355,171 @@ const Scheduler = ({
 									setAvailabilityOpen(true);
 								}}
 								disabled={saveUiState === 'loading'}
-								className="scheme-primary-btn"
+								className="scheduler-manage-btn scheme-primary-btn"
 							>
 								<CalendarDays
 									data-icon="inline-start"
 									aria-hidden
 								/>
-								Manage your availability
+								Manage availability
 							</Button>
-						) : null}
-						<Button
-							type="button"
-							variant="outline"
-							size="lg"
-							onClick={() => setSettingsOpen(true)}
-						>
-							<Settings
-								data-icon="inline-start"
-								aria-hidden
-							/>
-							Settings
-						</Button>
-					</div>
-					{error ? (
-						<p
-							className="basis-full text-sm text-destructive"
-							role="alert"
-						>
-							{error}
-						</p>
-					) : null}
-				</div>
+						</div>
 
-				<div className="scheduler-shell-well">
-					<div
-						className="scheduler-frame"
-						data-font-size={fontSize}
-					>
-						{isNarrow ? (
-							<button
+						<div className="scheduler-ctrl-search">
+							<div className="scheduler-ctrl-search-field">
+								<Search
+									aria-hidden
+									className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+								/>
+								<Input
+									id="scheduler-search-people"
+									type="search"
+									value={query}
+									placeholder="Find people"
+									aria-label="Find people to compare availability"
+									aria-autocomplete="list"
+									aria-controls={
+										suggestions.length > 0
+											? 'scheduler-search-suggestions'
+											: undefined
+									}
+									aria-activedescendant={
+										highlightedSuggestion?.id != null
+											? `scheduler-search-option-${String(
+													highlightedSuggestion.id
+											  )}`
+											: undefined
+									}
+									onChange={event => {
+										setQuery(event.target.value);
+										setActiveSuggestionIndex(0);
+									}}
+									onKeyDown={event => {
+										if (event.key !== 'Enter') {
+											return;
+										}
+										if (highlightedSuggestion?.id == null) {
+											return;
+										}
+										event.preventDefault();
+										addSelected(String(highlightedSuggestion.id));
+									}}
+									autoComplete="off"
+									className="scheduler-search-input h-11 bg-muted pl-8"
+								/>
+							</div>
+							{suggestions.length > 0 ? (
+								<ul
+									id="scheduler-search-suggestions"
+									role="listbox"
+									className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md"
+									onMouseLeave={() => setActiveSuggestionIndex(0)}
+								>
+									{suggestions.map((resource, index) => {
+										const id = String(resource.id);
+										const isHighlighted = index === highlightedSuggestionIndex;
+										return (
+											<li
+												key={id}
+												id={`scheduler-search-option-${id}`}
+												role="option"
+												aria-selected={isHighlighted}
+												onMouseEnter={() => setActiveSuggestionIndex(index)}
+											>
+												<button
+													type="button"
+													tabIndex={-1}
+													onClick={() => addSelected(id)}
+													className={cn(
+														'block w-full cursor-pointer px-3 py-2 text-left text-sm',
+														'focus-visible:outline-none',
+														isHighlighted
+															? 'bg-accent text-accent-foreground'
+															: null
+													)}
+												>
+													{resource.name}
+												</button>
+											</li>
+										);
+									})}
+								</ul>
+							) : null}
+						</div>
+
+						<div className="scheduler-ctrl-settings">
+							<Button
 								type="button"
-								className={
-									namesCollapsed
-										? 'scheduler-names-chip'
-										: 'scheduler-names-chip scheduler-names-chip-expanded'
-								}
-								aria-label={
-									namesCollapsed ? 'Show resource names' : 'Hide resource names'
-								}
-								aria-pressed={!namesCollapsed}
-								onClick={() => setNamesCollapsed(collapsed => !collapsed)}
+								variant="outline"
+								size="lg"
+								onClick={() => setSettingsOpen(true)}
+								className="scheduler-settings-btn"
+								aria-label="Settings"
 							>
-								<span aria-hidden="true">{namesCollapsed ? '›' : '‹'}</span>
-							</button>
+								<Settings
+									data-icon="inline-start"
+									aria-hidden
+								/>
+								<span className="scheduler-settings-label">Settings</span>
+							</Button>
+						</div>
+
+						{error ? (
+							<p
+								className="scheduler-header-error"
+								role="alert"
+							>
+								{error}
+							</p>
 						) : null}
-						<DayPilotScheduler
-							key={`${colorScheme}-${schedulerMountKey}-${currentUserId}`}
-							{...config}
-							theme="brown_theme"
-							resources={orderedResources}
-							events={eventRows}
-							onBeforeRowHeaderRender={onBeforeRowHeaderRender}
-							onBeforeCellRender={onBeforeCellRender}
-							onBeforeEventRender={onBeforeEventRender}
-							onRowClick={onRowClick}
-							onEventClick={onEventClick}
-							onEventMove={onEventMove}
-							onEventMoved={onEventMoved}
-							onEventResize={onEventResize}
-							onEventResized={onEventResized}
-							onTimeRangeSelect={onTimeRangeSelect}
-							onTimeRangeSelected={onTimeRangeSelected}
-						/>
+					</div>
+
+					<div className="scheduler-shell-well">
+						<div
+							className="scheduler-frame"
+							data-font-size={fontSize}
+						>
+							{isNarrow ? (
+								<button
+									type="button"
+									className={
+										namesCollapsed
+											? 'scheduler-names-chip'
+											: 'scheduler-names-chip scheduler-names-chip-expanded'
+									}
+									aria-label={
+										namesCollapsed
+											? 'Show resource names'
+											: 'Hide resource names'
+									}
+									aria-pressed={!namesCollapsed}
+									onClick={() => setNamesCollapsed(collapsed => !collapsed)}
+								>
+									<span aria-hidden="true">{namesCollapsed ? '›' : '‹'}</span>
+								</button>
+							) : null}
+							<DayPilotScheduler
+								key={`${schedulerMountKey}-${currentUserId}`}
+								{...config}
+								theme="brown_theme"
+								resources={orderedResources}
+								events={eventRows}
+								onBeforeRowHeaderRender={onBeforeRowHeaderRender}
+								onBeforeCellRender={onBeforeCellRender}
+								onBeforeEventRender={onBeforeEventRender}
+								onRowClick={onRowClick}
+								onEventClick={onEventClick}
+								onEventMove={onEventMove}
+								onEventMoved={onEventMoved}
+								onEventResize={onEventResize}
+								onEventResized={onEventResized}
+								onTimeRangeSelect={onTimeRangeSelect}
+								onTimeRangeSelected={onTimeRangeSelected}
+							/>
+						</div>
 					</div>
 				</div>
 			</section>
-
-			<div className="scheme-toggle-panel">
-				<div className="scheme-toggle-bar">
-					<p className="scheme-toggle-label">Color scheme (temporary)</p>
-					<Button
-						type="button"
-						variant="outline"
-						size="xs"
-						onClick={() => setColorSchemeOpen(open => !open)}
-						aria-expanded={colorSchemeOpen}
-						aria-controls="scheduler-color-scheme-options"
-					>
-						{colorSchemeOpen ? (
-							<>
-								Hide
-								<ChevronUp aria-hidden />
-							</>
-						) : (
-							<>
-								Show
-								<ChevronDown aria-hidden />
-							</>
-						)}
-					</Button>
-				</div>
-				{colorSchemeOpen && visibleColorSchemeIds.length > 0 ? (
-					<div
-						id="scheduler-color-scheme-options"
-						className="scheme-toggle"
-						role="group"
-						aria-label="Temporary color scheme"
-					>
-						{visibleColorSchemeIds.map(id => {
-							const scheme = COLOR_SCHEMES[id];
-							const pressed = id === colorScheme;
-							return (
-								<div
-									key={id}
-									className={cn(
-										'scheme-toggle-option',
-										pressed && 'scheme-toggle-option-selected'
-									)}
-								>
-									<button
-										type="button"
-										className="scheme-toggle-remove"
-										aria-label={`Remove ${scheme.label}`}
-										onClick={() => hideColorScheme(id)}
-									>
-										×
-									</button>
-									<button
-										type="button"
-										className="scheme-toggle-select"
-										title={scheme.blurb}
-										aria-pressed={pressed}
-										onClick={() => setColorScheme(id)}
-									>
-										<span className="scheme-toggle-option-name">
-											{scheme.label}
-										</span>
-										<span className="scheme-toggle-option-blurb">
-											{scheme.blurb}
-										</span>
-										<span
-											className="scheme-toggle-swatches"
-											aria-hidden
-										>
-											<span
-												className="scheme-toggle-swatch"
-												style={{ background: scheme.headerBg }}
-											/>
-											<span
-												className="scheme-toggle-swatch"
-												style={{ background: scheme.eventBar }}
-											/>
-											<span
-												className="scheme-toggle-swatch"
-												style={{ background: scheme.eventBgBottom }}
-											/>
-										</span>
-									</button>
-								</div>
-							);
-						})}
-					</div>
-				) : null}
-			</div>
 		</div>
 	);
 };

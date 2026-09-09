@@ -12,14 +12,14 @@ This is the master specification. Later work should be carved into vertical slic
 
 **Authority rules when the earlier ChatGPT plan and this repo disagree:**
 
-| Area | Source of truth |
-|------|-----------------|
-| Roles, invitations, RLS, audit log, secure backend functions, final-admin protection | Supabase plan (refined here) |
-| Attendance / “availability” **interaction model** (DayPilot scheduler, draft/save, modals, permissions UX) | Existing UI in `app/components/scheduler.tsx` + `availability-modal.tsx` |
-| Location browsing / search / map presentation | Existing UI in `components/ui/mock-map.tsx` + `locations-map.tsx` + `lib/listings-search.ts` |
-| Public marketing site, CMS blocks, brand chrome | Existing Tina + layout patterns |
-| Data ownership for live member data | Supabase (new) |
-| Data ownership for marketing pages | TinaCMS (existing) |
+| Area                                                                                                       | Source of truth                                                                              |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Roles, invitations, RLS, audit log, secure backend functions, final-admin protection                       | Supabase plan (refined here)                                                                 |
+| Attendance / “availability” **interaction model** (DayPilot scheduler, draft/save, modals, permissions UX) | Existing UI in `app/components/scheduler.tsx` + `availability-modal.tsx`                     |
+| Location browsing / search / map presentation                                                              | Existing UI in `components/ui/mock-map.tsx` + `locations-map.tsx` + `lib/listings-search.ts` |
+| Public marketing site, CMS blocks, brand chrome                                                            | Existing Tina + layout patterns                                                              |
+| Data ownership for live member data                                                                        | Supabase (new)                                                                               |
+| Data ownership for marketing pages                                                                         | TinaCMS (existing)                                                                           |
 
 ---
 
@@ -61,16 +61,16 @@ It is **not** a property booking or rental-availability product. Domain language
 
 ## 2. Current repo baseline (what already exists)
 
-| Layer | Today |
-|-------|--------|
-| Framework | Next.js 16 App Router, React 19, Tailwind 4, shadcn |
-| CMS | TinaCMS — pages only; `/admin` rewrite → Tina static admin |
+| Layer         | Today                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------- |
+| Framework     | Next.js 16 App Router, React 19, Tailwind 4, shadcn                                   |
+| CMS           | TinaCMS — pages only; `/admin` rewrite → Tina static admin                            |
 | Attendance UI | DayPilot Scheduler at `/community-calendar` — full mock auth, draft/save, soft-delete |
-| Listings UI | Tag/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages |
-| Listings data | `content/data/listings.json` (~75 rows); only a few have `lat`/`lng` |
-| Auth | None (scheduler “Log in as” + “Admin role” are test controls) |
-| Supabase | Not installed |
-| Members hub | `/place` (public Tina page) linking to calendar + dead `/add-attendance` |
+| Listings UI   | Tag/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages      |
+| Listings data | `content/data/listings.json` (~75 rows); only a few have `lat`/`lng`                  |
+| Auth          | None (scheduler “Log in as” + “Admin role” are test controls)                         |
+| Supabase      | Not installed                                                                         |
+| Members hub   | `/place` (public Tina page) linking to calendar + dead `/add-attendance`              |
 
 **Implication:** Backend auth, profiles, persisted attendance, member admin console, invitations, and listing CRUD are net-new. The scheduler and locations explorer UIs should be **evolved**, not redesigned from the ChatGPT UI inventory.
 
@@ -87,14 +87,14 @@ Stored on `profiles.role`. Never trust client-provided role for authorization.
 
 ### Member (`user`) may
 
-| Action | Notes |
-|--------|--------|
-| Sign in / reset / change own password | Supabase Auth |
-| Read profiles (id, full_name, avatar_url) | No other emails |
-| Read attendance bars in the scheduler window | See §8 |
+| Action                                                | Notes                         |
+| ----------------------------------------------------- | ----------------------------- |
+| Sign in / reset / change own password                 | Supabase Auth                 |
+| Read profiles (id, full_name, avatar_url)             | No other emails               |
+| Read attendance bars in the scheduler window          | See §8                        |
 | Create / edit / soft-delete / save **own** attendance | Existing draft→save semantics |
-| Read listings; search; map pins | Authenticated (see §5 gating) |
-| Update own `full_name`, `avatar_url` | Not `role` |
+| Read listings; search; map pins                       | Authenticated (see §5 gating) |
+| Update own `full_name`, `avatar_url`                  | Not `role`                    |
 
 ### Member may **not**
 
@@ -130,10 +130,10 @@ Enforce in secure backend functions (not only UI).
 
 ## 4. Dual “admin” surfaces (naming decision)
 
-| Surface | Path | Purpose |
-|---------|------|---------|
-| **CMS Admin** | `/admin` (existing rewrite → Tina) | Edit marketing markdown / blocks |
-| **App Admin** | `/members/admin/*` (new) | Users, invitations, listings CRUD, audit |
+| Surface       | Path                               | Purpose                                  |
+| ------------- | ---------------------------------- | ---------------------------------------- |
+| **CMS Admin** | `/admin` (existing rewrite → Tina) | Edit marketing markdown / blocks         |
+| **App Admin** | `/members/admin/*` (new)           | Users, invitations, listings CRUD, audit |
 
 Do **not** put member-management UI under `/admin` — that path already means Tina.
 
@@ -254,8 +254,8 @@ Existing: **DayPilot Scheduler** (`@daypilot/daypilot-lite-react`), not a month 
   - Draft vs saved visual status (`ready` / `unsaved` / `saved`)
   - Floating save / discard with leave guards
   - Settings: font/cell width, date range
-  - Color schemes distinguishing members / own row
-  - “Manage your availability” modal table (title / start / end / note)
+  - Fixed Sandstone (flat) palette for members / own row
+  - “Manage availability” modal table (title / start / end / note)
 
 Primary files to evolve (not replace):
 
@@ -267,14 +267,14 @@ Primary files to evolve (not replace):
 
 ### 8.2 Domain fields (stay)
 
-| Concept | UI / DayPilot | Database column |
-|---------|---------------|-----------------|
-| Id | event `id` | `attendance.id` uuid |
-| Owner | `resource` | `attendance.user_id` → `profiles.id` |
-| Display title | `tags.title` / `text` | `title` text not null |
-| Note | `tags.note` | `note` text null |
-| Start day | `start` date | `start_date` date |
-| End day | see §8.3 | `end_date` date (**inclusive**) |
+| Concept       | UI / DayPilot         | Database column                      |
+| ------------- | --------------------- | ------------------------------------ |
+| Id            | event `id`            | `attendance.id` uuid                 |
+| Owner         | `resource`            | `attendance.user_id` → `profiles.id` |
+| Display title | `tags.title` / `text` | `title` text not null                |
+| Note          | `tags.note`           | `note` text null                     |
+| Start day     | `start` date          | `start_date` date                    |
+| End day       | see §8.3              | `end_date` date (**inclusive**)      |
 
 Overlapping stays for the same user are **allowed** (existing product).
 
@@ -295,10 +295,10 @@ Do not change the modal field labels or user-facing “end date” meaning.
 
 Existing mental model is a **client draft buffer** then a single commit:
 
-| Role | Save merge semantics (keep) |
-|------|------------------------------|
-| `user` | Replace **only that user’s** stays in the persisted set with committed drafts |
-| `admin` | Persist the full committed event set they edited |
+| Role    | Save merge semantics (keep)                                                   |
+| ------- | ----------------------------------------------------------------------------- |
+| `user`  | Replace **only that user’s** stays in the persisted set with committed drafts |
+| `admin` | Persist the full committed event set they edited                              |
 
 Implement as:
 
@@ -322,10 +322,10 @@ Soft-delete: client marks `markedForDeletion`; only hard-delete on successful sa
 
 ### 8.6 Permissions on attendance
 
-| Actor | Select | Insert | Update | Delete |
-|-------|--------|--------|--------|--------|
+| Actor  | Select                                 | Insert                            | Update   | Delete   |
+| ------ | -------------------------------------- | --------------------------------- | -------- | -------- |
 | Member | Others’ current/window stays (and own) | Own only (`user_id = auth.uid()`) | Own only | Own only |
-| Admin | All (incl. history if requested) | Any user | Any | Any |
+| Admin  | All (incl. history if requested)       | Any user                          | Any      | Any      |
 
 RLS must enforce; UI already gates drag/edit via `canEditResource`-equivalent using session user + admin flag.
 
@@ -343,16 +343,16 @@ From `lib/listings-search.ts`:
 
 ```ts
 type Listing = {
-  name: string;
-  type: string | null;        // subtype, e.g. restaurant kind
-  address: string | null;
-  contact: string | null;
-  remark: string | null;      // free-form note (≈ “description”)
-  category: string;           // slug
-  sourceUrl: string;
-  tags: string[];
-  lat?: number | null;
-  lng?: number | null;
+	name: string;
+	type: string | null; // subtype, e.g. restaurant kind
+	address: string | null;
+	contact: string | null;
+	remark: string | null; // free-form note (≈ “description”)
+	category: string; // slug
+	sourceUrl: string;
+	tags: string[];
+	lat?: number | null;
+	lng?: number | null;
 };
 ```
 
@@ -360,12 +360,12 @@ type Listing = {
 
 Enum / check constraint must use existing slugs:
 
-| Slug | Label |
-|------|--------|
-| `food-dining` | Food & Dining |
+| Slug                   | Label                  |
+| ---------------------- | ---------------------- |
+| `food-dining`          | Food & Dining          |
 | `services-maintenance` | Services & Maintenance |
-| `health-wellness` | Health & Wellness |
-| `shop-market` | Shop & Market |
+| `health-wellness`      | Health & Wellness      |
+| `shop-market`          | Shop & Market          |
 
 Matches routes: `/food-dining`, `/services-maintenance`, `/health-wellness`, `/shop-market`.
 
@@ -391,32 +391,32 @@ Search matching today: **name, type, tags** (accent-insensitive fuzzy). Address 
 
 **`listings`**
 
-| Column | Type | Notes |
-|--------|------|--------|
-| id | uuid PK | |
-| name | text not null | |
-| type | text null | subtype |
-| address | text null | required before publish in admin UX |
-| contact | text null | |
-| remark | text null | |
-| category | enum/check | four slugs above |
-| source_url | text null | migrated from JSON |
-| latitude | double precision null | required to show pin |
-| longitude | double precision null | required to show pin |
-| created_by | uuid null | FK profiles |
-| updated_by | uuid null | |
-| created_at / updated_at | timestamptz | |
+| Column                  | Type                  | Notes                               |
+| ----------------------- | --------------------- | ----------------------------------- |
+| id                      | uuid PK               |                                     |
+| name                    | text not null         |                                     |
+| type                    | text null             | subtype                             |
+| address                 | text null             | required before publish in admin UX |
+| contact                 | text null             |                                     |
+| remark                  | text null             |                                     |
+| category                | enum/check            | four slugs above                    |
+| source_url              | text null             | migrated from JSON                  |
+| latitude                | double precision null | required to show pin                |
+| longitude               | double precision null | required to show pin                |
+| created_by              | uuid null             | FK profiles                         |
+| updated_by              | uuid null             |                                     |
+| created_at / updated_at | timestamptz           |                                     |
 
 Constraints: lat ∈ [-90,90], lng ∈ [-180,180] when not null. Pin display requires both coords.
 
 **`listing_tags`**
 
-| Column | Type |
-|--------|------|
-| id | uuid PK |
-| name | text unique (store display form; unique on lower(trim(name))) |
-| created_by | uuid |
-| created_at | timestamptz |
+| Column     | Type                                                          |
+| ---------- | ------------------------------------------------------------- |
+| id         | uuid PK                                                       |
+| name       | text unique (store display form; unique on lower(trim(name))) |
+| created_by | uuid                                                          |
+| created_at | timestamptz                                                   |
 
 **`listing_tag_assignments`**
 
@@ -426,10 +426,10 @@ Normalize tags for admin creatable multi-select; hydrate `tags: string[]` in API
 
 ### 9.7 Listing permissions
 
-| Actor | Read | Write |
-|-------|------|-------|
-| Member | Yes (all published listings) | No |
-| Admin | Yes | Create / update / delete + tag management |
+| Actor  | Read                         | Write                                     |
+| ------ | ---------------------------- | ----------------------------------------- |
+| Member | Yes (all published listings) | No                                        |
+| Admin  | Yes                          | Create / update / delete + tag management |
 
 No member-authored listings in v1.
 
@@ -449,13 +449,13 @@ Reuse `LocationsMap` patterns for preview; do not invent a second map library.
 
 ### `profiles`
 
-| Column | Type | Notes |
-|--------|------|--------|
-| id | uuid PK = `auth.users.id` | |
-| full_name | text not null | Scheduler row label |
-| avatar_url | text null | |
-| role | `user` \| `admin` | default `user` |
-| created_at / updated_at | timestamptz | |
+| Column                  | Type                      | Notes               |
+| ----------------------- | ------------------------- | ------------------- |
+| id                      | uuid PK = `auth.users.id` |                     |
+| full_name               | text not null             | Scheduler row label |
+| avatar_url              | text null                 |                     |
+| role                    | `user` \| `admin`         | default `user`      |
+| created_at / updated_at | timestamptz               |                     |
 
 Email stays in `auth.users`. Admins resolve email via secure admin API / privileged view — **not** via a profiles column exposed to RLS `select` for members.
 
@@ -496,13 +496,13 @@ Clients: select for admins only; no insert/update/delete from client.
 
 Enable RLS on every app table.
 
-| Table | Member | Admin |
-|-------|--------|-------|
-| profiles | Select public fields (id, name, avatar); update own name/avatar | Select all needed via policies or admin RPC for emails |
-| attendance | Select intersecting window / non-expired; mutate own | Full mutate |
-| listings + tags + assignments | Select | Full mutate |
-| user_invitations | None | Via backend / admin policies carefully |
-| admin_audit_log | None | Select only |
+| Table                         | Member                                                          | Admin                                                  |
+| ----------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| profiles                      | Select public fields (id, name, avatar); update own name/avatar | Select all needed via policies or admin RPC for emails |
+| attendance                    | Select intersecting window / non-expired; mutate own            | Full mutate                                            |
+| listings + tags + assignments | Select                                                          | Full mutate                                            |
+| user_invitations              | None                                                            | Via backend / admin policies carefully                 |
+| admin_audit_log               | None                                                            | Select only                                            |
 
 Prefer **privileged Edge Functions / Server Actions with service role** for invitations, role change, delete user, geocode, and audit writes — even when table policies exist — so business rules (final admin, duplicate invite) stay in one place.
 
@@ -510,17 +510,17 @@ Prefer **privileged Edge Functions / Server Actions with service role** for invi
 
 ## 13. Secure backend functions (inventory)
 
-| Function | Responsibility |
-|----------|----------------|
-| `is_admin` | Helper |
-| `invite_user` | Admin check, dedupe, invite, invitation row, audit |
-| `resend_invitation` | |
-| `cancel_invitation` | |
-| `change_user_role` | Final-admin guard + audit |
-| `delete_user` | Final-admin / self-handoff guard; delete auth user; purge future attendance; keep audit; decide avatar cleanup |
-| `save_attendance_batch` | Enforce role merge rules; validate dates; return rows |
-| `geocode_listing` | Proxy Google Geocoding |
-| `create_listing` / `update_listing` / `delete_listing` | Validate, tags, coords, audit |
+| Function                                               | Responsibility                                                                                                 |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `is_admin`                                             | Helper                                                                                                         |
+| `invite_user`                                          | Admin check, dedupe, invite, invitation row, audit                                                             |
+| `resend_invitation`                                    |                                                                                                                |
+| `cancel_invitation`                                    |                                                                                                                |
+| `change_user_role`                                     | Final-admin guard + audit                                                                                      |
+| `delete_user`                                          | Final-admin / self-handoff guard; delete auth user; purge future attendance; keep audit; decide avatar cleanup |
+| `save_attendance_batch`                                | Enforce role merge rules; validate dates; return rows                                                          |
+| `geocode_listing`                                      | Proxy Google Geocoding                                                                                         |
+| `create_listing` / `update_listing` / `delete_listing` | Validate, tags, coords, audit                                                                                  |
 
 Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Server Actions under `app/` with service role. Prefer one pattern and stick to it.
 
@@ -530,38 +530,38 @@ Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Ser
 
 ### Public / auth
 
-| Route | Purpose |
-|-------|---------|
-| `/sign-in` | Email + password (no register link) |
-| `/accept-invite` | Set password from invite |
-| `/forgot-password` | Request reset |
-| `/reset-password` | Complete reset |
-| `/`, `/about`, `/events`, category routes | Existing Tina pages |
+| Route                                     | Purpose                             |
+| ----------------------------------------- | ----------------------------------- |
+| `/sign-in`                                | Email + password (no register link) |
+| `/accept-invite`                          | Set password from invite            |
+| `/forgot-password`                        | Request reset                       |
+| `/reset-password`                         | Complete reset                      |
+| `/`, `/about`, `/events`, category routes | Existing Tina pages                 |
 
 ### Members (authenticated)
 
-| Route | Purpose |
-|-------|---------|
-| `/place` | Members hub (gate after auth) |
+| Route                 | Purpose                              |
+| --------------------- | ------------------------------------ |
+| `/place`              | Members hub (gate after auth)        |
 | `/community-calendar` | Attendance scheduler (**keep path**) |
-| `/account` | Profile + password |
+| `/account`            | Profile + password                   |
 
 Fix or remove dead `/add-attendance` link in `content/pages/place.md` (point to calendar or account).
 
 ### App admin (authenticated + admin role)
 
-| Route | Purpose |
-|-------|---------|
-| `/members/admin` | Dashboard counts + shortcuts |
-| `/members/admin/users` | Users table / roles / delete |
-| `/members/admin/invitations` | Invite + pending + history |
-| `/members/admin/listings` | Listing CRUD + geocode UI |
-| `/members/admin/audit-log` | Read-only audit |
+| Route                        | Purpose                      |
+| ---------------------------- | ---------------------------- |
+| `/members/admin`             | Dashboard counts + shortcuts |
+| `/members/admin/users`       | Users table / roles / delete |
+| `/members/admin/invitations` | Invite + pending + history   |
+| `/members/admin/listings`    | Listing CRUD + geocode UI    |
+| `/members/admin/audit-log`   | Read-only audit              |
 
 ### CMS
 
-| Route | Purpose |
-|-------|---------|
+| Route    | Purpose                 |
+| -------- | ----------------------- |
 | `/admin` | Tina (unchanged for v1) |
 
 ---
@@ -570,15 +570,15 @@ Fix or remove dead `/add-attendance` link in `content/pages/place.md` (point to 
 
 ### Keep / evolve
 
-| Component | Path | Notes |
-|-----------|------|-------|
-| Scheduler | `app/components/scheduler.tsx` | Wire to Supabase; remove mocks |
-| AvailabilityModal / ReadOnly | `app/components/availability-modal.tsx` | Keep fields & table UX |
-| MockMap → rename later | `components/ui/mock-map.tsx` | Data from Supabase |
-| LocationsMap | `components/ui/locations-map.tsx` | Keep |
-| listings-search helpers | `lib/listings-search.ts` | Keep scoring API |
-| SiteHeader / Footer / Logo | `components/layout/*` | Add auth menu later |
-| shadcn primitives | `components/ui/*` | Dialogs, tables, forms |
+| Component                    | Path                                    | Notes                          |
+| ---------------------------- | --------------------------------------- | ------------------------------ |
+| Scheduler                    | `app/components/scheduler.tsx`          | Wire to Supabase; remove mocks |
+| AvailabilityModal / ReadOnly | `app/components/availability-modal.tsx` | Keep fields & table UX         |
+| MockMap → rename later       | `components/ui/mock-map.tsx`            | Data from Supabase             |
+| LocationsMap                 | `components/ui/locations-map.tsx`       | Keep                           |
+| listings-search helpers      | `lib/listings-search.ts`                | Keep scoring API               |
+| SiteHeader / Footer / Logo   | `components/layout/*`                   | Add auth menu later            |
+| shadcn primitives            | `components/ui/*`                       | Dialogs, tables, forms         |
 
 ### Add (net-new)
 
@@ -597,22 +597,22 @@ The ChatGPT “Main Calendar Components” list (month heading, Today button as 
 
 ## 16. Permissions matrix (condensed)
 
-| Resource / action | User | Admin |
-|-------------------|------|-------|
-| Sign in | Yes | Yes |
-| View attendance in scheduler window | Yes | Yes |
-| Create overlapping own stays | Yes | Yes |
-| Edit/delete own stays | Yes | Yes |
-| Manage others’ stays | No | Yes |
-| View listings / search / map | Yes* | Yes |
-| Mutate listings / tags | No | Yes |
-| View others’ emails | No | Yes |
-| Update own profile / password | Yes | Yes |
-| Change own role | No | Only via admin action on others |
-| Invitations | No | Yes |
-| Promote / demote / delete users | No | Yes, with final-admin rules |
-| App audit log | No | Read |
-| Tina `/admin` | Orthogonal | Orthogonal |
+| Resource / action                   | User       | Admin                           |
+| ----------------------------------- | ---------- | ------------------------------- |
+| Sign in                             | Yes        | Yes                             |
+| View attendance in scheduler window | Yes        | Yes                             |
+| Create overlapping own stays        | Yes        | Yes                             |
+| Edit/delete own stays               | Yes        | Yes                             |
+| Manage others’ stays                | No         | Yes                             |
+| View listings / search / map        | Yes\*      | Yes                             |
+| Mutate listings / tags              | No         | Yes                             |
+| View others’ emails                 | No         | Yes                             |
+| Update own profile / password       | Yes        | Yes                             |
+| Change own role                     | No         | Only via admin action on others |
+| Invitations                         | No         | Yes                             |
+| Promote / demote / delete users     | No         | Yes, with final-admin rules     |
+| App audit log                       | No         | Read                            |
+| Tina `/admin`                       | Orthogonal | Orthogonal                      |
 
 \*Subject to gating decision in §5.
 
@@ -632,14 +632,14 @@ The ChatGPT “Main Calendar Components” list (month heading, Today button as 
 
 ## 18. Env & secrets
 
-| Var | Where | Notes |
-|-----|-------|--------|
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Client | Existing; restrict by referrer |
-| `NEXT_PUBLIC_SUPABASE_URL` | Client | New |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Client | New; RLS-bound |
-| `SUPABASE_SERVICE_ROLE_KEY` | Server only | Never `NEXT_PUBLIC_` |
-| Google Geocoding key | Server only | If separate from Maps JS key |
-| Tina `clientId` / `token` / `branch` | Existing Tina config | Unrelated to app roles |
+| Var                                  | Where                | Notes                          |
+| ------------------------------------ | -------------------- | ------------------------------ |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`    | Client               | Existing; restrict by referrer |
+| `NEXT_PUBLIC_SUPABASE_URL`           | Client               | New                            |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`      | Client               | New; RLS-bound                 |
+| `SUPABASE_SERVICE_ROLE_KEY`          | Server only          | Never `NEXT_PUBLIC_`           |
+| Google Geocoding key                 | Server only          | If separate from Maps JS key   |
+| Tina `clientId` / `token` / `branch` | Existing Tina config | Unrelated to app roles         |
 
 Document in `.env.example` when Supabase is added (do not commit `.env.local`).
 
@@ -677,13 +677,13 @@ When adding auth/admin screens:
 
 ## 21. Open decisions (resolve at implementation start)
 
-| ID | Question | Recommendation |
-|----|----------|----------------|
-| O1 | Gate listings/maps behind auth, or keep public teaser? | Authed full data; public CTA on category pages |
-| O2 | On user delete: hard-delete all attendance vs only future? | Delete all attendance; retain audit with user id + summary |
-| O3 | Edge Functions vs Next Server Actions for admin ops? | Next Server Actions if team lives in App Router; else Edge for invite emails next to Supabase |
-| O4 | Rename `MockMap` / Tina block `mockMap`? | Yes, when touching Tina schema (`LocationsMap` block) |
-| O5 | Category pages filter listings by category? | Yes after Supabase — `categoryFromPathname` already exists unused |
+| ID  | Question                                                   | Recommendation                                                                                |
+| --- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| O1  | Gate listings/maps behind auth, or keep public teaser?     | Authed full data; public CTA on category pages                                                |
+| O2  | On user delete: hard-delete all attendance vs only future? | Delete all attendance; retain audit with user id + summary                                    |
+| O3  | Edge Functions vs Next Server Actions for admin ops?       | Next Server Actions if team lives in App Router; else Edge for invite emails next to Supabase |
+| O4  | Rename `MockMap` / Tina block `mockMap`?                   | Yes, when touching Tina schema (`LocationsMap` block)                                         |
+| O5  | Category pages filter listings by category?                | Yes after Supabase — `categoryFromPathname` already exists unused                             |
 
 ---
 
@@ -725,21 +725,21 @@ docs/architecture-spec.md              # this document
 
 ## 24. Traceability: ChatGPT plan → this spec
 
-| Original section | Disposition |
-|------------------|-------------|
-| Roles / matrix / final admin | Kept |
-| Invite-only Auth + service role | Kept |
-| profiles / invitations / audit tables | Kept |
-| RLS outlines | Kept (refined) |
-| Backend function list | Kept + `save_attendance_batch` |
-| Month-style calendar component inventory | **Replaced** by DayPilot scheduler UX |
-| Availability table | Renamed conceptually to **attendance**; inclusive dates + adapter |
-| Location categories Services/Restaurants… | **Replaced** by existing four slugs |
-| Location fields description-only | **Replaced** by Listing shape |
+| Original section                                 | Disposition                                                                   |
+| ------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Roles / matrix / final admin                     | Kept                                                                          |
+| Invite-only Auth + service role                  | Kept                                                                          |
+| profiles / invitations / audit tables            | Kept                                                                          |
+| RLS outlines                                     | Kept (refined)                                                                |
+| Backend function list                            | Kept + `save_attendance_batch`                                                |
+| Month-style calendar component inventory         | **Replaced** by DayPilot scheduler UX                                         |
+| Availability table                               | Renamed conceptually to **attendance**; inclusive dates + adapter             |
+| Location categories Services/Restaurants…        | **Replaced** by existing four slugs                                           |
+| Location fields description-only                 | **Replaced** by Listing shape                                                 |
 | `/availability`, `/locations`, `/admin/*` routes | **Replaced** by `/community-calendar`, category/map pages, `/members/admin/*` |
-| Locations page order Map→Search→Register | **Replaced** by existing MockMap order/behaviour |
-| Fuzzy search name/category/address/tags | **Partial**: name/type/tags now; address optional later |
-| Shared generic “component inventory” | Filtered to keep/evolve vs add |
+| Locations page order Map→Search→Register         | **Replaced** by existing MockMap order/behaviour                              |
+| Fuzzy search name/category/address/tags          | **Partial**: name/type/tags now; address optional later                       |
+| Shared generic “component inventory”             | Filtered to keep/evolve vs add                                                |
 
 This document is the single spec to split into implementation tickets.
 `)

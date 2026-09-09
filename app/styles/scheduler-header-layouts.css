@@ -1,0 +1,116 @@
+/* Attendance calendar header — folder-tab toolbar on the well */
+
+.scheduler-page-title {
+	margin: 0;
+	padding: 0.75rem 0 1.5rem;
+	text-align: center;
+	font-family: var(--font-heading), ui-serif, Georgia, serif;
+	font-size: 2.25rem;
+	font-weight: 400;
+	letter-spacing: -0.025em;
+	line-height: 1.15;
+}
+
+@media (min-width: 640px) {
+	.scheduler-page-title {
+		font-size: 3rem;
+	}
+}
+
+.scheduler-chrome {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-areas:
+		'island'
+		'well';
+	align-items: start;
+	background: var(--scheme-well, #a89880);
+	padding: 36px 6px 80px 6px;
+	gap: 0;
+}
+
+.scheduler-header-island {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	gap: 0.5rem 0.65rem;
+	grid-area: island;
+	width: fit-content;
+	max-width: 100%;
+	justify-self: start;
+	padding: 0.4rem 0.5rem 0.45rem;
+	border-radius: 0.55rem 0.55rem 0 0;
+	background: color-mix(in srgb, var(--scheme-page-bg, #f0ebe3) 88%, white);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 55%, transparent);
+}
+
+.scheduler-ctrl-search,
+.scheduler-ctrl-primary,
+.scheduler-ctrl-settings {
+	min-width: 0;
+}
+
+.scheduler-ctrl-search {
+	position: relative;
+	flex: 0 0 164px;
+	width: 164px;
+}
+
+.scheduler-ctrl-search-field {
+	position: relative;
+}
+
+.scheduler-ctrl-primary {
+	flex: 0 0 164px;
+	width: 164px;
+}
+
+.scheduler-ctrl-primary .scheduler-manage-btn {
+	width: 100%;
+	justify-content: center;
+	padding-inline: 0.5rem;
+	font-size: 0.8125rem;
+	white-space: normal;
+	line-height: 1.2;
+	height: auto;
+	min-height: 2.35rem;
+}
+
+.scheduler-ctrl-search .scheduler-search-input {
+	height: 2.35rem;
+	background: color-mix(in srgb, white 70%, transparent);
+}
+
+.scheduler-ctrl-settings .scheduler-settings-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.scheduler-ctrl-settings .scheduler-settings-btn {
+	height: 2.35rem;
+	width: 2.35rem;
+	padding: 0;
+}
+
+.scheduler-header-error {
+	grid-column: 1 / -1;
+	margin: 0;
+	font-size: 0.875rem;
+	color: var(--destructive, #b42318);
+	text-align: center;
+}
+
+.scheduler-chrome .scheduler-shell-well {
+	grid-area: well;
+	padding: 0;
+	background: transparent;
+	border-radius: 0 0.35rem 0.35rem 0.35rem;
+	overflow: hidden;
+}
