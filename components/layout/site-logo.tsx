@@ -12,9 +12,12 @@ export default function SiteLogo({
 	const height = size === 'large' ? 55 : 39;
 
 	return (
-		<Link href="/" className={`inline-flex ${className}`}>
+		<Link
+			href="/"
+			className={`inline-flex ${className}`}
+		>
 			<Image
-				src="/images/apic_community_logo.png"
+				src="/images/apic_community_logo_cropped.png"
 				alt="APIC Owners Community"
 				width={width}
 				height={height}
