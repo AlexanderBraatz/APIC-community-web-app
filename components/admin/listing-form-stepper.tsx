@@ -413,7 +413,7 @@ export default function ListingFormStepper({
 						<InspectStep preview={previewListing} />
 					) : null}
 
-					<div className="flex flex-wrap items-center gap-3 border-t border-[#b8a99a]/30 pt-6">
+					<div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#b8a99a]/30 pt-6">
 						<Button
 							type="button"
 							variant="outline"
