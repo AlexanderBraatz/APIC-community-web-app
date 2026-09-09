@@ -12,7 +12,13 @@ import {
 	AvailabilityModal,
 	ReadOnlyAvailabilityModal
 } from '@/app/components/availability-modal';
-import { CalendarDays, Search, Settings } from 'lucide-react';
+import {
+	CalendarDays,
+	ChevronLeft,
+	ChevronRight,
+	Search,
+	Settings
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -1506,7 +1512,22 @@ const Scheduler = ({
 									aria-pressed={!namesCollapsed}
 									onClick={() => setNamesCollapsed(collapsed => !collapsed)}
 								>
-									<span aria-hidden="true">{namesCollapsed ? '›' : '‹'}</span>
+									<span className="scheduler-names-chip-face">
+										{namesCollapsed ? (
+											<>
+												<span>Show names</span>
+												<ChevronRight
+													aria-hidden
+													className="scheduler-names-chip-chevron"
+												/>
+											</>
+										) : (
+											<ChevronLeft
+												aria-hidden
+												className="scheduler-names-chip-chevron"
+											/>
+										)}
+									</span>
 								</button>
 							) : null}
 							<DayPilotScheduler
