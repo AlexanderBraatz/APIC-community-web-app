@@ -43,6 +43,10 @@ import {
 	eventToAttendanceStay,
 	modalInclusiveEndToDayPilotEnd
 } from '@/lib/attendance/adapters';
+import {
+	fuzzyMatch,
+	normalizeSearchText
+} from '@/lib/attendance/member-search';
 import type {
 	AttendanceRow,
 	ProfileResource,
@@ -97,10 +101,6 @@ function rangeFromInputs(startValue: string, endValue: string) {
 	const days = new DayPilot.Duration(startDate, endDate.addDays(1)).totalDays();
 
 	return { startDate, days };
-}
-
-function normalizeSearchText(value: string) {
-	return value.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 function escapeHtml(value: string) {
@@ -201,33 +201,6 @@ function withMarkedForDeletion(
 	};
 }
 
-/** Case-insensitive fuzzy match: each query word must appear as a subsequence in the name. */
-function fuzzyMatch(query: string, name: string) {
-	const normalizedQuery = normalizeSearchText(query);
-	if (!normalizedQuery) {
-		return false;
-	}
-
-	const normalizedName = normalizeSearchText(name);
-	const words = normalizedQuery.split(' ');
-
-	return words.every(word => {
-		if (normalizedName.includes(word)) {
-			return true;
-		}
-
-		let nameIndex = 0;
-		for (const char of word) {
-			nameIndex = normalizedName.indexOf(char, nameIndex);
-			if (nameIndex === -1) {
-				return false;
-			}
-			nameIndex += 1;
-		}
-		return true;
-	});
-}
-
 const SCHEDULER_FONT_SIZE: Record<SchedulerFontSize, { cellWidth: number }> = {
 	small: { cellWidth: 28 },
 	medium: { cellWidth: 32 },
@@ -314,6 +287,8 @@ const Scheduler = ({
 	const [availabilityFocusId, setAvailabilityFocusId] = useState<string | null>(
 		null
 	);
+	const [availabilityTargetUserId, setAvailabilityTargetUserId] =
+		useState(currentUserId);
 	const [readOnlyEvent, setReadOnlyEvent] = useState<DayPilot.EventData | null>(
 		null
 	);
@@ -469,14 +444,32 @@ const Scheduler = ({
 		}
 	};
 
+	const availabilityTargetId = availabilityTargetUserId || currentUserId;
+	const availabilityTargetName =
+		resources.find(resource => String(resource.id) === availabilityTargetId)
+			?.name ?? '';
+
 	const userAvailabilityEvents = useMemo(
-		() => eventRows.filter(event => String(event.resource) === currentUserId),
-		[eventRows, currentUserId]
+		() =>
+			eventRows.filter(event => String(event.resource) === availabilityTargetId),
+		[eventRows, availabilityTargetId]
+	);
+
+	const availabilityMembers = useMemo(
+		() =>
+			resources
+				.filter(resource => resource.id != null)
+				.map(resource => ({
+					id: String(resource.id),
+					name: resource.name ?? 'Member'
+				})),
+		[resources]
 	);
 
 	const closeAvailabilityModal = () => {
 		setAvailabilityOpen(false);
 		setAvailabilityFocusId(null);
+		setAvailabilityTargetUserId(currentUserId);
 	};
 
 	const closeReadOnlyAvailabilityModal = () => {
@@ -490,9 +483,12 @@ const Scheduler = ({
 		title: string;
 		note: string;
 	}) => {
+		const targetId = availabilityTargetId;
+		if (!isAdmin && targetId !== currentUserId) {
+			return;
+		}
 		const resourceName =
-			resources.find(resource => String(resource.id) === currentUserId)?.name ??
-			'';
+			resources.find(resource => String(resource.id) === targetId)?.name ?? '';
 		const title = payload.title.trim() || resourceName;
 		const note = payload.note.trim();
 		const start = `${payload.startValue}T00:00:00`;
@@ -507,7 +503,7 @@ const Scheduler = ({
 							withEventContent(
 								{
 									id: crypto.randomUUID(),
-									resource: currentUserId,
+									resource: targetId,
 									start,
 									end,
 									text: title
@@ -528,6 +524,7 @@ const Scheduler = ({
 
 		setAvailabilityOpen(false);
 		setAvailabilityFocusId(null);
+		setAvailabilityTargetUserId(currentUserId);
 		await saveChanges(nextEvents);
 	};
 
@@ -848,8 +845,10 @@ const Scheduler = ({
 			return;
 		}
 
-		if (String(event.resource) === currentUserId) {
+		const resourceId = String(event.resource);
+		if (resourceId === currentUserId || isAdmin) {
 			setReadOnlyEvent(null);
+			setAvailabilityTargetUserId(resourceId);
 			setAvailabilityFocusId(eventId);
 			setAvailabilityOpen(true);
 			return;
@@ -857,6 +856,7 @@ const Scheduler = ({
 
 		setAvailabilityOpen(false);
 		setAvailabilityFocusId(null);
+		setAvailabilityTargetUserId(currentUserId);
 		setReadOnlyEvent(event);
 	};
 
@@ -1128,11 +1128,21 @@ const Scheduler = ({
 				<AvailabilityModal
 					open
 					userEvents={userAvailabilityEvents}
-					defaultTitle={
-						resources.find(resource => String(resource.id) === currentUserId)
-							?.name ?? ''
-					}
+					defaultTitle={availabilityTargetName}
 					initialEventId={availabilityFocusId}
+					isAdmin={isAdmin}
+					members={availabilityMembers}
+					currentUserId={currentUserId}
+					targetUserId={availabilityTargetId}
+					targetMemberName={availabilityTargetName}
+					onSelectMember={memberId => {
+						setAvailabilityFocusId(null);
+						setAvailabilityTargetUserId(memberId);
+					}}
+					onClearMember={() => {
+						setAvailabilityFocusId(null);
+						setAvailabilityTargetUserId(currentUserId);
+					}}
 					onDiscard={closeAvailabilityModal}
 					onSave={payload => {
 						void saveAvailabilityFromModal(payload);
@@ -1352,6 +1362,7 @@ const Scheduler = ({
 								size="lg"
 								onClick={() => {
 									setAvailabilityFocusId(null);
+									setAvailabilityTargetUserId(currentUserId);
 									setAvailabilityOpen(true);
 								}}
 								disabled={saveUiState === 'loading'}

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { DayPilot } from '@daypilot/daypilot-lite-react';
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -24,9 +24,18 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { dayPilotEndToModalInclusive } from '@/lib/attendance/adapters';
+import {
+	fuzzyMatch,
+	normalizeSearchText
+} from '@/lib/attendance/member-search';
 import { cn } from '@/lib/utils';
 
 type FormMode = 'edit' | 'add';
+
+export type AvailabilityMemberOption = {
+	id: string;
+	name: string;
+};
 
 type AvailabilityModalProps = {
 	open: boolean;
@@ -34,6 +43,13 @@ type AvailabilityModalProps = {
 	defaultTitle: string;
 	/** When set, open with this event loaded in the yellow edit form. */
 	initialEventId?: string | null;
+	isAdmin?: boolean;
+	members?: AvailabilityMemberOption[];
+	currentUserId?: string;
+	targetUserId?: string;
+	targetMemberName?: string;
+	onSelectMember?: (memberId: string) => void;
+	onClearMember?: () => void;
 	onDiscard: () => void;
 	onSave: (payload: {
 		eventId: string | null;
@@ -74,6 +90,13 @@ export function AvailabilityModal({
 	userEvents,
 	defaultTitle,
 	initialEventId = null,
+	isAdmin = false,
+	members = [],
+	currentUserId,
+	targetUserId,
+	targetMemberName = '',
+	onSelectMember,
+	onClearMember,
 	onDiscard,
 	onSave
 }: AvailabilityModalProps) {
@@ -84,6 +107,14 @@ export function AvailabilityModal({
 	const [titleValue, setTitleValue] = useState('');
 	const [noteValue, setNoteValue] = useState('');
 	const [formError, setFormError] = useState<string | null>(null);
+	const [memberQuery, setMemberQuery] = useState('');
+	const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+
+	const editingOther =
+		isAdmin &&
+		targetUserId != null &&
+		currentUserId != null &&
+		targetUserId !== currentUserId;
 
 	const listEvents = useMemo(
 		() =>
@@ -96,6 +127,35 @@ export function AvailabilityModal({
 				),
 		[userEvents]
 	);
+
+	const memberSuggestions = useMemo(() => {
+		if (!isAdmin || !normalizeSearchText(memberQuery)) {
+			return [];
+		}
+		return members
+			.filter(
+				member =>
+					member.id !== targetUserId &&
+					fuzzyMatch(memberQuery, member.name)
+			)
+			.slice(0, 8);
+	}, [isAdmin, memberQuery, members, targetUserId]);
+
+	const highlightedSuggestionIndex =
+		memberSuggestions.length === 0
+			? 0
+			: Math.min(activeSuggestionIndex, memberSuggestions.length - 1);
+	const highlightedSuggestion = memberSuggestions[highlightedSuggestionIndex];
+
+	const resetForm = () => {
+		setFormMode(null);
+		setEditingId(null);
+		setStartValue('');
+		setEndValue('');
+		setTitleValue('');
+		setNoteValue('');
+		setFormError(null);
+	};
 
 	useEffect(() => {
 		if (!open) {
@@ -116,13 +176,13 @@ export function AvailabilityModal({
 				return;
 			}
 		}
-		setFormMode(null);
-		setEditingId(null);
-		setStartValue('');
-		setEndValue('');
-		setTitleValue('');
-		setNoteValue('');
+		resetForm();
 	}, [open, initialEventId, userEvents]);
+
+	useEffect(() => {
+		setMemberQuery('');
+		setActiveSuggestionIndex(0);
+	}, [open, targetUserId]);
 
 	const loadEvent = (event: DayPilot.EventData) => {
 		setFormMode('edit');
@@ -142,6 +202,12 @@ export function AvailabilityModal({
 		setTitleValue(defaultTitle);
 		setNoteValue('');
 		setFormError(null);
+	};
+
+	const selectMember = (memberId: string) => {
+		onSelectMember?.(memberId);
+		setMemberQuery('');
+		setActiveSuggestionIndex(0);
 	};
 
 	const handleSave = () => {
@@ -176,8 +242,13 @@ export function AvailabilityModal({
 		formMode === 'add' ? 'Add a new availability' : 'Edit availability';
 	const formDescription =
 		formMode === 'add'
-			? 'Fill in the dates, a short title, and an optional note for your new stay.'
+			? editingOther
+				? `Fill in the dates, a short title, and an optional note for ${targetMemberName}'s new stay.`
+				: 'Fill in the dates, a short title, and an optional note for your new stay.'
 			: 'Adjust the dates, title, or note, then save your changes.';
+	const listHeading = editingOther
+		? `${targetMemberName}'s availabilities`
+		: 'Your availabilities';
 
 	return (
 		<Dialog
@@ -195,14 +266,134 @@ export function AvailabilityModal({
 				<DialogHeader>
 					<DialogTitle>Manage availability</DialogTitle>
 					<DialogDescription>
-						Edit an existing stay with the pencil rows, or use the plus row to
-						add a new one.
+						{editingOther
+							? `Editing stays for ${targetMemberName}. Use the pencil rows to edit, or the plus row to add a new one.`
+							: 'Edit an existing stay with the pencil rows, or use the plus row to add a new one.'}
 					</DialogDescription>
 				</DialogHeader>
 
 				<div className="grid gap-4">
+					{isAdmin ? (
+						<div className="grid gap-2">
+							<p className="text-sm font-medium">Member availabilities</p>
+							{editingOther ? (
+								<div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
+									<p className="min-w-0 flex-1 truncate text-sm">
+										Editing{' '}
+										<span className="font-medium">{targetMemberName}</span>
+									</p>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										className="h-8 shrink-0 gap-1 px-2"
+										onClick={() => onClearMember?.()}
+									>
+										<X
+											className="size-3.5"
+											aria-hidden
+										/>
+										Clear
+									</Button>
+								</div>
+							) : null}
+							<div className="relative">
+								<div className="relative">
+									<Search
+										aria-hidden
+										className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+									/>
+									<Input
+										id="availability-member-search"
+										type="search"
+										value={memberQuery}
+										placeholder="Find people"
+										aria-label="Find member to edit availability"
+										aria-autocomplete="list"
+										aria-controls={
+											memberSuggestions.length > 0
+												? 'availability-member-suggestions'
+												: undefined
+										}
+										aria-expanded={memberSuggestions.length > 0}
+										aria-activedescendant={
+											highlightedSuggestion
+												? `availability-member-option-${highlightedSuggestion.id}`
+												: undefined
+										}
+										onChange={event => {
+											setMemberQuery(event.target.value);
+											setActiveSuggestionIndex(0);
+										}}
+										onKeyDown={event => {
+											if (memberSuggestions.length === 0) {
+												return;
+											}
+											if (event.key === 'ArrowDown') {
+												event.preventDefault();
+												setActiveSuggestionIndex(index =>
+													Math.min(index + 1, memberSuggestions.length - 1)
+												);
+												return;
+											}
+											if (event.key === 'ArrowUp') {
+												event.preventDefault();
+												setActiveSuggestionIndex(index =>
+													Math.max(index - 1, 0)
+												);
+												return;
+											}
+											if (event.key !== 'Enter' || !highlightedSuggestion) {
+												return;
+											}
+											event.preventDefault();
+											selectMember(highlightedSuggestion.id);
+										}}
+										className="h-11 bg-muted pl-8"
+									/>
+								</div>
+								{memberSuggestions.length > 0 ? (
+									<ul
+										id="availability-member-suggestions"
+										role="listbox"
+										aria-label="Member suggestions"
+										className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-background py-1 shadow-md"
+									>
+										{memberSuggestions.map((member, index) => {
+											const active = index === highlightedSuggestionIndex;
+											return (
+												<li
+													key={member.id}
+													id={`availability-member-option-${member.id}`}
+													role="option"
+													aria-selected={active}
+												>
+													<button
+														type="button"
+														onClick={() => selectMember(member.id)}
+														onMouseEnter={() =>
+															setActiveSuggestionIndex(index)
+														}
+														className={cn(
+															'flex w-full px-3 py-2 text-left text-sm',
+															active
+																? 'bg-muted text-foreground'
+																: 'text-foreground hover:bg-muted/70'
+														)}
+													>
+														{member.name}
+													</button>
+												</li>
+											);
+										})}
+									</ul>
+								) : null}
+							</div>
+						</div>
+					) : null}
+
 					<div className="grid gap-1.5">
-						<p className="text-sm font-medium">Your availabilities</p>
+						<p className="text-sm font-medium">{listHeading}</p>
 						<div className="max-h-64 overflow-y-auto rounded-lg border border-border">
 							<Table>
 								<TableHeader>

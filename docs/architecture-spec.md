@@ -249,13 +249,13 @@ Existing: **DayPilot Scheduler** (`@daypilot/daypilot-lite-react`), not a month 
   - People search + pin/compare selected members
   - Drag move / resize (permission-gated)
   - Drag-select range to create draft stay
-  - Event click → edit modal (own/admin) or read-only modal (others)
+  - Event click → edit modal (own, or any member when admin) or read-only modal (others for non-admins)
   - Soft-delete mark (×) then commit on Save
   - Draft vs saved visual status (`ready` / `unsaved` / `saved`)
   - Floating save / discard with leave guards
   - Settings: font/cell width, date range
   - Fixed Sandstone (flat) palette for members / own row
-  - “Manage availability” modal table (title / start / end / note)
+  - “Manage availability” modal table (title / start / end / note); admins can search/select a member and edit that member’s stays in the same form
 
 Primary files to evolve (not replace):
 
@@ -327,7 +327,7 @@ Soft-delete: client marks `markedForDeletion`; only hard-delete on successful sa
 | Member | Others’ current/window stays (and own) | Own only (`user_id = auth.uid()`) | Own only | Own only |
 | Admin  | All (incl. history if requested)       | Any user                          | Any      | Any      |
 
-RLS must enforce; UI already gates drag/edit via `canEditResource`-equivalent using session user + admin flag.
+RLS must enforce; UI gates drag/edit via `canEditResource` (session user + admin flag). Admins can also retarget the Manage availability form to any member (member search above the table); saves use that member’s `user_id`. Non-admins always edit themselves.
 
 ---
 
@@ -573,7 +573,8 @@ Fix or remove dead `/add-attendance` link in `content/pages/place.md` (point to 
 | Component                    | Path                                    | Notes                          |
 | ---------------------------- | --------------------------------------- | ------------------------------ |
 | Scheduler                    | `app/components/scheduler.tsx`          | Wire to Supabase; remove mocks |
-| AvailabilityModal / ReadOnly | `app/components/availability-modal.tsx` | Keep fields & table UX         |
+| AvailabilityModal / ReadOnly | `app/components/availability-modal.tsx` | Form table; admin member retarget |
+| member-search helpers        | `lib/attendance/member-search.ts`       | Shared fuzzy find for people       |
 | MockMap → rename later       | `components/ui/mock-map.tsx`            | Data from Supabase             |
 | LocationsMap                 | `components/ui/locations-map.tsx`       | Keep                           |
 | listings-search helpers      | `lib/listings-search.ts`                | Keep scoring API               |
