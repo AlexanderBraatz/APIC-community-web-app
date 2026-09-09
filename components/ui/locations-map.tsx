@@ -312,7 +312,7 @@ function CastelfalfiPin() {
 					disableAutoPan
 					headerDisabled
 				>
-					<p className="font-heading text-sm font-medium text-[#333333]">
+					<p className="font-heading text-xs font-medium text-[#333333] sm:text-sm">
 						Castelfalfi
 					</p>
 				</InfoWindow>
@@ -388,14 +388,11 @@ function MapPins({
 					headerDisabled={!isSelectedInfo}
 					onCloseClick={() => onClearSelect?.()}
 				>
-					<div className="font-heading max-w-56 px-0.5 py-0.5 text-[#333333]">
-						<p className="text-sm font-medium">{activePin.name}</p>
+					<div className="font-heading max-w-40 px-0.5 py-0.5 text-[#333333] sm:max-w-56">
+						<p className="text-xs font-medium sm:text-sm">{activePin.name}</p>
 						{activePin.type ? (
-							<p className="mt-0.5 text-xs text-[#666666]">{activePin.type}</p>
-						) : null}
-						{activePin.address ? (
-							<p className="mt-1 text-xs leading-snug text-[#666666]">
-								{activePin.address}
+							<p className="mt-0.5 text-[11px] text-[#666666] sm:text-xs">
+								{activePin.type}
 							</p>
 						) : null}
 					</div>
@@ -416,6 +413,16 @@ export default function LocationsMap({
 }: LocationsMapProps) {
 	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 	const pins = useMemo(() => locations.filter(listingHasCoords), [locations]);
+	// Touch devices expect pinch/pan; hide zoom/fullscreen chrome below lg.
+	const [showMapChrome, setShowMapChrome] = useState(false);
+
+	useEffect(() => {
+		const media = window.matchMedia('(min-width: 1024px)');
+		const sync = () => setShowMapChrome(media.matches);
+		sync();
+		media.addEventListener('change', sync);
+		return () => media.removeEventListener('change', sync);
+	}, []);
 
 	if (!apiKey) {
 		return (
@@ -449,11 +456,11 @@ export default function LocationsMap({
 					defaultCenter={CASTELFALFI}
 					defaultZoom={DEFAULT_ZOOM}
 					gestureHandling="greedy"
-					zoomControl={true}
+					zoomControl={showMapChrome}
 					cameraControl={false}
 					mapTypeControl={false}
 					streetViewControl={false}
-					fullscreenControl={true}
+					fullscreenControl={showMapChrome}
 					styles={MAP_STYLES}
 					reuseMaps
 				>

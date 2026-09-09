@@ -62,6 +62,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	// already stuck at the top of the viewport, which is exactly when we need to scroll.
 	const scrollAnchorRef = useRef<HTMLDivElement>(null);
 	const pendingScrollToSearchRef = useRef(false);
+	const [searchBarHeight, setSearchBarHeight] = useState(0);
 	const inputId = useId();
 
 	function requestScrollToSearch() {
@@ -176,6 +177,23 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		return () => document.removeEventListener('mousedown', onPointerDown);
 	}, []);
 
+	// Keep the sticky map parked just under the search bar (height changes with tags).
+	useLayoutEffect(() => {
+		if (authStatus !== 'signed_in') return;
+
+		const el = rootRef.current;
+		if (!el || typeof ResizeObserver === 'undefined') return;
+
+		const update = () => {
+			setSearchBarHeight(el.getBoundingClientRect().height);
+		};
+
+		update();
+		const observer = new ResizeObserver(update);
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, [authStatus]);
+
 	// After a filter that shortens the list, document height collapses and the
 	// browser clamps scroll — which makes the sticky search/map look like they
 	// jumped. Scroll the in-flow anchor (not the sticky bar) to the top.
@@ -284,9 +302,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 			/>
 			<div
 				ref={rootRef}
-				className="sticky top-0 z-40 w-full bg-[#eeeae4] px-4 py-8 sm:px-6 lg:px-8"
+				className="sticky top-0 z-40 w-full bg-[#eeeae4] py-5 px-4 sm:px-6 sm:py-8 lg:px-8"
 			>
-				<div className="relative mx-auto w-full max-w-[33vw]">
+				<div className="relative mx-auto w-full max-w-none lg:max-w-[33vw]">
 					<label
 						htmlFor={inputId}
 						className="sr-only"
@@ -377,7 +395,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 					) : null}
 
 					{activeTags.length > 0 ? (
-						<div className="mt-3  flex flex-wrap gap-2">
+						<div className="mt-3 flex flex-wrap gap-2">
 							{activeTags.map(tag => (
 								<button
 									key={tag}
@@ -395,68 +413,63 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							))}
 						</div>
 					) : null}
-
-					{/* {!isFiltered ? (
-						<p className="font-heading mt-3 text-center text-sm text-[#666666]">
-							Search by tag or place namecc
-							{mapLocations.length === 0
-								? ' · Map pins appear for places that have coordinates (more after geocoding).'
-								: null}
-						</p>
-					) : null} */}
 				</div>
 			</div>
 
-			<div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-				<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8">
-					{/* Map — first on mobile, right column on desktop */}
-					<div className="order-1 self-start lg:sticky lg:top-[120px] h-fit  lg:order-2 pt-5">
-						<LocationsMap
-							locations={mapLocations}
-							selectedName={selectedPlaceName}
-							highlightedName={highlightedPlaceName}
-							onSelect={listing => selectPlace(listing)}
-							onClearSelect={() => setSelectedPlaceName(null)}
-						/>
-					</div>
+			{/* flex-col on small screens so sticky map can span over the scrolling list;
+			    CSS grid rows would clip sticky to the map’s own row.
+			    Map sticky wrapper is full-bleed (outside max-width padding) on mobile
+			    so cards cannot show through at the sides. */}
+			<div className="flex flex-col gap-6 lg:mx-auto lg:max-w-[1400px] lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 lg:px-8">
+				{/* Map — sticky under search; full-width cover on mobile */}
+				<div
+					className="order-1 sticky z-30 h-fit w-full bg-[#eeeae4] px-4 pb-5 pt-0 rounded-b-4xl sm:px-6 lg:order-2 lg:self-start lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-5"
+					style={{ top: searchBarHeight }}
+				>
+					<LocationsMap
+						locations={mapLocations}
+						selectedName={selectedPlaceName}
+						highlightedName={highlightedPlaceName}
+						onSelect={listing => selectPlace(listing)}
+						onClearSelect={() => setSelectedPlaceName(null)}
+						className="aspect-[1.618/1] md:aspect-auto md:h-[33vh] lg:h-[calc(100vh-186px)]"
+					/>
+				</div>
 
-					{/* List — second on mobile, left column on desktop */}
-					<div className="relative order-2 [overflow-anchor:none] lg:order-1 pt-5">
-						{isFiltered && results.length === 0 ? (
-							<p className="font-heading text-base text-[#666666]">
-								No places match your search.
+				{/* List — scrolls under sticky search + map on mobile; left column on desktop */}
+				<div className="relative order-2 [overflow-anchor:none] px-4 pt-5 sm:px-6 lg:order-1 lg:px-0">
+					{isFiltered && results.length === 0 ? (
+						<p className="font-heading text-base text-[#666666]">
+							No places match your search.
+						</p>
+					) : null}
+
+					{results.length > 0 ? (
+						<div>
+							<p className="font-heading mb-6 text-sm text-[#666666]">
+								{results.length} {results.length === 1 ? 'place' : 'places'}
+								{category ? ` in ${CATEGORY_LABELS[category] ?? category}` : ''}
 							</p>
-						) : null}
-
-						{results.length > 0 ? (
-							<div>
-								<p className="font-heading mb-6 text-sm text-[#666666]">
-									{results.length} {results.length === 1 ? 'place' : 'places'}
-									{category
-										? ` in ${CATEGORY_LABELS[category] ?? category}`
-										: ''}
-								</p>
-								{results.map((listing, index) => (
-									<div key={`${listing.category}-${listing.name}`}>
-										<div
-											className={`-mx-3 rounded-3xl px-3 py-8 transition-colors duration-200 ease-in-out ${
-												highlightedPlaceName === listing.name
-													? 'bg-[#f7f3ec]'
-													: 'bg-transparent'
-											}`}
-											onMouseEnter={() => setHighlightedPlaceName(listing.name)}
-											onMouseLeave={() => setHighlightedPlaceName(null)}
-										>
-											<ListingResultCard listing={listing} />
-										</div>
-										{index < results.length - 1 ? (
-											<hr className="border-[#b8a99a]" />
-										) : null}
+							{results.map((listing, index) => (
+								<div key={`${listing.category}-${listing.name}`}>
+									<div
+										className={`-mx-3 rounded-3xl px-3 py-8 transition-colors duration-200 ease-in-out ${
+											highlightedPlaceName === listing.name
+												? 'bg-[#f7f3ec]'
+												: 'bg-transparent'
+										}`}
+										onMouseEnter={() => setHighlightedPlaceName(listing.name)}
+										onMouseLeave={() => setHighlightedPlaceName(null)}
+									>
+										<ListingResultCard listing={listing} />
 									</div>
-								))}
-							</div>
-						) : null}
-					</div>
+									{index < results.length - 1 ? (
+										<hr className="border-[#b8a99a]" />
+									) : null}
+								</div>
+							))}
+						</div>
+					) : null}
 				</div>
 			</div>
 		</section>
