@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import AuthHeaderActions from './auth-header-actions';
 import SiteLogo from './site-logo';
 
@@ -51,35 +51,14 @@ function NavLink({
 
 export default function SiteHeader() {
 	const [open, setOpen] = useState(false);
-	const [navVisible, setNavVisible] = useState(true);
-	const lastScrollY = useRef(0);
 	const pathname = usePathname();
-
-	useEffect(() => {
-		const onScroll = () => {
-			const y = window.scrollY;
-
-			if (y < 80) {
-				setNavVisible(true);
-			} else if (y > lastScrollY.current) {
-				setNavVisible(false);
-			} else {
-				setNavVisible(true);
-			}
-
-			lastScrollY.current = y;
-		};
-
-		window.addEventListener('scroll', onScroll, { passive: true });
-		return () => window.removeEventListener('scroll', onScroll);
-	}, []);
 
 	const isActive = (href: string) =>
 		pathname === href || (href !== '/' && pathname.startsWith(`${href}/`));
 
 	return (
 		<header>
-			{/* Top bar — logo + login, scrolls away on desktop */}
+			{/* Top bar — logo + login */}
 			<div className="border-b border-[#e5e5e5] bg-white">
 				<div className="mx-auto flex h-[90px] max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-10">
 					<SiteLogo />
@@ -100,13 +79,8 @@ export default function SiteHeader() {
 				</div>
 			</div>
 
-			{/* Desktop nav — sticky, show on scroll up */}
-			<div
-				className={cn(
-					'sticky top-0 z-50 hidden transition-transform duration-200 md:block',
-					navVisible ? 'translate-y-0' : '-translate-y-full'
-				)}
-			>
+			{/* Desktop nav */}
+			<div className="hidden md:block">
 				<nav
 					className="border-b border-[#6a4b29] bg-[#805b32]"
 					style={{
