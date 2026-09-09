@@ -30,14 +30,17 @@
 }
 
 .scheduler-header-island {
-	display: flex;
-	flex-wrap: nowrap;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	grid-template-areas:
+		'search settings'
+		'primary primary';
 	align-items: center;
 	gap: 0.5rem 0.65rem;
 	grid-area: island;
-	width: fit-content;
+	width: 100%;
 	max-width: 100%;
-	justify-self: start;
+	justify-self: stretch;
 	padding: 0.4rem 0.5rem 0.45rem;
 	border-radius: 0.55rem 0.55rem 0 0;
 	background: color-mix(in srgb, var(--scheme-page-bg, #f0ebe3) 88%, white);
@@ -52,8 +55,8 @@
 
 .scheduler-ctrl-search {
 	position: relative;
-	flex: 0 0 164px;
-	width: 164px;
+	grid-area: search;
+	width: 100%;
 }
 
 .scheduler-ctrl-search-field {
@@ -61,8 +64,12 @@
 }
 
 .scheduler-ctrl-primary {
-	flex: 0 0 164px;
-	width: 164px;
+	grid-area: primary;
+	width: 100%;
+}
+
+.scheduler-ctrl-settings {
+	grid-area: settings;
 }
 
 .scheduler-ctrl-primary .scheduler-manage-btn {
@@ -74,6 +81,25 @@
 	line-height: 1.2;
 	height: auto;
 	min-height: 2.35rem;
+}
+
+@media (min-width: 640px) {
+	.scheduler-header-island {
+		display: flex;
+		flex-wrap: nowrap;
+		width: fit-content;
+		justify-self: start;
+	}
+
+	.scheduler-ctrl-search {
+		flex: 0 0 164px;
+		width: 164px;
+	}
+
+	.scheduler-ctrl-primary {
+		flex: 0 0 164px;
+		width: 164px;
+	}
 }
 
 .scheduler-ctrl-search .scheduler-search-input {
