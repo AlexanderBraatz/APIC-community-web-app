@@ -2,6 +2,7 @@
 
 import { BlogIndexQuery } from '@/tina/__generated__/types';
 import { ArrowRight, Search } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useTina } from 'tinacms/react';
@@ -119,10 +120,13 @@ export default function BlogIndex({
 											</p>
 										) : null}
 										{post.image ? (
-											<img
+											<Image
 												src={post.image}
 												alt={post.imageAlt || ''}
 												className="mt-5 w-full object-cover"
+												width={768}
+												height={576}
+												sizes="(min-width: 860px) 769px, 92.78vw"
 											/>
 										) : null}
 										<span className="mt-5 flex justify-end">

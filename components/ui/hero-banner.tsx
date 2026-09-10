@@ -1,6 +1,7 @@
 'use client';
 
 import { PageBlocksHeroBanner } from '@/tina/__generated__/types';
+import Image from 'next/image';
 import { tinaField } from 'tinacms/tina-field';
 
 export default function HeroBanner(props: PageBlocksHeroBanner) {
@@ -18,11 +19,14 @@ export default function HeroBanner(props: PageBlocksHeroBanner) {
 					data-tina-field={tinaField(props, 'backgroundVideo')}
 				/>
 			) : props.backgroundImage ? (
-				<img
+				<Image
+					fill
 					src={props.backgroundImage}
 					alt=""
+					priority
 					className="absolute inset-0 size-full object-cover"
 					data-tina-field={tinaField(props, 'backgroundImage')}
+					sizes="100vw"
 				/>
 			) : (
 				<div className="absolute inset-0 bg-[#7A5A32]" />

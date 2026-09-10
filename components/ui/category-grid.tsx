@@ -1,6 +1,7 @@
 'use client';
 
 import { PageBlocksCategoryGrid } from '@/tina/__generated__/types';
+import Image from 'next/image';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
 
@@ -30,8 +31,11 @@ export default function CategoryGrid(props: PageBlocksCategoryGrid) {
 							>
 								{item.image ? (
 									<div className="relative aspect-[39/55] w-full overflow-hidden">
-										<img
+										<Image
+											width={332}
+											height={468}
 											src={item.image}
+											sizes="(min-width: 1540px) 932px, (min-width: 1040px) 62.08vw, (min-width: 640px) calc(138.95vw - 99px), calc(281.88vw - 90px)"
 											alt=""
 											className="size-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
 											data-tina-field={tinaField(item, 'image')}

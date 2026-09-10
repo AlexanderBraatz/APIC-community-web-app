@@ -1,6 +1,7 @@
 'use client';
 
 import { PageBlocksQuoteBanner } from '@/tina/__generated__/types';
+import Image from 'next/image';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
 
@@ -8,7 +9,9 @@ export default function QuoteBanner(props: PageBlocksQuoteBanner) {
 	return (
 		<section className="relative min-h-[70vh] w-full overflow-hidden">
 			{props.backgroundImage ? (
-				<img
+				<Image
+					fill
+					sizes="100vw"
 					src={props.backgroundImage}
 					alt=""
 					className="absolute inset-0 size-full object-cover"

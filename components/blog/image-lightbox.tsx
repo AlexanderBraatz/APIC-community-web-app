@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import Image from 'next/image';
 import { useEffect, useEffectEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -111,7 +112,10 @@ export default function ImageLightbox({
 				onClick={close}
 				className="right-1 top-1 size-14 sm:right-3 sm:top-3 sm:size-16"
 			>
-				<X className="size-6" strokeWidth={1.75} />
+				<X
+					className="size-6"
+					strokeWidth={1.75}
+				/>
 			</LightboxControl>
 
 			{hasMultiple ? (
@@ -120,7 +124,10 @@ export default function ImageLightbox({
 					onClick={goPrev}
 					className="left-0 top-1/2 size-16 -translate-y-1/2 sm:left-2 sm:size-20 lg:left-4"
 				>
-					<ChevronLeft className="size-7 sm:size-8" strokeWidth={1.5} />
+					<ChevronLeft
+						className="size-7 sm:size-8"
+						strokeWidth={1.5}
+					/>
 				</LightboxControl>
 			) : null}
 
@@ -130,24 +137,33 @@ export default function ImageLightbox({
 					onClick={goNext}
 					className="right-0 top-1/2 size-16 -translate-y-1/2 sm:right-2 sm:size-20 lg:right-4"
 				>
-					<ChevronRight className="size-7 sm:size-8" strokeWidth={1.5} />
+					<ChevronRight
+						className="size-7 sm:size-8"
+						strokeWidth={1.5}
+					/>
 				</LightboxControl>
 			) : null}
 
-			<figure className="pointer-events-none flex max-h-full w-full flex-col items-center justify-center px-4 py-14 sm:px-10 sm:py-16 lg:px-20 lg:py-20">
-				<img
-					src={current.src}
-					alt={current.alt || current.caption || ''}
-					className="pointer-events-auto h-auto max-h-[calc(100vh-7.5rem)] w-auto max-w-full object-contain sm:max-h-[calc(100vh-9rem)] lg:max-h-[calc(100vh-10rem)]"
+			<figure className="pointer-events-none flex h-full w-full flex-col items-center justify-center px-4 py-14 sm:px-10 sm:py-16 lg:px-20 lg:py-20">
+				<div
+					className="pointer-events-auto relative min-h-0 w-full flex-1"
 					onClick={event => event.stopPropagation()}
-				/>
+				>
+					<Image
+						fill
+						src={current.src}
+						alt={current.alt || current.caption || ''}
+						sizes="100vw"
+						className="object-contain"
+					/>
+				</div>
 				{current.caption ? (
-					<figcaption className="mt-4 max-w-3xl text-center font-heading text-sm text-white/80 sm:text-base">
+					<figcaption className="mt-4 max-w-3xl shrink-0 text-center font-heading text-sm text-white/80 sm:text-base">
 						{current.caption}
 					</figcaption>
 				) : null}
 				{hasMultiple ? (
-					<p className="mt-3 text-xs text-white/55">
+					<p className="mt-3 shrink-0 text-xs text-white/55">
 						{index + 1} / {images.length}
 					</p>
 				) : null}

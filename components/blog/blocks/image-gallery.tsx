@@ -4,6 +4,7 @@ import ImageLightbox, {
 	type LightboxImage
 } from '@/components/blog/image-lightbox';
 import { BlogBlocksImageGallery } from '@/tina/__generated__/types';
+import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import { tinaField } from 'tinacms/tina-field';
 
@@ -65,11 +66,14 @@ export default function BlogImageGallery(props: BlogBlocksImageGallery) {
 							}}
 						>
 							<span className="block origin-center scale-100 transition-transform duration-500 ease-in-out will-change-transform group-hover:scale-105">
-								<img
+								<Image
 									src={image.src}
 									alt={image.alt || ''}
 									className="aspect-4/3 size-full object-cover transition-[filter] duration-500 ease-in-out group-hover:brightness-[1.2]"
 									data-tina-field={tinaField(item, 'image')}
+									width={378}
+									height={283}
+									sizes="(min-width: 880px) 379px, (min-width: 640px) calc(40vw + 35px), calc(100vw - 32px)"
 								/>
 							</span>
 						</button>

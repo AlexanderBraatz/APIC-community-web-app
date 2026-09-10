@@ -2,10 +2,10 @@ import Link from 'next/link';
 import { signOut } from '@/app/auth/actions';
 import {
 	changePassword,
-	removeAvatar,
 	updateFullName,
-	uploadAvatar
+	updateProfileColor
 } from '@/lib/account/actions';
+import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -25,16 +25,20 @@ export default async function AccountPage({ searchParams }: PageProps) {
 	const { data: profile } = user
 		? await supabase
 				.from('profiles')
-				.select('full_name, role, avatar_url')
+				.select('full_name, role, event_bar_color')
 				.eq('id', user.id)
 				.maybeSingle()
 		: { data: null };
+	const profileCircleBg = profile?.event_bar_color ?? '#e8dfd2';
+	const profileCircleTextColor = profile?.event_bar_color
+		? '#ffffff'
+		: '#805b32';
 
 	return (
 		<main className="mx-auto w-full max-w-lg px-4 py-12">
 			<h1 className="font-heading text-3xl text-[#805b32]">Account</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Update your name and avatar, change your password, or sign out.
+				Update your name and profile colour, change your password, or sign out.
 			</p>
 
 			{params.error ? (
@@ -58,45 +62,39 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				<h2 className="text-lg font-medium text-[#444]">Profile</h2>
 
 				<div className="flex items-center gap-4">
-					{profile?.avatar_url ? (
-						// eslint-disable-next-line @next/next/no-img-element -- remote Supabase Storage URL
-						<img
-							src={profile.avatar_url}
-							alt=""
-							width={72}
-							height={72}
-							className="h-[72px] w-[72px] rounded-full object-cover"
-						/>
-					) : (
-						<div
-							className="flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[#e8dfd2] text-sm font-medium text-[#805b32]"
-							aria-hidden
-						>
-							{(profile?.full_name || user?.email || '?')
-								.slice(0, 1)
-								.toUpperCase()}
-						</div>
-					)}
+					<div
+						className="flex h-[72px] w-[72px] items-center justify-center rounded-full text-sm font-medium"
+						aria-hidden
+						style={{
+							background: profileCircleBg,
+							color: profileCircleTextColor
+						}}
+					>
+						{(profile?.full_name || user?.email || '?')
+							.slice(0, 1)
+							.toUpperCase()}
+					</div>
 					<div className="min-w-0 text-sm">
-						<p className="truncate text-[#444]">
-							{profile?.full_name || '—'}
-						</p>
+						<p className="truncate text-[#444]">{profile?.full_name || '—'}</p>
 						<p className="truncate text-[#888]">{user?.email ?? '—'}</p>
 					</div>
 				</div>
 
 				<div>
 					<dt className="sr-only">Email</dt>
-					<p className="text-xs text-[#888]">Email (read-only)</p>
+					<p className="text-xs text-[#888]">Email</p>
 					<p className="mt-1 text-sm text-[#444]">{user?.email ?? '—'}</p>
 				</div>
 
 				<div>
-					<p className="text-xs text-[#888]">Role (read-only)</p>
+					<p className="text-xs text-[#888]">Role</p>
 					<p className="mt-1 text-sm text-[#444]">{profile?.role ?? '—'}</p>
 				</div>
 
-				<form action={updateFullName} className="space-y-3">
+				<form
+					action={updateFullName}
+					className="space-y-3"
+				>
 					<div className="space-y-2">
 						<Label htmlFor="full_name">Full name</Label>
 						<Input
@@ -119,44 +117,47 @@ export default async function AccountPage({ searchParams }: PageProps) {
 			</section>
 
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
-				<h2 className="text-lg font-medium text-[#444]">Avatar</h2>
+				<h2 className="text-lg font-medium text-[#444]">Profile colour</h2>
 				<p className="text-sm text-[#666]">
-					JPEG, PNG, WebP, or GIF up to 2 MB.
+					Choose the colour shown behind your profile initial.
 				</p>
-				<form action={uploadAvatar} className="space-y-3">
-					<div className="space-y-2">
-						<Label htmlFor="avatar">Choose image</Label>
-						<Input
-							id="avatar"
-							name="avatar"
-							type="file"
-							accept="image/jpeg,image/png,image/webp,image/gif"
-							required
-						/>
-					</div>
-					<Button
-						type="submit"
-						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
+				<form action={updateProfileColor}>
+					<div
+						role="radiogroup"
+						aria-label="Profile colour"
+						className="flex flex-wrap gap-2"
 					>
-						Upload avatar
-					</Button>
+						{EVENT_BAR_PALETTE.map(color => {
+							const selected = profile?.event_bar_color === color;
+							return (
+								<button
+									key={color}
+									type="submit"
+									name="color"
+									value={color}
+									role="radio"
+									aria-checked={selected}
+									aria-label={`Profile colour ${color}`}
+									title={color}
+									className={`size-8 rounded-full border-2 transition-[box-shadow,transform] ${
+										selected
+											? 'scale-105 border-[#333] shadow-sm'
+											: 'border-transparent hover:scale-105'
+									}`}
+									style={{ background: color }}
+								/>
+							);
+						})}
+					</div>
 				</form>
-				{profile?.avatar_url ? (
-					<form action={removeAvatar}>
-						<Button
-							type="submit"
-							variant="outline"
-							className="rounded-[2px] border-[#634627]"
-						>
-							Remove avatar
-						</Button>
-					</form>
-				) : null}
 			</section>
 
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">Password</h2>
-				<form action={changePassword} className="space-y-4">
+				<form
+					action={changePassword}
+					className="space-y-4"
+				>
 					<div className="space-y-2">
 						<Label htmlFor="password">New password</Label>
 						<Input

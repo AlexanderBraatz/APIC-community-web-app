@@ -3,15 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-
-const AVATAR_BUCKET = 'avatars';
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
-const ALLOWED_AVATAR_TYPES = new Set([
-	'image/jpeg',
-	'image/png',
-	'image/webp',
-	'image/gif'
-]);
+import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
 
 function accountRedirect(opts: { error?: string; message?: string }): never {
 	const params = new URLSearchParams();
@@ -33,21 +25,6 @@ async function requireUser() {
 	}
 
 	return { supabase, user };
-}
-
-function extensionForMime(mime: string) {
-	switch (mime) {
-		case 'image/jpeg':
-			return 'jpg';
-		case 'image/png':
-			return 'png';
-		case 'image/webp':
-			return 'webp';
-		case 'image/gif':
-			return 'gif';
-		default:
-			return null;
-	}
 }
 
 export async function updateFullName(formData: FormData) {
@@ -76,54 +53,15 @@ export async function updateFullName(formData: FormData) {
 	accountRedirect({ message: 'Name saved.' });
 }
 
-export async function uploadAvatar(formData: FormData) {
-	const entry = formData.get('avatar');
-	const file = entry instanceof File && entry.size > 0 ? entry : null;
-
-	if (!file) {
-		accountRedirect({ error: 'Choose an image to upload.' });
+export async function updateProfileColor(formData: FormData) {
+	const color = String(formData.get('color') ?? '');
+	if (!(EVENT_BAR_PALETTE as readonly string[]).includes(color)) {
+		accountRedirect({ error: 'Choose a colour from the palette.' });
 	}
-
-	if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
-		accountRedirect({
-			error: 'Use a JPEG, PNG, WebP, or GIF image.'
-		});
-	}
-
-	if (file.size > MAX_AVATAR_BYTES) {
-		accountRedirect({ error: 'Avatar must be 2 MB or smaller.' });
-	}
-
-	const ext = extensionForMime(file.type);
-	if (!ext) {
-		accountRedirect({ error: 'Unsupported image type.' });
-	}
-
 	const { supabase, user } = await requireUser();
-	const objectPath = `${user.id}/avatar.${ext}`;
-	const bytes = new Uint8Array(await file.arrayBuffer());
-
-	const { error: uploadError } = await supabase.storage
-		.from(AVATAR_BUCKET)
-		.upload(objectPath, bytes, {
-			contentType: file.type,
-			upsert: true,
-			cacheControl: '3600'
-		});
-
-	if (uploadError) {
-		accountRedirect({ error: uploadError.message });
-	}
-
-	const {
-		data: { publicUrl }
-	} = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(objectPath);
-
-	const avatarUrl = `${publicUrl}?v=${Date.now()}`;
-
 	const { error: profileError } = await supabase
 		.from('profiles')
-		.update({ avatar_url: avatarUrl })
+		.update({ event_bar_color: color })
 		.eq('id', user.id);
 
 	if (profileError) {
@@ -132,30 +70,7 @@ export async function uploadAvatar(formData: FormData) {
 
 	revalidatePath('/account');
 	revalidatePath('/community-calendar');
-	accountRedirect({ message: 'Avatar updated.' });
-}
-
-export async function removeAvatar() {
-	const { supabase, user } = await requireUser();
-
-	const { error: profileError } = await supabase
-		.from('profiles')
-		.update({ avatar_url: null })
-		.eq('id', user.id);
-
-	if (profileError) {
-		accountRedirect({ error: profileError.message });
-	}
-
-	// Best-effort: clear known object names under the user's folder.
-	const candidates = ['jpg', 'png', 'webp', 'gif'].map(
-		ext => `${user.id}/avatar.${ext}`
-	);
-	await supabase.storage.from(AVATAR_BUCKET).remove(candidates);
-
-	revalidatePath('/account');
-	revalidatePath('/community-calendar');
-	accountRedirect({ message: 'Avatar removed.' });
+	accountRedirect({ message: 'Profile colour updated.' });
 }
 
 export async function changePassword(formData: FormData) {

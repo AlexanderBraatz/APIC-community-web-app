@@ -4,11 +4,9 @@ import { PageQuery } from '@/tina/__generated__/types';
 import ButtonList from './button-list';
 import CommunityFeatures from './community-features';
 import ImageCaptionList from './image-caption-list';
-import ImageGallery from './image-gallery';
 import ListingsBrowse from './listings-browse';
 import CategoryGrid from './category-grid';
 import CtaSection from './cta-section';
-import EventListing from './event-listing';
 import SectionHeading from './section-heading';
 import HeroBanner from './hero-banner';
 import QuoteBanner from './quote-banner';
@@ -73,14 +71,6 @@ export default function PageContent(props: {
 							/>
 						);
 					}
-					case 'PageBlocksEventListing': {
-						return (
-							<EventListing
-								key={i}
-								{...block}
-							/>
-						);
-					}
 					case 'PageBlocksSectionHeading': {
 						return (
 							<SectionHeading
@@ -100,14 +90,6 @@ export default function PageContent(props: {
 					case 'PageBlocksImageCaptionList': {
 						return (
 							<ImageCaptionList
-								key={i}
-								{...block}
-							/>
-						);
-					}
-					case 'PageBlocksImageGallery': {
-						return (
-							<ImageGallery
 								key={i}
 								{...block}
 							/>
