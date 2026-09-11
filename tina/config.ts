@@ -26,9 +26,9 @@ const blogImageField = {
 };
 
 export default defineConfig({
-	branch: '',
-	clientId: '',
-	token: '',
+	branch: 'main',
+	clientId: process.env.NEXT_PUBLIC_TINA_CLIENT_ID,
+	token: process.env.TINA_TOKEN,
 	build: {
 		publicFolder: 'public',
 		outputFolder: 'admin'
@@ -124,7 +124,11 @@ export default defineConfig({
 								fields: [
 									{ name: 'intro', type: 'string' },
 									{ name: 'heading', type: 'string', required: true },
-									{ name: 'buttonLabel', label: 'Button Label', type: 'string' },
+									{
+										name: 'buttonLabel',
+										label: 'Button Label',
+										type: 'string'
+									},
 									{ name: 'buttonLink', label: 'Button Link', type: 'string' },
 									{
 										name: 'backgroundImage',
@@ -157,7 +161,11 @@ export default defineConfig({
 								name: 'categoryGrid',
 								label: 'Category Grid',
 								fields: [
-									{ name: 'sectionTitle', label: 'Section Title', type: 'string' },
+									{
+										name: 'sectionTitle',
+										label: 'Section Title',
+										type: 'string'
+									},
 									{
 										name: 'items',
 										label: 'Categories',
@@ -184,7 +192,11 @@ export default defineConfig({
 										type: 'string',
 										ui: { component: 'textarea' }
 									},
-									{ name: 'buttonLabel', label: 'Button Label', type: 'string' },
+									{
+										name: 'buttonLabel',
+										label: 'Button Label',
+										type: 'string'
+									},
 									{ name: 'buttonLink', label: 'Button Link', type: 'string' }
 								]
 							},
@@ -324,7 +336,13 @@ export default defineConfig({
 							}
 						}
 					} as any,
-					{ name: 'title', label: 'Title', type: 'string', isTitle: true, required: true },
+					{
+						name: 'title',
+						label: 'Title',
+						type: 'string',
+						isTitle: true,
+						required: true
+					},
 					{ name: 'author', label: 'Author', type: 'string', required: true },
 					{
 						name: 'publishedAt',
@@ -465,7 +483,11 @@ export default defineConfig({
 										type: 'string',
 										ui: { component: 'textarea' }
 									},
-									{ name: 'buttonLabel', label: 'Button Label', type: 'string' },
+									{
+										name: 'buttonLabel',
+										label: 'Button Label',
+										type: 'string'
+									},
 									{ name: 'buttonLink', label: 'Button Link', type: 'string' }
 								]
 							},
