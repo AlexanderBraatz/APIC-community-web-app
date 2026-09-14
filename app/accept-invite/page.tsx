@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { InvitePrivacyStep } from '@/components/privacy/invite-privacy-step';
 
 async function acceptAction(formData: FormData) {
 	'use server';
@@ -15,13 +16,13 @@ async function acceptAction(formData: FormData) {
 			error instanceof Error ? error.message : 'Could not set password.';
 		redirect(`/accept-invite?error=${encodeURIComponent(message)}`);
 	}
-	redirect('/place');
+	redirect('/accept-invite?step=privacy');
 }
 
 export default async function AcceptInvitePage({
 	searchParams
 }: {
-	searchParams: Promise<{ error?: string }>;
+	searchParams: Promise<{ error?: string; step?: string }>;
 }) {
 	const params = await searchParams;
 	const supabase = await createClient();
@@ -44,6 +45,20 @@ export default async function AcceptInvitePage({
 				</p>
 			</main>
 		);
+	}
+
+	const { data: prefs } = await supabase
+		.from('privacy_preferences')
+		.select('user_id')
+		.eq('user_id', user.id)
+		.maybeSingle();
+
+	if (prefs) {
+		redirect('/place');
+	}
+
+	if (params.step === 'privacy') {
+		return <InvitePrivacyStep error={params.error} />;
 	}
 
 	return (
@@ -90,9 +105,19 @@ export default async function AcceptInvitePage({
 					type="submit"
 					className="w-full rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
 				>
-					Join community
+					Continue
 				</Button>
 			</form>
+
+			<p className="mt-6 text-center text-sm text-[#666]">
+				Already set a password?{' '}
+				<Link
+					href="/accept-invite?step=privacy"
+					className="text-[#805b32] underline"
+				>
+					Continue to privacy preferences
+				</Link>
+			</p>
 		</main>
 	);
 }

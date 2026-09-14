@@ -18,12 +18,21 @@ export default function SiteFooter() {
 					<p>Registration No.: 146236</p>
 				</div>
 
-				<Link
-					href="/privacy"
-					className="mt-8 text-sm text-[#777777] underline-offset-4 transition-colors hover:text-[#7A5A32] hover:underline"
-				>
-					Privacy Policy
-				</Link>
+				<div className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-[#777777]">
+					<Link
+						href="/privacy"
+						className="underline-offset-4 transition-colors hover:text-[#7A5A32] hover:underline"
+					>
+						Privacy Policy
+					</Link>
+					<span aria-hidden="true">·</span>
+					<Link
+						href="/terms"
+						className="underline-offset-4 transition-colors hover:text-[#7A5A32] hover:underline"
+					>
+						Terms &amp; Conditions
+					</Link>
+				</div>
 
 				<p className="mt-10 text-xs text-[#777777]">
 					© 2026 Apic.Community. All rights reserved.

@@ -13,6 +13,11 @@ import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
 import { useTina } from 'tinacms/react';
+import { useEffect } from 'react';
+import {
+	AnalyticsEvents,
+	useAnalytics
+} from '@/components/analytics/posthog-provider';
 
 export type BlogNeighbor = {
 	slug: string;
@@ -49,6 +54,12 @@ export default function BlogPost({
 }) {
 	const { data } = useTina(tinaProps);
 	const post = data.blog;
+	const { track } = useAnalytics();
+
+	useEffect(() => {
+		const slug = post._sys?.filename;
+		if (slug) track(AnalyticsEvents.EVENT_OPENED, { content_id: slug });
+	}, [post._sys?.filename, track]);
 	const metaBits = [post.author, formatPublishedAt(post.publishedAt)].filter(
 		Boolean
 	);

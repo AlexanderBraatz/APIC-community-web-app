@@ -18,6 +18,10 @@ import {
 	MessageCircle,
 	Phone
 } from 'lucide-react';
+import {
+	AnalyticsEvents,
+	useAnalytics
+} from '@/components/analytics/posthog-provider';
 
 function ContactIcon({ kind }: { kind: Listing['contacts'][number]['kind'] }) {
 	const className = 'size-4 shrink-0 text-[#7A5A32]';
@@ -69,6 +73,7 @@ function contactDisplay(contact: Listing['contacts'][number]): string {
 }
 
 export default function ListingResultCard({ listing }: { listing: Listing }) {
+	const { track } = useAnalytics();
 	const hoursLines = formatOpeningHoursLines(listing.openingHours);
 	const contacts = listing.contacts ?? [];
 	const hasContactInfo =
@@ -142,6 +147,12 @@ export default function ListingResultCard({ listing }: { listing: Listing }) {
 													? { target: '_blank', rel: 'noopener noreferrer' }
 													: {})}
 												className="underline-offset-2 hover:underline"
+												onClick={() =>
+													track(AnalyticsEvents.CONTACT_CLICKED, {
+														category: listing.category,
+														contact_kind: contact.kind
+													})
+												}
 											>
 												{label
 													? `${label}: ${contactDisplay(contact)}`

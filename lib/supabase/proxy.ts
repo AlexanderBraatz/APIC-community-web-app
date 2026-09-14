@@ -11,6 +11,16 @@ const PROTECTED_PREFIXES = [
 
 const AUTH_ONLY_WHEN_SIGNED_OUT = ['/sign-in', '/forgot-password'] as const;
 
+/** Routes allowed while authenticated but before privacy onboarding is done. */
+const PRIVACY_ONBOARDING_ALLOWLIST = [
+	'/accept-invite',
+	'/terms',
+	'/privacy',
+	'/auth',
+	'/reset-password',
+	'/sign-out'
+] as const;
+
 function matchesPrefix(pathname: string, prefixes: readonly string[]) {
 	return prefixes.some(
 		prefix => pathname === prefix || pathname.startsWith(`${prefix}/`)
@@ -45,7 +55,10 @@ export async function updateSession(request: NextRequest) {
 
 	// Do not run logic between createServerClient and getClaims().
 	const { data } = await supabase.auth.getClaims();
-	const isAuthenticated = Boolean(data?.claims);
+	const claims = data?.claims;
+	const isAuthenticated = Boolean(claims);
+	const userId =
+		typeof claims?.sub === 'string' ? claims.sub : undefined;
 
 	const { pathname, search } = request.nextUrl;
 
@@ -62,6 +75,28 @@ export async function updateSession(request: NextRequest) {
 		redirectUrl.pathname = '/place';
 		redirectUrl.search = '';
 		return NextResponse.redirect(redirectUrl);
+	}
+
+	// Gate protected member areas until privacy/terms preferences exist.
+	if (
+		isAuthenticated &&
+		userId &&
+		matchesPrefix(pathname, PROTECTED_PREFIXES) &&
+		!matchesPrefix(pathname, PRIVACY_ONBOARDING_ALLOWLIST)
+	) {
+		const { data: prefs } = await supabase
+			.from('privacy_preferences')
+			.select('user_id')
+			.eq('user_id', userId)
+			.maybeSingle();
+
+		if (!prefs) {
+			const redirectUrl = request.nextUrl.clone();
+			redirectUrl.pathname = '/accept-invite';
+			redirectUrl.search = '';
+			redirectUrl.searchParams.set('step', 'privacy');
+			return NextResponse.redirect(redirectUrl);
+		}
 	}
 
 	return supabaseResponse;

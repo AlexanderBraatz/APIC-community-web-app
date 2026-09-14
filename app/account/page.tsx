@@ -6,10 +6,12 @@ import {
 	updateProfileColor
 } from '@/lib/account/actions';
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
+import { AccountPrivacyForm } from '@/components/privacy/account-privacy-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/server';
+import { getPrivacyPreferencesForCurrentUser } from '@/lib/privacy/get-preferences';
 
 type PageProps = {
 	searchParams: Promise<{ error?: string; message?: string }>;
@@ -29,6 +31,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				.eq('id', user.id)
 				.maybeSingle()
 		: { data: null };
+	const privacyPrefs = user
+		? await getPrivacyPreferencesForCurrentUser()
+		: null;
 	const profileCircleBg = profile?.event_bar_color ?? '#e8dfd2';
 	const profileCircleTextColor = profile?.event_bar_color
 		? '#ffffff'
@@ -38,7 +43,8 @@ export default async function AccountPage({ searchParams }: PageProps) {
 		<main className="mx-auto w-full max-w-lg px-4 py-12">
 			<h1 className="font-heading text-3xl text-[#805b32]">Account</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Update your name and profile colour, change your password, or sign out.
+				Update your name and profile colour, privacy preferences, change your
+				password, or sign out.
 			</p>
 
 			{params.error ? (
@@ -151,6 +157,13 @@ export default async function AccountPage({ searchParams }: PageProps) {
 					</div>
 				</form>
 			</section>
+
+			{privacyPrefs ? (
+				<AccountPrivacyForm
+					analyticsEnabled={privacyPrefs.analytics_enabled}
+					sessionReplayEnabled={privacyPrefs.session_replay_enabled}
+				/>
+			) : null}
 
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">Password</h2>

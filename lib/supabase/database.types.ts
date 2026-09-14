@@ -416,6 +416,44 @@ export type Database = {
         }
         Relationships: []
       }
+      privacy_preferences: {
+        Row: {
+          analytics_enabled: boolean
+          created_at: string
+          preferences_answered_at: string
+          session_replay_enabled: boolean
+          terms_accepted_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          analytics_enabled?: boolean
+          created_at?: string
+          preferences_answered_at?: string
+          session_replay_enabled?: boolean
+          terms_accepted_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          analytics_enabled?: boolean
+          created_at?: string
+          preferences_answered_at?: string
+          session_replay_enabled?: boolean
+          terms_accepted_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privacy_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduler_preferences: {
         Row: {
           created_at: string

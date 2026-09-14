@@ -6,9 +6,14 @@ import ImageLightbox, {
 import { BlogBlocksImageGallery } from '@/tina/__generated__/types';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
+import {
+	AnalyticsEvents,
+	useAnalytics
+} from '@/components/analytics/posthog-provider';
 import { tinaField } from 'tinacms/tina-field';
 
 export default function BlogImageGallery(props: BlogBlocksImageGallery) {
+	const { track } = useAnalytics();
 	const [open, setOpen] = useState(false);
 	const [index, setIndex] = useState(0);
 
@@ -63,6 +68,7 @@ export default function BlogImageGallery(props: BlogBlocksImageGallery) {
 							onClick={() => {
 								setIndex(i);
 								setOpen(true);
+								track(AnalyticsEvents.GALLERY_OPENED);
 							}}
 						>
 							<span className="block origin-center scale-100 transition-transform duration-500 ease-in-out will-change-transform group-hover:scale-105">

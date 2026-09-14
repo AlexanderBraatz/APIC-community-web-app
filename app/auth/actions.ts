@@ -30,14 +30,15 @@ export async function signInWithPassword(formData: FormData) {
 	}
 
 	revalidatePath('/', 'layout');
-	redirect(next);
+	const separator = next.includes('?') ? '&' : '?';
+	redirect(`${next}${separator}welcome=1`);
 }
 
 export async function signOut() {
 	const supabase = await createClient();
 	await supabase.auth.signOut();
 	revalidatePath('/', 'layout');
-	redirect('/sign-in');
+	redirect('/sign-in?signed_out=1');
 }
 
 export async function requestPasswordReset(formData: FormData) {

@@ -26,6 +26,10 @@ import {
 } from 'react';
 import ListingResultCard from './listing-result-card';
 import LocationsMap from './locations-map';
+import {
+	AnalyticsEvents,
+	useAnalytics
+} from '@/components/analytics/posthog-provider';
 
 const CATEGORY_LABELS: Record<string, string> = {
 	'food-dining': 'Food & Dining',
@@ -39,6 +43,7 @@ type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const pathname = usePathname();
 	const category = categoryFromPathname(pathname);
+	const { track } = useAnalytics();
 
 	const [authStatus, setAuthStatus] = useState<AuthStatus>('loading');
 	const [listings, setListings] = useState<Listing[]>([]);
@@ -167,6 +172,14 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		Boolean(selectedPlaceName);
 
 	useEffect(() => {
+		const trimmed = deferredQuery.trim();
+		if (!trimmed || authStatus !== 'signed_in') return;
+		track(AnalyticsEvents.DIRECTORY_SEARCHED, {
+			query_length: trimmed.length
+		});
+	}, [deferredQuery, authStatus, track]);
+
+	useEffect(() => {
 		const onPointerDown = (event: MouseEvent) => {
 			if (!rootRef.current?.contains(event.target as Node)) {
 				setPanelOpen(false);
@@ -223,6 +236,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		setQuery('');
 		setSelectedPlaceName(null);
 		setPanelOpen(false);
+		track(AnalyticsEvents.DIRECTORY_FILTER_USED, { filter_key: 'tag' });
 	}
 
 	function removeTag(tag: string) {
@@ -237,6 +251,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		setSelectedPlaceName(listing.name);
 		setQuery('');
 		setPanelOpen(false);
+		track(AnalyticsEvents.PLACE_OPENED, {
+			category: listing.category
+		});
 	}
 
 	function clearAll() {

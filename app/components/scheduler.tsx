@@ -39,6 +39,10 @@ import '../styles/scheduler-header-layouts.css';
 import { SCHEDULER_SCHEME, schemeToCssVars } from '@/app/lib/color-schemes';
 import { saveAttendanceBatch } from '@/lib/attendance/actions';
 import {
+	AnalyticsEvents,
+	useAnalytics
+} from '@/components/analytics/posthog-provider';
+import {
 	updateEventBarColor,
 	updateSchedulerPreferences
 } from '@/lib/attendance/preference-actions';
@@ -228,6 +232,7 @@ const Scheduler = ({
 	currentUserId,
 	isAdmin
 }: SchedulerProps) => {
+	const { track } = useAnalytics();
 	const resources = useMemo<DayPilot.ResourceData[]>(
 		() =>
 			profiles.map(profile => ({
@@ -445,6 +450,17 @@ const Scheduler = ({
 			setSavedThisSession(true);
 			unsavedHistoryPushedRef.current = false;
 			setSaveUiState('success');
+			const createdCount = unsavedIds.size;
+			const editedCount = Math.max(0, eventsToSave.length - createdCount);
+			if (createdCount > 0) {
+				track(AnalyticsEvents.STAY_CREATED, { count: createdCount });
+			}
+			if (editedCount > 0 || deleteIds.length > 0) {
+				track(AnalyticsEvents.STAY_EDITED, {
+					count: editedCount,
+					deleted_count: deleteIds.length
+				});
+			}
 		} catch {
 			setSaveUiState('error');
 		}
