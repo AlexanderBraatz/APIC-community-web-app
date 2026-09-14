@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import { limitInvite } from '@/lib/admin/rate-limit';
+import { captureServerActionException } from '@/lib/sentry/capture';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import type { Json } from '@/lib/supabase/database.types';
 import { createClient } from '@/lib/supabase/server';
@@ -113,6 +114,9 @@ export async function inviteUser(formData: FormData): Promise<{ ok: true } | { o
 			perPage: 1000
 		});
 		if (listError) {
+			captureServerActionException(listError, 'invite_user', {
+				step: 'list_users'
+			});
 			return { ok: false, error: listError.message };
 		}
 
@@ -144,6 +148,9 @@ export async function inviteUser(formData: FormData): Promise<{ ok: true } | { o
 		);
 
 		if (inviteError) {
+			captureServerActionException(inviteError, 'invite_user', {
+				step: 'invite_email'
+			});
 			return { ok: false, error: inviteError.message };
 		}
 
@@ -164,6 +171,9 @@ export async function inviteUser(formData: FormData): Promise<{ ok: true } | { o
 			.single();
 
 		if (insertError) {
+			captureServerActionException(insertError, 'invite_user', {
+				step: 'insert_invitation'
+			});
 			return { ok: false, error: insertError.message };
 		}
 
@@ -180,6 +190,7 @@ export async function inviteUser(formData: FormData): Promise<{ ok: true } | { o
 		revalidatePath('/members/admin/audit-log');
 		return { ok: true };
 	} catch (error) {
+		captureServerActionException(error, 'invite_user');
 		return {
 			ok: false,
 			error: error instanceof Error ? error.message : 'Invite failed.'
@@ -226,6 +237,9 @@ export async function resendInvitation(
 		);
 
 		if (inviteError) {
+			captureServerActionException(inviteError, 'resend_invitation', {
+				step: 'invite_email'
+			});
 			return { ok: false, error: inviteError.message };
 		}
 
@@ -253,6 +267,7 @@ export async function resendInvitation(
 		revalidatePath('/members/admin/audit-log');
 		return { ok: true };
 	} catch (error) {
+		captureServerActionException(error, 'resend_invitation');
 		return {
 			ok: false,
 			error: error instanceof Error ? error.message : 'Resend failed.'
@@ -315,6 +330,7 @@ export async function cancelInvitation(
 		revalidatePath('/members/admin/audit-log');
 		return { ok: true };
 	} catch (error) {
+		captureServerActionException(error, 'cancel_invitation');
 		return {
 			ok: false,
 			error: error instanceof Error ? error.message : 'Cancel failed.'
@@ -333,39 +349,53 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 		throw new Error('Passwords do not match.');
 	}
 
-	const supabase = await createClient();
-	const {
-		data: { user },
-		error: userError
-	} = await supabase.auth.getUser();
+	try {
+		const supabase = await createClient();
+		const {
+			data: { user },
+			error: userError
+		} = await supabase.auth.getUser();
 
-	if (userError || !user?.email) {
-		throw new Error('Open the invitation link from your email first.');
-	}
+		if (userError || !user?.email) {
+			throw new Error('Open the invitation link from your email first.');
+		}
 
-	const { error: passwordError } = await supabase.auth.updateUser({ password });
-	if (passwordError) {
-		throw new Error(passwordError.message);
-	}
+		const { error: passwordError } = await supabase.auth.updateUser({
+			password
+		});
+		if (passwordError) {
+			throw new Error(passwordError.message);
+		}
 
-	const admin = createServiceRoleClient();
-	const email = user.email.toLowerCase();
+		const admin = createServiceRoleClient();
+		const email = user.email.toLowerCase();
 
-	const { data: invitation } = await admin
-		.from('user_invitations')
-		.select('id, status')
-		.eq('status', 'pending')
-		.ilike('email', email)
-		.maybeSingle();
-
-	if (invitation) {
-		await admin
+		const { data: invitation } = await admin
 			.from('user_invitations')
-			.update({
-				status: 'accepted',
-				accepted_at: new Date().toISOString(),
-				auth_user_id: user.id
-			})
-			.eq('id', invitation.id);
+			.select('id, status')
+			.eq('status', 'pending')
+			.ilike('email', email)
+			.maybeSingle();
+
+		if (invitation) {
+			await admin
+				.from('user_invitations')
+				.update({
+					status: 'accepted',
+					accepted_at: new Date().toISOString(),
+					auth_user_id: user.id
+				})
+				.eq('id', invitation.id);
+		}
+	} catch (error) {
+		const message = error instanceof Error ? error.message : '';
+		const isUserFacing =
+			message === 'Open the invitation link from your email first.' ||
+			message === 'Password must be at least 8 characters.' ||
+			message === 'Passwords do not match.';
+		if (!isUserFacing) {
+			captureServerActionException(error, 'complete_invite_acceptance');
+		}
+		throw error;
 	}
 }

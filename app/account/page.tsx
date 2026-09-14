@@ -6,6 +6,7 @@ import {
 	updateProfileColor
 } from '@/lib/account/actions';
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
+import { SentryDevTestButton } from '@/components/analytics/sentry-dev-test-button';
 import { AccountPrivacyForm } from '@/components/privacy/account-privacy-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -201,6 +202,10 @@ export default async function AccountPage({ searchParams }: PageProps) {
 					</Button>
 				</form>
 			</section>
+
+			{process.env.NODE_ENV === 'development' ? (
+				<SentryDevTestButton />
+			) : null}
 
 			<div className="mt-10 flex flex-wrap gap-3 border-t border-[#e5e5e5] pt-6">
 				<Link

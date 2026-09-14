@@ -13,6 +13,6 @@ export const config = {
 		 * - favicon and common static assets
 		 * - TinaCMS static admin (rewritten to /admin/index.html)
 		 */
-		'/((?!_next/static|_next/image|favicon.ico|admin/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)'
+		'/((?!_next/static|_next/image|favicon.ico|admin/|sentry-tunnel|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js)$).*)'
 	]
 };

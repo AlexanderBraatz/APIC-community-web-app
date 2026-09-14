@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs/config';
 
 const nextConfig: NextConfig = {
 	/* config options here */
@@ -42,4 +43,26 @@ const nextConfig: NextConfig = {
 	}
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+	org: process.env.SENTRY_ORG,
+	project: process.env.SENTRY_PROJECT,
+	authToken: process.env.SENTRY_AUTH_TOKEN,
+	silent: !process.env.CI,
+	widenClientFileUpload: true,
+	// Fixed tunnel path — also excluded from auth proxy matcher.
+	tunnelRoute: '/sentry-tunnel',
+	sourcemaps: {
+		deleteSourcemapsAfterUpload: true
+	},
+	// Local/CI builds without auth token should still succeed.
+	errorHandler: err => {
+		console.warn('[sentry] source map upload skipped:', err.message);
+	},
+	bundleSizeOptimizations: {
+		excludeDebugStatements: true,
+		// Session Replay lives in PostHog; drop unused Sentry replay chunks.
+		excludeReplayIframe: true,
+		excludeReplayShadowDom: true,
+		excludeReplayWorker: true
+	}
+});

@@ -1,5 +1,6 @@
 'use server';
 
+import { captureServerActionException } from '@/lib/sentry/capture';
 import { createClient } from '@/lib/supabase/server';
 import type {
 	AttendanceRow,
@@ -87,15 +88,20 @@ export async function saveAttendanceBatch(payload: {
 	stays: AttendanceStayInput[];
 	deleteIds: string[];
 }): Promise<AttendanceRow[]> {
-	const supabase = await createClient();
-	const { data, error } = await supabase.rpc('save_attendance_batch', {
-		p_stays: payload.stays,
-		p_delete_ids: payload.deleteIds
-	});
+	try {
+		const supabase = await createClient();
+		const { data, error } = await supabase.rpc('save_attendance_batch', {
+			p_stays: payload.stays,
+			p_delete_ids: payload.deleteIds
+		});
 
-	if (error) {
-		throw new Error(error.message);
+		if (error) {
+			throw new Error(error.message);
+		}
+
+		return (data ?? []) as AttendanceRow[];
+	} catch (error) {
+		captureServerActionException(error, 'save_attendance_batch');
+		throw error;
 	}
-
-	return (data ?? []) as AttendanceRow[];
 }
