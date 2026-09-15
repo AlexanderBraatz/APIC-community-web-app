@@ -133,3 +133,15 @@
 @utility font-heading {
   font-family: var(--font-heading), ui-serif, Georgia, serif;
 }
+
+/* Sentry User Feedback floating button — match site brown CTAs */
+#sentry-feedback {
+  --actor-background: #805b32;
+  --actor-hover-background: #1f2d22;
+  --actor-color: #ffffff;
+  --actor-border: 1px solid #634627;
+  --accent-background: #805b32;
+  --accent-foreground: #ffffff;
+  --button-primary-background: #805b32;
+  --button-primary-hover-background: #1f2d22;
+}

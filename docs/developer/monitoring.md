@@ -46,6 +46,7 @@ Use **separate** Sentry projects and PostHog projects (keys) for local vs produc
 - Critical server actions call `captureServerActionException` (`lib/sentry/capture.ts`) with tags `area:server_action` + action name
 - Tunnel: `/sentry-tunnel` (also excluded from auth proxy)
 - Client test control: Account page → “Sentry (development only)” button
+- **User Feedback** floating widget (client-only in `instrumentation-client.ts`, styled to match brown CTAs in `globals.css`) — independent of PostHog consent; only when DSN is set
 
 **Session Replay (Sentry)** — production + error-only only:
 
@@ -97,6 +98,6 @@ Members change toggles under **Account → Privacy & analytics**. Invite flow ca
 
 - Do keep EU hosts (`de.sentry.io`, `eu.i.posthog.com`).
 - Do keep separate dev vs prod keys/DSNs.
-- Don’t put Replay on server/edge Sentry configs.
+- Don’t put Replay or User Feedback on server/edge Sentry configs (browser APIs only).
 - Don’t turn on Sentry random session sampling (`replaysSessionSampleRate`) unless you have Replay quota to burn.
 - Don’t treat PostHog as a substitute for Sentry (or the reverse).
