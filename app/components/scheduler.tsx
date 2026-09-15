@@ -310,6 +310,21 @@ const Scheduler = ({
 	const [namesCollapsed, setNamesCollapsed] = useState(true);
 	const [fontSizeOverride, setFontSizeOverride] =
 		useState<SchedulerFontSize | null>(null);
+	// Test override for DayPilot floating event labels (sticky names while scrolling).
+	// Library default is off on iOS; null keeps that default.
+	const [floatingEventsOverride, setFloatingEventsOverride] = useState<
+		boolean | null
+	>(null);
+	const libraryFloatingEvents = useSyncExternalStore(
+		() => () => {},
+		() => {
+			const ua = navigator.userAgent;
+			const isIos = ua.includes('iPhone') || ua.includes('iPad');
+			return !isIos;
+		},
+		() => true
+	);
+	const floatingEvents = floatingEventsOverride ?? libraryFloatingEvents;
 	const fontSize = fontSizeOverride ?? preferences.fontSize;
 	const activeScheme = SCHEDULER_SCHEME;
 
@@ -931,6 +946,7 @@ const Scheduler = ({
 			days,
 			cellWidth: fontSizeConfig.cellWidth,
 			rowHeaderWidth,
+			floatingEvents,
 			rowClickHandling: 'Enabled',
 			eventMoveHandling: 'Update',
 			eventResizeHandling: 'Update',
@@ -938,7 +954,7 @@ const Scheduler = ({
 			eventDeleteHandling: 'Disabled',
 			timeRangeSelectedHandling: 'Enabled'
 		}),
-		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth]
+		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth, floatingEvents]
 	);
 
 	return (
@@ -1123,6 +1139,48 @@ const Scheduler = ({
 									className="bg-muted"
 								/>
 							</div>
+						</div>
+
+						<div className="grid gap-1.5 rounded-lg border border-dashed border-[#d4a017]/70 bg-[#fff8e8] p-3">
+							<Label id="scheduler-floating-events-label">
+								Sticky event labels (test)
+							</Label>
+							<p className="text-xs text-muted-foreground">
+								DayPilot default on this device:{' '}
+								{libraryFloatingEvents ? 'on' : 'off'}
+								{!libraryFloatingEvents
+									? ' (disabled on iOS for scroll performance)'
+									: ''}
+								. Not saved — session only.
+							</p>
+							<ToggleGroup
+								aria-labelledby="scheduler-floating-events-label"
+								variant="outline"
+								spacing={0}
+								value={[floatingEvents ? 'on' : 'off']}
+								onValueChange={values => {
+									const next = values[0];
+									if (next === 'on' || next === 'off') {
+										setFloatingEventsOverride(next === 'on');
+										setSchedulerMountKey(key => key + 1);
+									}
+								}}
+							>
+								<ToggleGroupItem
+									value="off"
+									aria-label="Sticky labels off"
+									className="px-3"
+								>
+									Off
+								</ToggleGroupItem>
+								<ToggleGroupItem
+									value="on"
+									aria-label="Sticky labels on"
+									className="px-3"
+								>
+									On
+								</ToggleGroupItem>
+							</ToggleGroup>
 						</div>
 
 						{error ? (
