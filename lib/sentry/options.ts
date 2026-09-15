@@ -37,6 +37,19 @@ export function getTracesSampleRate(): number {
 	return getSentryEnvironment() === 'production' ? 0.1 : 1.0;
 }
 
+/** Production-only Session Replay (client). Never random-record full sessions. */
+export function isSentryReplayEnabled(): boolean {
+	return getSentryEnvironment() === 'production';
+}
+
+export function getReplaysSessionSampleRate(): number {
+	return 0;
+}
+
+export function getReplaysOnErrorSampleRate(): number {
+	return isSentryReplayEnabled() ? 1.0 : 0;
+}
+
 /**
  * Shared privacy-first init options for client, server, and edge.
  * Always-on essential monitoring — independent of PostHog consent.

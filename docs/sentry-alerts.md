@@ -1,6 +1,6 @@
 # Sentry + Slack alerts (ops)
 
-Essential error monitoring is always on via `@sentry/nextjs`. Product analytics and session replay stay in PostHog and remain consent-gated.
+Essential error monitoring is always on via `@sentry/nextjs`. Product analytics and consent-gated full session replay stay in PostHog. Sentry Session Replay is production + error-only only (see below).
 
 **Region: EU** — use [https://de.sentry.io](https://de.sentry.io) for the org, projects, tokens, Slack integration, and alerts. Do **not** mix with `sentry.io` (US). DSNs will look like `https://…@….ingest.de.sentry.io/…`.
 
@@ -89,7 +89,7 @@ Do **not** expect member email, stay notes, or passwords in payloads — the app
 - No Slack alerts on the local/dev Sentry project
 - No WhatsApp
 - Email fallback in Sentry is optional; Slack is the primary path
-- Do not enable Sentry Session Replay (PostHog owns consent-gated replay)
+- Sentry Session Replay: **production + error-only** (`replaysSessionSampleRate: 0`, `replaysOnErrorSampleRate: 1`). Off in local/preview. Quota is consumed when a replay is captured, not when you watch it. Consent-gated product replay remains PostHog.
 - Do not create the org on US `sentry.io` if you chose EU
 
 ## Verification checklist

@@ -1,9 +1,24 @@
 import * as Sentry from '@sentry/nextjs';
-import { getSharedSentryOptions } from './lib/sentry/options';
+import {
+	getReplaysOnErrorSampleRate,
+	getReplaysSessionSampleRate,
+	getSharedSentryOptions,
+	isSentryReplayEnabled
+} from './lib/sentry/options';
 
 Sentry.init({
-	...getSharedSentryOptions()
-	// No Sentry Session Replay — product replay is consent-gated via PostHog.
+	...getSharedSentryOptions(),
+	integrations: isSentryReplayEnabled()
+		? [
+				Sentry.replayIntegration({
+					maskAllText: true,
+					maskAllInputs: true,
+					blockAllMedia: true
+				})
+			]
+		: [],
+	replaysSessionSampleRate: getReplaysSessionSampleRate(),
+	replaysOnErrorSampleRate: getReplaysOnErrorSampleRate()
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;

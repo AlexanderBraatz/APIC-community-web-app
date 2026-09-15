@@ -59,10 +59,6 @@ export default withSentryConfig(nextConfig, {
 		console.warn('[sentry] source map upload skipped:', err.message);
 	},
 	bundleSizeOptimizations: {
-		excludeDebugStatements: true,
-		// Session Replay lives in PostHog; drop unused Sentry replay chunks.
-		excludeReplayIframe: true,
-		excludeReplayShadowDom: true,
-		excludeReplayWorker: true
+		excludeDebugStatements: true
 	}
 });
