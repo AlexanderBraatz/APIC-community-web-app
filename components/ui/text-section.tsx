@@ -19,7 +19,7 @@ export default function TextSection(props: PageBlocksTextSection) {
 
 				<div
 					data-tina-field={tinaField(props, 'body')}
-					className="mx-auto max-w-4xl font-heading text-left text-lg leading-[1.75] text-[#333333]"
+					className="mx-auto max-w-4xl font-sans text-left text-lg leading-[1.75] text-[#333333]"
 				>
 					<TinaMarkdown
 						content={props.body}
