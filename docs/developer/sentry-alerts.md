@@ -2,6 +2,8 @@
 
 Essential error monitoring is always on via `@sentry/nextjs`. Product analytics and consent-gated full session replay stay in PostHog. Sentry Session Replay is production + error-only only (see below).
 
+For the full monitoring overview (Sentry + PostHog), see [monitoring.md](./monitoring.md).
+
 **Region: EU** — use [https://de.sentry.io](https://de.sentry.io) for the org, projects, tokens, Slack integration, and alerts. Do **not** mix with `sentry.io` (US). DSNs will look like `https://…@….ingest.de.sentry.io/…`.
 
 App wiring is done in code. Alert routing is configured in the **Sentry UI** (not app env vars).

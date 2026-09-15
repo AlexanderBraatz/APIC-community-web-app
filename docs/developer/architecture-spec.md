@@ -719,7 +719,7 @@ content/data/listings.json             # seed only after cutover
 tina/config.ts                         # marketing CMS only
 next.config.ts                         # /admin → Tina (keep)
 components/layout/site-header.tsx      # auth entry later
-docs/architecture-spec.md              # this document
+docs/developer/architecture-spec.md    # this document
 ```
 
 ---

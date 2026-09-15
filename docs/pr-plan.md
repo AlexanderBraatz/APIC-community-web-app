@@ -148,7 +148,7 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 **Includes**
 
 - `supabase/config.toml` via `supabase init` (if missing).
-- Document link/`db push`/MCP rules in this file (already) + short note in README or `docs/supabase.md`.
+- Document link/`db push`/MCP rules in this file (already) + short note in README or `docs/developer/supabase.md`.
 - `.env.example` placeholders for Supabase keys.
 - Optional: `.cursor/mcp.json` with Supabase MCP URL (no secrets).
 - Disable public sign-ups in Auth (dashboard) and note it in docs.
@@ -497,7 +497,7 @@ Override in the PR description if product chooses otherwise.
 
 Example: starting **PR-03**
 
-1. Read `docs/architecture-spec.md` §8 and this PR’s section.
+1. Read `docs/developer/architecture-spec.md` §8 and this PR’s section.
 2. Add migration SQL under `supabase/migrations/`.
 3. Use MCP `list_tables` / read-only SQL to confirm remote state before/after.
 4. Implement `save_attendance_batch` + wire scheduler.
