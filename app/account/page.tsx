@@ -203,9 +203,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				</form>
 			</section>
 
-			{process.env.NODE_ENV === 'development' ? (
-				<SentryDevTestButton />
-			) : null}
+			{/* {process.env.NODE_ENV === 'development' ? ( */}
+			<SentryDevTestButton />
+			{/* ) : null} */}
 
 			<div className="mt-10 flex flex-wrap gap-3 border-t border-[#e5e5e5] pt-6">
 				<Link
