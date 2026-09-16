@@ -53,7 +53,7 @@ export default function ContactStep({
 			<div className="space-y-3">
 				<div className="flex flex-wrap items-center justify-between gap-3">
 					<div>
-						<h3 className="text-sm font-medium text-[#444]">Contacts</h3>
+						<h3 className="text-sm font-medium text-[#444]">Contact info</h3>
 						<p className="text-xs text-[#888]">
 							Add phone, mobile, WhatsApp, email, or website. Optional label
 							for roles (e.g. Reservations).
@@ -68,19 +68,19 @@ export default function ContactStep({
 							)
 						}
 					>
-						Add contact
+						Add contact info
 					</Button>
 				</div>
 				{contacts.length === 0 ? (
 					<p className="text-xs text-[#999]">
-						No contacts yet — add one, or fill via Places lookup.
+						No contact info yet — add one, or fill via Places lookup.
 					</p>
 				) : (
-					<ul className="space-y-2">
+					<ul className="space-y-5 sm:space-y-2">
 						{contacts.map(row => (
 							<li
 								key={row.key}
-								className="grid gap-2 sm:grid-cols-[8.5rem_minmax(0,7rem)_1fr_auto]"
+								className="grid gap-2 py-1 sm:py-0 sm:grid-cols-[8.5rem_minmax(0,7rem)_1fr_auto]"
 							>
 								<select
 									aria-label="Contact kind"
@@ -148,7 +148,7 @@ export default function ContactStep({
 									type="button"
 									size="icon"
 									className={CLEAR_ACTION_BUTTON_CLASS}
-									aria-label="Remove contact"
+									aria-label="Remove contact info"
 									onClick={() =>
 										onContactsChange(contacts.filter(c => c.key !== row.key))
 									}
@@ -173,7 +173,11 @@ export default function ContactStep({
 					</div>
 					<Button
 						type="button"
-						className={SECONDARY_ACTION_BUTTON_CLASS}
+						className={
+							showHours
+								? CLEAR_ACTION_BUTTON_CLASS
+								: SECONDARY_ACTION_BUTTON_CLASS
+						}
 						onClick={handleOpeningHoursToggle}
 						aria-expanded={showHours}
 					>

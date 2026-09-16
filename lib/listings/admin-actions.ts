@@ -429,6 +429,13 @@ async function persistListingTagsAndAliases(
 	}
 }
 
+function formatListingDbError(message: string): string {
+	if (message.includes('listings_category_name_unique')) {
+		return `It looks like this location already exists. ${message}`;
+	}
+	return message;
+}
+
 export async function createListing(
 	formData: FormData
 ): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
@@ -445,7 +452,7 @@ export async function createListing(
 			})
 			.select('id')
 			.single();
-		if (error) return { ok: false, error: error.message };
+		if (error) return { ok: false, error: formatListingDbError(error.message) };
 
 		await persistListingTagsAndAliases(
 			supabase,
@@ -486,7 +493,7 @@ export async function updateListing(
 			.from('listings')
 			.update(listingPayload(parsed, user.id))
 			.eq('id', id);
-		if (error) return { ok: false, error: error.message };
+		if (error) return { ok: false, error: formatListingDbError(error.message) };
 
 		await persistListingTagsAndAliases(
 			supabase,

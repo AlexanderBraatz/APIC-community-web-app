@@ -5,7 +5,7 @@ export const LISTING_FORM_STEPS = [
 	{ id: 'google', label: 'Find place' },
 	{ id: 'type-name', label: 'Type & Name' },
 	{ id: 'location', label: 'Location' },
-	{ id: 'contact', label: 'Contact' },
+	{ id: 'contact', label: 'Contact info' },
 	{ id: 'apic-description', label: 'APIC description' },
 	{ id: 'tags', label: 'Tags' },
 	{ id: 'inspect', label: 'Inspect & Accept' }
@@ -29,7 +29,7 @@ export const CATEGORY_LABELS: Record<CategorySlug, string> = {
 
 export { CATEGORY_SLUGS };
 
-/** Mid-weight action (Add contact / Add hours / Adjust pin) — stronger than outline, softer than Next. */
+/** Mid-weight action (Add contact info / Add hours / Adjust pin) — stronger than outline, softer than Next. */
 export const SECONDARY_ACTION_BUTTON_CLASS =
 	'rounded-[2px] border border-[#d4a05a] bg-[#f7bc74] text-black hover:bg-[#f0a84f]';
 
