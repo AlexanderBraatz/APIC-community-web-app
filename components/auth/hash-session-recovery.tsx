@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 /**
- * Recover invite/recovery sessions when Supabase landed on /sign-in with
- * tokens in the URL hash (server routes cannot read the hash).
+ * Recover invite/recovery sessions when Supabase lands on any route with
+ * tokens in the URL hash (common when Site URL is used as fallback).
+ * Server routes cannot read the hash, so this must run in the browser.
  */
 export default function HashSessionRecovery() {
 	const router = useRouter();

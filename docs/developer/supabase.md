@@ -246,12 +246,8 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 Dashboard → **Authentication → URL configuration**
 
 - **Production Site URL:** `https://YOUR-PROJECT.vercel.app` (or custom domain)
-- Redirect URLs include (local + production):
+- Redirect URLs **must** allow the app’s `redirectTo` targets (wildcards recommended):
   - `http://localhost:3000/**`
-  - `http://localhost:3000/auth/confirm`
-  - `http://localhost:3000/accept-invite`
   - `https://YOUR-PROJECT.vercel.app/**`
-  - `https://YOUR-PROJECT.vercel.app/auth/confirm`
-  - `https://YOUR-PROJECT.vercel.app/accept-invite`
 
-Invite emails often return tokens in the **URL hash**. `/auth/confirm` is a client page that calls `setSession` from those tokens (server route handlers cannot read the hash).
+If `/auth/confirm` is not allowed, Supabase falls back to Site URL (`/`) with tokens in the **URL hash**. `HashSessionRecovery` in the root layout recovers those sessions and routes invite → `/accept-invite`, recovery → `/reset-password`. Prefer fixing Redirect URLs so links land on `/auth/confirm` directly.

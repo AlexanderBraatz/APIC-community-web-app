@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { signInWithPassword } from '@/app/auth/actions';
-import HashSessionRecovery from '@/components/auth/hash-session-recovery';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +14,6 @@ export default async function SignInPage({ searchParams }: PageProps) {
 
 	return (
 		<main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
-			<HashSessionRecovery />
 			<h1 className="font-heading text-3xl text-[#805b32]">Sign in</h1>
 			<p className="mt-2 text-sm text-[#666]">
 				Members only. There is no public registration — ask an admin for an
