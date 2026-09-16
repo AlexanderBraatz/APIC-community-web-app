@@ -17,7 +17,9 @@ export default async function MembersAdminLayout({
 	return (
 		<div className="mx-auto w-full max-w-5xl px-4 py-10">
 			<header className="mb-8 border-b border-[#e5e5e5] pb-4">
-				<h1 className="font-heading text-3xl text-[#805b32]">Members admin</h1>
+				<h1 className="font-heading text-3xl text-[#805b32]">
+					Admin Dashboard
+				</h1>
 				<nav className="mt-4 flex flex-wrap gap-4 text-sm">
 					<Link
 						href="/members/admin"
@@ -35,7 +37,7 @@ export default async function MembersAdminLayout({
 						href="/members/admin/users"
 						className="text-[#805b32] underline"
 					>
-						Users
+						Members
 					</Link>
 					<Link
 						href="/members/admin/invitations"

@@ -64,7 +64,7 @@ export default function UserRoleActions({
 			? 'Promote to admin?'
 			: kind === 'demote'
 				? 'Demote to member?'
-				: 'Delete user?';
+				: 'Delete member?';
 
 	const description =
 		kind === 'promote'

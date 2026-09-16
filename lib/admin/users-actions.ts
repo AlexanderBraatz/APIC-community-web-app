@@ -112,7 +112,7 @@ export async function changeUserRole(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
 	try {
 		const { supabase, user } = await requireAdmin();
-		if (!userId) return { ok: false, error: 'User id is required.' };
+		if (!userId) return { ok: false, error: 'Member id is required.' };
 		if (userId === user.id) {
 			return { ok: false, error: 'You cannot change your own role.' };
 		}
@@ -125,7 +125,7 @@ export async function changeUserRole(
 			.select('id, full_name, role')
 			.eq('id', userId)
 			.maybeSingle();
-		if (!before) return { ok: false, error: 'User not found.' };
+		if (!before) return { ok: false, error: 'Member not found.' };
 
 		const { data: after, error } = await supabase.rpc('change_user_role', {
 			p_user_id: userId,
@@ -160,7 +160,7 @@ export async function deleteUser(
 ): Promise<{ ok: true } | { ok: false; error: string }> {
 	try {
 		const { supabase, user } = await requireAdmin();
-		if (!userId) return { ok: false, error: 'User id is required.' };
+		if (!userId) return { ok: false, error: 'Member id is required.' };
 
 		const { data: target, error: targetError } = await supabase
 			.from('profiles')
@@ -168,7 +168,7 @@ export async function deleteUser(
 			.eq('id', userId)
 			.maybeSingle();
 		if (targetError) return { ok: false, error: targetError.message };
-		if (!target) return { ok: false, error: 'User not found.' };
+		if (!target) return { ok: false, error: 'Member not found.' };
 
 		const { count: adminCount, error: countError } = await supabase
 			.from('profiles')

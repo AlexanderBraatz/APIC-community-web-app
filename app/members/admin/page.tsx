@@ -43,7 +43,7 @@ export default async function MembersAdminDashboardPage() {
 
 	const tiles = [
 		{
-			label: 'Users',
+			label: 'Members',
 			value: counts.users
 		},
 		{

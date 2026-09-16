@@ -40,9 +40,9 @@ export default function SiteFooter() {
 				<Link
 					href="/admin"
 					className="mt-2 text-xs text-[#999999]"
-					aria-label="Open admin"
+					aria-label="Open content and blog admin"
 				>
-					Admin
+					Content &amp; Blog Admin
 				</Link>
 			</div>
 		</footer>

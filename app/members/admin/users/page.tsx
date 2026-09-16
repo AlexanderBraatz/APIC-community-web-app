@@ -19,11 +19,11 @@ export default async function AdminUsersPage({
 	return (
 		<div className="space-y-8">
 			<section>
-				<h2 className="text-xl font-medium text-[#444]">Users</h2>
+				<h2 className="text-xl font-medium text-[#444]">Members</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Users are community members who can sign in, browse listings, and
-					share when they will be in Castelfalfi on the attendance calendar.
-					Admins can also manage listings, invitations, and other members.
+					Members can sign in, browse listings, and share when they will be in
+					Castelfalfi on the attendance calendar. Admins can also manage
+					listings, invitations, and other members.
 				</p>
 			</section>
 
