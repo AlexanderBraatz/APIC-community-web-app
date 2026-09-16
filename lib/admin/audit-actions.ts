@@ -47,7 +47,6 @@ export type AdminDashboardCounts = {
 };
 
 const AUDIT_PAGE_SIZE = 50;
-const RECENT_ACTIONS_LIMIT = 10;
 
 function asJsonRecord(value: unknown): Record<string, unknown> | null {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -130,25 +129,6 @@ export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
 		listings: listingsRes.count ?? 0,
 		calendarEntries: calendarRes.count ?? 0
 	};
-}
-
-export async function listRecentAuditActions(
-	limit = RECENT_ACTIONS_LIMIT
-): Promise<AuditLogRow[]> {
-	const { supabase } = await requireAdmin();
-	const { data, error } = await supabase
-		.from('admin_audit_log')
-		.select(
-			'id, admin_user_id, action, target_type, target_id, summary, old_values, new_values, created_at'
-		)
-		.order('created_at', { ascending: false })
-		.limit(limit);
-
-	if (error) {
-		throw new Error(error.message);
-	}
-
-	return attachAdminNames(supabase, data ?? []);
 }
 
 export async function listAuditLog(opts?: {

@@ -4,6 +4,7 @@ Documentation for developers to understand how this project works — architectu
 
 | Doc | What it covers |
 | --- | --- |
+| [handover.md](./handover.md) | Insurance / relaunch guide (accounts, env, clone steps); PDF at `/docs/apic-community-handover.pdf` |
 | [monitoring.md](./monitoring.md) | Sentry + PostHog cheat sheet (errors, analytics, replay, env vars) |
 | [sentry-alerts.md](./sentry-alerts.md) | Sentry EU projects, Slack alerts, verification checklist |
 | [supabase.md](./supabase.md) | Supabase setup, migrations, local vs hosted |
