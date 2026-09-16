@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import AdminListingsList from '@/components/admin/admin-listings-list';
-import { Button } from '@/components/ui/button';
+import MissingGeocodeAlert from '@/components/admin/missing-geocode-alert';
 import {
 	geocodeMissingListings,
 	listAdminListings
@@ -32,30 +32,19 @@ export default async function AdminListingsPage({
 }) {
 	const params = await searchParams;
 	const listings = await listAdminListings();
-	const missingCoords = listings.filter(row => row.lat === null || row.lng === null)
-		.length;
+	const missingCoords = listings.filter(
+		row => row.lat === null || row.lng === null
+	);
 
 	return (
 		<div className="space-y-8">
-			<section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-				<div>
-					<h2 className="text-xl font-medium text-[#444]">Listings</h2>
-					<p className="mt-1 text-sm text-[#666]">
-						Listings are the places, services, and local recommendations
-						members browse on the community site — restaurants, shops,
-						wellness, and more around Castelfalfi and Tuscany.
-					</p>
-				</div>
-				<form action={geocodeMissingAction}>
-					<Button
-						type="submit"
-						variant="outline"
-						className="rounded-[2px]"
-						disabled={missingCoords === 0}
-					>
-						Geocode missing ({missingCoords})
-					</Button>
-				</form>
+			<section>
+				<h2 className="text-xl font-medium text-[#444]">Listings</h2>
+				<p className="mt-1 text-sm text-[#666]">
+					Listings are the places, services, and local recommendations members
+					browse on the community site — restaurants, shops, wellness, and more
+					around Castelfalfi and Tuscany.
+				</p>
 			</section>
 
 			{params.error ? (
@@ -74,6 +63,11 @@ export default async function AdminListingsPage({
 					{params.message}
 				</p>
 			) : null}
+
+			<MissingGeocodeAlert
+				listings={missingCoords}
+				action={geocodeMissingAction}
+			/>
 
 			<div className="space-y-2">
 				<h3 className="text-sm font-medium text-[#444]">Add new Listing</h3>
