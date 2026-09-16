@@ -32,15 +32,21 @@ export default function RootLayout({
 			lang="en"
 			className={`${inter.variable} ${playfair.variable} h-full antialiased`}
 		>
-			<body className="flex min-h-full flex-col bg-white font-sans text-[#444444]">
-				<AnalyticsRoot>
-					<Suspense fallback={null}>
-						<PostHogSignOutReset />
-					</Suspense>
-					<SiteHeader />
-					<div className="flex-1">{children}</div>
-					<SiteFooter />
-				</AnalyticsRoot>
+			<body className="min-h-full bg-white font-sans text-[#444444]">
+				{/*
+				 * Base UI portals (dialog/popover) render as siblings of this root.
+				 * isolation ensures they stack above page content without z-index wars.
+				 */}
+				<div className="root isolate flex min-h-full flex-col">
+					<AnalyticsRoot>
+						<Suspense fallback={null}>
+							<PostHogSignOutReset />
+						</Suspense>
+						<SiteHeader />
+						<div className="flex-1">{children}</div>
+						<SiteFooter />
+					</AnalyticsRoot>
+				</div>
 			</body>
 		</html>
 	);

@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePickerField } from '@/components/ui/date-picker-field';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { cn } from '@/lib/utils';
 import '../styles/brown_theme.css';
@@ -1112,29 +1113,27 @@ const Scheduler = ({
 							</ToggleGroup>
 						</div>
 
-						<div className="grid min-w-0 gap-3 md:grid-cols-2">
-							<div className="grid min-w-0 gap-1.5">
+						<div className="grid gap-3 sm:grid-cols-2">
+							<div className="grid gap-1.5">
 								<Label htmlFor="scheduler-start-date">Start date</Label>
-								<Input
+								<DatePickerField
 									id="scheduler-start-date"
-									type="date"
 									value={startValue}
 									max={endValue || undefined}
-									onChange={event => setStartValue(event.target.value)}
+									onChange={setStartValue}
 									required
-									className="max-w-full bg-muted"
+									className="bg-muted"
 								/>
 							</div>
-							<div className="grid min-w-0 gap-1.5">
+							<div className="grid gap-1.5">
 								<Label htmlFor="scheduler-end-date">End date</Label>
-								<Input
+								<DatePickerField
 									id="scheduler-end-date"
-									type="date"
 									value={endValue}
 									min={startValue || undefined}
-									onChange={event => setEndValue(event.target.value)}
+									onChange={setEndValue}
 									required
-									className="max-w-full bg-muted"
+									className="bg-muted"
 								/>
 							</div>
 						</div>

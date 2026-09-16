@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { DatePickerField } from '@/components/ui/date-picker-field';
 import {
 	Table,
 	TableBody,
@@ -506,27 +507,25 @@ export function AvailabilityModal({
 								</p>
 							</div>
 
-							<div className="grid min-w-0 gap-3 md:grid-cols-2">
-								<div className="grid min-w-0 gap-1.5">
+							<div className="grid gap-3 sm:grid-cols-2">
+								<div className="grid gap-1.5">
 									<Label htmlFor="availability-start">Start date</Label>
-									<Input
+									<DatePickerField
 										id="availability-start"
-										type="date"
 										value={startValue}
 										max={endValue || undefined}
-										onChange={event => setStartValue(event.target.value)}
-										className="max-w-full bg-background"
+										onChange={setStartValue}
+										className="bg-background"
 									/>
 								</div>
-								<div className="grid min-w-0 gap-1.5">
+								<div className="grid gap-1.5">
 									<Label htmlFor="availability-end">End date</Label>
-									<Input
+									<DatePickerField
 										id="availability-end"
-										type="date"
 										value={endValue}
 										min={startValue || undefined}
-										onChange={event => setEndValue(event.target.value)}
-										className="max-w-full bg-background"
+										onChange={setEndValue}
+										className="bg-background"
 									/>
 								</div>
 							</div>
