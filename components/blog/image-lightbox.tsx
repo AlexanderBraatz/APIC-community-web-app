@@ -1,8 +1,14 @@
 'use client';
 
+import {
+	Carousel,
+	CarouselContent,
+	CarouselItem,
+	type CarouselApi
+} from '@/components/ui/carousel';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useEffectEvent, type ReactNode } from 'react';
+import { useEffect, useEffectEvent, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 export type LightboxImage = {
@@ -56,20 +62,63 @@ export default function ImageLightbox({
 }: ImageLightboxProps) {
 	const hasMultiple = images.length > 1;
 	const current = images[index];
+	const [api, setApi] = useState<CarouselApi>();
 
-	const goPrev = useEffectEvent(() => {
+	const goPrev = () => {
 		if (!hasMultiple) return;
-		onIndexChange((index - 1 + images.length) % images.length);
-	});
+		api?.scrollPrev();
+	};
 
-	const goNext = useEffectEvent(() => {
+	const goNext = () => {
 		if (!hasMultiple) return;
-		onIndexChange((index + 1) % images.length);
+		api?.scrollNext();
+	};
+
+	const syncIndexFromApi = useEffectEvent((carouselApi: NonNullable<CarouselApi>) => {
+		onIndexChange(carouselApi.selectedScrollSnap());
 	});
 
-	const close = useEffectEvent(() => {
-		onClose();
+	const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			event.stopPropagation();
+			onClose();
+		} else if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			event.stopPropagation();
+			if (!hasMultiple) return;
+			api?.scrollPrev();
+		} else if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			event.stopPropagation();
+			if (!hasMultiple) return;
+			api?.scrollNext();
+		}
 	});
+
+	useEffect(() => {
+		if (!api) return;
+
+		const onSelect = () => {
+			syncIndexFromApi(api);
+		};
+
+		onSelect();
+		api.on('select', onSelect);
+		api.on('reInit', onSelect);
+
+		return () => {
+			api.off('select', onSelect);
+			api.off('reInit', onSelect);
+		};
+	}, [api]);
+
+	useEffect(() => {
+		if (!api || !open) return;
+		if (api.selectedScrollSnap() !== index) {
+			api.scrollTo(index, true);
+		}
+	}, [api, open, index]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -77,23 +126,11 @@ export default function ImageLightbox({
 		const previousOverflow = document.body.style.overflow;
 		document.body.style.overflow = 'hidden';
 
-		const onKeyDown = (event: KeyboardEvent) => {
-			if (event.key === 'Escape') {
-				event.preventDefault();
-				close();
-			} else if (event.key === 'ArrowLeft') {
-				event.preventDefault();
-				goPrev();
-			} else if (event.key === 'ArrowRight') {
-				event.preventDefault();
-				goNext();
-			}
-		};
-
-		window.addEventListener('keydown', onKeyDown);
+		// Capture phase so Embla/shadcn carousel key handlers do not double-step.
+		window.addEventListener('keydown', onKeyDown, true);
 		return () => {
 			document.body.style.overflow = previousOverflow;
-			window.removeEventListener('keydown', onKeyDown);
+			window.removeEventListener('keydown', onKeyDown, true);
 		};
 	}, [open]);
 
@@ -105,11 +142,11 @@ export default function ImageLightbox({
 			aria-modal="true"
 			aria-label={current.caption || current.alt || 'Image viewer'}
 			className="fixed inset-0 z-100 flex items-center justify-center bg-black/85"
-			onClick={close}
+			onClick={onClose}
 		>
 			<LightboxControl
 				label="Close"
-				onClick={close}
+				onClick={onClose}
 				className="right-1 top-1 size-14 sm:right-3 sm:top-3 sm:size-16"
 			>
 				<X
@@ -149,13 +186,39 @@ export default function ImageLightbox({
 					className="pointer-events-auto relative min-h-0 w-full flex-1"
 					onClick={event => event.stopPropagation()}
 				>
-					<Image
-						fill
-						src={current.src}
-						alt={current.alt || current.caption || ''}
-						sizes="100vw"
-						className="object-contain"
-					/>
+					{hasMultiple ? (
+						<Carousel
+							setApi={setApi}
+							opts={{ loop: true, startIndex: index }}
+							className="h-full w-full"
+						>
+							<CarouselContent className="ml-0">
+								{images.map((image, i) => (
+									<CarouselItem
+										key={`${image.src}-${i}`}
+										className="relative h-full pl-0"
+									>
+										<Image
+											fill
+											src={image.src}
+											alt={image.alt || image.caption || ''}
+											sizes="100vw"
+											className="object-contain"
+											priority={i === index}
+										/>
+									</CarouselItem>
+								))}
+							</CarouselContent>
+						</Carousel>
+					) : (
+						<Image
+							fill
+							src={current.src}
+							alt={current.alt || current.caption || ''}
+							sizes="100vw"
+							className="object-contain"
+						/>
+					)}
 				</div>
 				{current.caption ? (
 					<figcaption className="mt-4 max-w-3xl shrink-0 text-center font-heading text-sm text-white/80 sm:text-base">
