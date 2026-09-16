@@ -87,9 +87,9 @@ Already expected for this app:
 
 - [x] **Public sign-ups disabled** (invitation-only; see PR-02 for invite flow).
 - Confirm under **Authentication → Providers → Email** (disable “Enable sign ups” / equivalent).
-- **URL configuration:** set Site URL to your app origin (local: `http://localhost:3000`).
-- Add the same origin under Redirect URLs, plus `http://localhost:3000/auth/confirm`.
-- Set `NEXT_PUBLIC_SITE_URL` in `.env.local` to that origin so password-reset emails build the correct link.
+- **URL configuration:** set Site URL to your app origin (local: `http://localhost:3000`; production: your Vercel HTTPS URL).
+- Add matching Redirect URLs for local and production, including `/auth/confirm` (and `/accept-invite` if listed).
+- Set `NEXT_PUBLIC_SITE_URL` to that origin (`.env.local` locally; Vercel env in production) so invite and password-reset emails build the correct `redirectTo`.
 - [ ] **Leaked password protection** — Authentication → Attack Protection (HaveIBeenPwned); enable when ready for production.
 - [ ] **Invite / recovery email copy** — Authentication → Email Templates; keep APIC tone and links to `/auth/confirm` + `/accept-invite` / `/reset-password`.
 
@@ -245,9 +245,13 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 
 Dashboard → **Authentication → URL configuration**
 
-- Site URL: `http://localhost:3000`
-- Redirect URLs include:
+- **Production Site URL:** `https://YOUR-PROJECT.vercel.app` (or custom domain)
+- Redirect URLs include (local + production):
+  - `http://localhost:3000/**`
   - `http://localhost:3000/auth/confirm`
   - `http://localhost:3000/accept-invite`
+  - `https://YOUR-PROJECT.vercel.app/**`
+  - `https://YOUR-PROJECT.vercel.app/auth/confirm`
+  - `https://YOUR-PROJECT.vercel.app/accept-invite`
 
 Invite emails often return tokens in the **URL hash**. `/auth/confirm` is a client page that calls `setSession` from those tokens (server route handlers cannot read the hash).

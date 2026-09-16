@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { getSiteOrigin } from '@/lib/site-url';
 import { createClient } from '@/lib/supabase/server';
 
 function safeNextPath(next: string | null | undefined) {
@@ -51,12 +52,10 @@ export async function requestPasswordReset(formData: FormData) {
 	}
 
 	const supabase = await createClient();
-	const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '');
+	const origin = getSiteOrigin();
 
 	const { error } = await supabase.auth.resetPasswordForEmail(email, {
-		redirectTo: origin
-			? `${origin}/auth/confirm?next=/reset-password`
-			: undefined
+		redirectTo: `${origin}/auth/confirm?next=/reset-password`
 	});
 
 	if (error) {

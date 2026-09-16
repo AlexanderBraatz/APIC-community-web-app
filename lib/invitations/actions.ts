@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import { limitInvite } from '@/lib/admin/rate-limit';
 import { captureServerActionException } from '@/lib/sentry/capture';
+import { getSiteOrigin } from '@/lib/site-url';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import type { Json } from '@/lib/supabase/database.types';
 import { createClient } from '@/lib/supabase/server';
@@ -25,15 +26,8 @@ function normalizeEmail(email: string) {
 	return email.trim().toLowerCase();
 }
 
-function siteOrigin() {
-	return (
-		process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') ||
-		'http://localhost:3000'
-	);
-}
-
 function inviteRedirectTo() {
-	return `${siteOrigin()}/auth/confirm?next=${encodeURIComponent('/accept-invite')}`;
+	return `${getSiteOrigin()}/auth/confirm?next=${encodeURIComponent('/accept-invite')}`;
 }
 
 async function writeAudit(
