@@ -53,10 +53,11 @@ export async function updateFullName(formData: FormData) {
 	accountRedirect({ message: 'Name saved.' });
 }
 
-export async function updateProfileColor(formData: FormData) {
-	const color = String(formData.get('color') ?? '');
+export async function updateProfileColor(
+	color: string
+): Promise<{ error?: string }> {
 	if (!(EVENT_BAR_PALETTE as readonly string[]).includes(color)) {
-		accountRedirect({ error: 'Choose a colour from the palette.' });
+		return { error: 'Choose a colour from the palette.' };
 	}
 	const { supabase, user } = await requireUser();
 	const { error: profileError } = await supabase
@@ -65,12 +66,12 @@ export async function updateProfileColor(formData: FormData) {
 		.eq('id', user.id);
 
 	if (profileError) {
-		accountRedirect({ error: profileError.message });
+		return { error: profileError.message };
 	}
 
 	revalidatePath('/account');
 	revalidatePath('/community-calendar');
-	accountRedirect({ message: 'Profile colour updated.' });
+	return {};
 }
 
 export async function changePassword(formData: FormData) {

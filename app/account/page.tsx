@@ -1,11 +1,7 @@
 import Link from 'next/link';
 import { signOut } from '@/app/auth/actions';
-import {
-	changePassword,
-	updateFullName,
-	updateProfileColor
-} from '@/lib/account/actions';
-import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
+import { changePassword, updateFullName } from '@/lib/account/actions';
+import { ProfileColorDialog } from '@/components/account/profile-color-dialog';
 import { SentryDevTestButton } from '@/components/analytics/sentry-dev-test-button';
 import { AccountPrivacyForm } from '@/components/privacy/account-privacy-form';
 import { Button } from '@/components/ui/button';
@@ -128,35 +124,21 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				<p className="text-sm text-[#666]">
 					Choose the colour shown behind your profile initial.
 				</p>
-				<form action={updateProfileColor}>
-					<div
-						role="radiogroup"
-						aria-label="Profile colour"
-						className="flex flex-wrap gap-2"
-					>
-						{EVENT_BAR_PALETTE.map(color => {
-							const selected = profile?.event_bar_color === color;
-							return (
-								<button
-									key={color}
-									type="submit"
-									name="color"
-									value={color}
-									role="radio"
-									aria-checked={selected}
-									aria-label={`Profile colour ${color}`}
-									title={color}
-									className={`size-8 rounded-full border-2 transition-[box-shadow,transform] ${
-										selected
-											? 'scale-105 border-[#333] shadow-sm'
-											: 'border-transparent hover:scale-105'
-									}`}
-									style={{ background: color }}
-								/>
-							);
-						})}
-					</div>
-				</form>
+				<div className="flex items-center gap-3">
+					<span
+						className="size-8 shrink-0 rounded-full border-2 border-[#333] shadow-sm"
+						style={{ background: profileCircleBg }}
+						title={profile?.event_bar_color ?? 'Default'}
+						aria-label={
+							profile?.event_bar_color
+								? `Current profile colour ${profile.event_bar_color}`
+								: 'Current profile colour default'
+						}
+					/>
+					<ProfileColorDialog
+						currentColor={profile?.event_bar_color ?? null}
+					/>
+				</div>
 			</section>
 
 			{privacyPrefs ? (
