@@ -163,9 +163,27 @@
 }
 
 .scheduler-event-name {
+	flex-shrink: 1;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.scheduler-event-note-preview {
+	flex-shrink: 9999;
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+	text-decoration: none;
+	opacity: 0.85;
+}
+
+.scheduler-event-note-preview:hover {
+	text-decoration: underline;
 }
 
 .scheduler-event-delete-mark {

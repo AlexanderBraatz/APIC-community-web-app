@@ -168,6 +168,14 @@ function getEventNote(event: DayPilot.EventData) {
 	return typeof note === 'string' ? note : '';
 }
 
+function notePreviewText(note: string, maxLen = 20) {
+	const trimmed = note.trim();
+	if (!trimmed) {
+		return '';
+	}
+	return `: „${trimmed.slice(0, maxLen)}...`;
+}
+
 function withEventContent(
 	event: DayPilot.EventData,
 	content: { title: string; note: string }
@@ -474,7 +482,9 @@ const Scheduler = ({
 
 	const userAvailabilityEvents = useMemo(
 		() =>
-			eventRows.filter(event => String(event.resource) === availabilityTargetId),
+			eventRows.filter(
+				event => String(event.resource) === availabilityTargetId
+			),
 		[eventRows, availabilityTargetId]
 	);
 
@@ -629,24 +639,49 @@ const Scheduler = ({
 			: Math.min(activeSuggestionIndex, suggestions.length - 1);
 	const highlightedSuggestion = suggestions[highlightedSuggestionIndex];
 
+	const userIdsWithAttendance = useMemo(() => {
+		const ids = new Set<string>();
+		for (const event of eventRows) {
+			if (!isMarkedForDeletion(event)) {
+				ids.add(String(event.resource));
+			}
+		}
+		return ids;
+	}, [eventRows]);
+
 	const orderedResources = useMemo(() => {
+		const byAttendanceThenName = (
+			a: DayPilot.ResourceData,
+			b: DayPilot.ResourceData
+		) => {
+			const aHas = userIdsWithAttendance.has(String(a.id)) ? 0 : 1;
+			const bHas = userIdsWithAttendance.has(String(b.id)) ? 0 : 1;
+			if (aHas !== bHas) {
+				return aHas - bHas;
+			}
+			return (a.name ?? '').localeCompare(b.name ?? '', undefined, {
+				sensitivity: 'base'
+			});
+		};
+
 		const loggedIn = resources.find(
 			resource => String(resource.id) === currentUserId
 		);
 		const selected = selectedIds
 			.filter(id => id !== currentUserId)
 			.map(id => resources.find(resource => String(resource.id) === id))
+			.filter((resource): resource is DayPilot.ResourceData => resource != null)
+			.sort(byAttendanceThenName);
+		const rest = resources
 			.filter(
-				(resource): resource is DayPilot.ResourceData => resource != null
-			);
-		const rest = resources.filter(
-			resource =>
-				resource.id != null &&
-				String(resource.id) !== currentUserId &&
-				!selectedIds.includes(String(resource.id))
-		);
+				resource =>
+					resource.id != null &&
+					String(resource.id) !== currentUserId &&
+					!selectedIds.includes(String(resource.id))
+			)
+			.sort(byAttendanceThenName);
 		return [...(loggedIn ? [loggedIn] : []), ...selected, ...rest];
-	}, [resources, selectedIds, currentUserId]);
+	}, [resources, selectedIds, currentUserId, userIdsWithAttendance]);
 
 	const addSelected = (id: string) => {
 		updateSelectedIds(current =>
@@ -840,6 +875,12 @@ const Scheduler = ({
 		}
 
 		const name = escapeHtml(getEventTitle(args.data));
+		const preview = notePreviewText(getEventNote(args.data));
+		const noteSnippet = preview
+			? `<span class="scheduler-event-note-preview">${escapeHtml(
+					preview
+			  )}</span>`
+			: '';
 		const chipLabel = markedForDeletion
 			? 'To delete'
 			: EVENT_STATUS_LABELS[saveStatus];
@@ -856,8 +897,8 @@ const Scheduler = ({
 				? `<span class="scheduler-event-delete-mark" title="${deleteTitle}" onmousedown="event.stopPropagation()">×</span>`
 				: '';
 		args.data.html = editable
-			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${statusChip}${deleteMark}</span>`
-			: `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span></span>`;
+			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${noteSnippet}${statusChip}${deleteMark}</span>`
+			: `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${noteSnippet}</span>`;
 	};
 
 	const onEventClick = (args: DayPilot.SchedulerEventClickArgs) => {
