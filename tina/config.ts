@@ -143,6 +143,12 @@ export default defineConfig({
 								fields: [
 									{ name: 'sectionTitle', label: 'Heading', type: 'string' },
 									{
+										name: 'description',
+										label: 'Description',
+										type: 'string',
+										ui: { component: 'textarea' }
+									},
+									{
 										name: 'buttons',
 										label: 'Buttons',
 										type: 'object',
@@ -176,8 +182,18 @@ export default defineConfig({
 										},
 										fields: [
 											{ name: 'title', type: 'string' },
+											{
+												name: 'description',
+												type: 'string',
+												ui: { component: 'textarea' }
+											},
 											{ name: 'image', type: 'image' },
-											{ name: 'link', type: 'string' }
+											{ name: 'link', type: 'string' },
+											{
+												name: 'buttonLabel',
+												label: 'Button Label',
+												type: 'string'
+											}
 										]
 									}
 								]

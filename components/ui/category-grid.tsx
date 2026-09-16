@@ -7,12 +7,12 @@ import { tinaField } from 'tinacms/tina-field';
 
 export default function CategoryGrid(props: PageBlocksCategoryGrid) {
 	return (
-		<section className="bg-white px-4 pb-20 sm:px-6 lg:px-8 lg:pb-28">
+		<section className="bg-[#eeeae4] px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
 			<div className="mx-auto max-w-[1400px]">
 				{props.sectionTitle ? (
 					<h2
 						data-tina-field={tinaField(props, 'sectionTitle')}
-						className="font-heading mb-12 text-center text-2xl font-medium leading-snug text-[#5D4325] sm:text-3xl lg:mb-16 lg:text-4xl"
+						className="font-heading mb-12 text-left text-2xl font-medium leading-snug text-[#5D4325] sm:text-3xl lg:mb-16 lg:text-4xl"
 					>
 						{props.sectionTitle}
 					</h2>
@@ -22,12 +22,15 @@ export default function CategoryGrid(props: PageBlocksCategoryGrid) {
 					{props.items?.map((item, i) => {
 						if (!item?.title) return null;
 
+						const href = item.link || '#';
+						const buttonLabel = item.buttonLabel || item.title;
+
 						return (
 							<Link
 								key={i}
-								href={item.link || '#'}
+								href={href}
 								data-tina-field={tinaField(item)}
-								className="group block"
+								className="group flex flex-col"
 							>
 								{item.image ? (
 									<div className="relative aspect-[39/55] w-full overflow-hidden">
@@ -44,12 +47,22 @@ export default function CategoryGrid(props: PageBlocksCategoryGrid) {
 								) : (
 									<div className="aspect-[39/55] w-full bg-[#F8F6F2]" />
 								)}
-								<h3
-									data-tina-field={tinaField(item, 'title')}
-									className="font-heading mt-4 text-xl font-medium text-[#5D4325] transition-colors group-hover:text-[#7A5A32]"
+
+								<span
+									data-tina-field={tinaField(item, 'buttonLabel')}
+									className="mt-4 inline-flex w-full items-center justify-center rounded-[2px] border border-[#634627] bg-[#805b32] px-4 py-2.5 text-center text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 group-hover:border-[#0a0f0b] group-hover:bg-[#1f2d22]"
 								>
-									{item.title}
-								</h3>
+									{buttonLabel}
+								</span>
+
+								{item.description ? (
+									<p
+										data-tina-field={tinaField(item, 'description')}
+										className="mt-3 text-sm leading-relaxed text-[#444444]"
+									>
+										{item.description}
+									</p>
+								) : null}
 							</Link>
 						);
 					})}
