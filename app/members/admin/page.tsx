@@ -18,23 +18,19 @@ export default async function MembersAdminDashboardPage() {
 	const tiles = [
 		{
 			label: 'Users',
-			value: counts.users,
-			href: '/members/admin/users'
+			value: counts.users
 		},
 		{
-			label: 'Admins',
-			value: counts.admins,
-			href: '/members/admin/users?role=admin'
+			label: 'Blog posts',
+			value: counts.blogPosts
 		},
 		{
 			label: 'Listings',
-			value: counts.listings,
-			href: '/members/admin/listings'
+			value: counts.listings
 		},
 		{
-			label: 'Pending invites',
-			value: counts.pendingInvites,
-			href: '/members/admin/invitations'
+			label: 'Calendar entries',
+			value: counts.calendarEntries
 		}
 	];
 
@@ -50,10 +46,9 @@ export default async function MembersAdminDashboardPage() {
 
 			<section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				{tiles.map(tile => (
-					<Link
+					<div
 						key={tile.label}
-						href={tile.href}
-						className="border border-[#e5e5e5] px-4 py-5 transition-colors hover:border-[#805b32]"
+						className="border border-[#e5e5e5] px-4 py-5"
 					>
 						<p className="text-xs tracking-wide text-[#888] uppercase">
 							{tile.label}
@@ -61,7 +56,7 @@ export default async function MembersAdminDashboardPage() {
 						<p className="mt-2 font-heading text-3xl text-[#805b32]">
 							{tile.value}
 						</p>
-					</Link>
+					</div>
 				))}
 			</section>
 

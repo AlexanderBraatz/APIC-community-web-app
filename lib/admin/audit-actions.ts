@@ -1,3 +1,5 @@
+import { readdir } from 'node:fs/promises';
+import path from 'node:path';
 import { requireAdmin } from '@/lib/admin/require-admin';
 
 export const AUDIT_ACTIONS = [
@@ -39,9 +41,9 @@ export type AuditLogRow = {
 
 export type AdminDashboardCounts = {
 	users: number;
-	admins: number;
+	blogPosts: number;
 	listings: number;
-	pendingInvites: number;
+	calendarEntries: number;
 };
 
 const AUDIT_PAGE_SIZE = 50;
@@ -98,32 +100,35 @@ async function attachAdminNames(
 	}));
 }
 
+async function countBlogPosts(): Promise<number> {
+	const blogDir = path.join(process.cwd(), 'content/blog');
+	try {
+		const files = await readdir(blogDir);
+		return files.filter(file => /\.md$/i.test(file)).length;
+	} catch {
+		return 0;
+	}
+}
+
 export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
 	const { supabase } = await requireAdmin();
 
-	const [usersRes, adminsRes, listingsRes, invitesRes] = await Promise.all([
+	const [usersRes, listingsRes, calendarRes, blogPosts] = await Promise.all([
 		supabase.from('profiles').select('id', { count: 'exact', head: true }),
-		supabase
-			.from('profiles')
-			.select('id', { count: 'exact', head: true })
-			.eq('role', 'admin'),
 		supabase.from('listings').select('id', { count: 'exact', head: true }),
-		supabase
-			.from('user_invitations')
-			.select('id', { count: 'exact', head: true })
-			.eq('status', 'pending')
+		supabase.from('attendance').select('id', { count: 'exact', head: true }),
+		countBlogPosts()
 	]);
 
 	if (usersRes.error) throw new Error(usersRes.error.message);
-	if (adminsRes.error) throw new Error(adminsRes.error.message);
 	if (listingsRes.error) throw new Error(listingsRes.error.message);
-	if (invitesRes.error) throw new Error(invitesRes.error.message);
+	if (calendarRes.error) throw new Error(calendarRes.error.message);
 
 	return {
 		users: usersRes.count ?? 0,
-		admins: adminsRes.count ?? 0,
+		blogPosts,
 		listings: listingsRes.count ?? 0,
-		pendingInvites: invitesRes.count ?? 0
+		calendarEntries: calendarRes.count ?? 0
 	};
 }
 
