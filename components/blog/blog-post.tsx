@@ -36,10 +36,10 @@ function formatPublishedAt(value?: string | null) {
 }
 
 const lightButtonClassName =
-	'inline-flex items-center gap-1.5 rounded-[2px] border border-[#c4b5a4] bg-[#ebe6dc] px-4 py-2.5 font-sans text-sm font-medium text-[#805b32] transition-[color,background-color,border-color] duration-100 hover:border-[#634627] hover:bg-[#805b32] hover:text-white';
+	'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[2px] border border-[#c4b5a4] bg-[#ebe6dc] px-3 py-2.5 font-sans text-sm font-medium text-[#805b32] transition-[color,background-color,border-color] duration-100 hover:border-[#634627] hover:bg-[#805b32] hover:text-white sm:px-4';
 
 const lightButtonDisabledClassName =
-	'inline-flex cursor-not-allowed items-center gap-1.5 rounded-[2px] border border-[#e8e0d6] bg-[#f7f4ef] px-4 py-2.5 font-sans text-sm font-medium text-[#b5a898]';
+	'inline-flex shrink-0 cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-[2px] border border-[#e8e0d6] bg-[#f7f4ef] px-3 py-2.5 font-sans text-sm font-medium text-[#b5a898] sm:px-4';
 
 export default function BlogPost({
 	previousPost,
@@ -70,7 +70,7 @@ export default function BlogPost({
 				<div className="mx-auto max-w-3xl">
 					<nav
 						aria-label="Blog post navigation"
-						className="mb-8 flex flex-wrap items-center justify-between gap-3"
+						className="mb-8 flex items-center justify-between gap-2 sm:gap-3"
 					>
 						<Link
 							href="/blog"
@@ -80,9 +80,10 @@ export default function BlogPost({
 								className="size-4"
 								aria-hidden="true"
 							/>
-							Back To Articles
+							<span className="sm:hidden">Articles</span>
+							<span className="hidden sm:inline">Back To Articles</span>
 						</Link>
-						<div className="flex flex-wrap items-center gap-3">
+						<div className="flex items-center gap-2 sm:gap-3">
 							{previousPost ? (
 								<Link
 									href={`/blog/${previousPost.slug}`}
