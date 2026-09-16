@@ -738,6 +738,10 @@ const Scheduler = ({
 	};
 
 	const onEventMove = (args: DayPilot.SchedulerEventMoveArgs) => {
+		if (isNarrow) {
+			args.preventDefault();
+			return;
+		}
 		const fromResource = String(args.e.resource());
 		const toResource = String(args.newResource);
 		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
@@ -746,6 +750,9 @@ const Scheduler = ({
 	};
 
 	const onEventMoved = (args: DayPilot.SchedulerEventMovedArgs) => {
+		if (isNarrow) {
+			return;
+		}
 		const fromResource = String(args.e.resource());
 		const toResource = String(args.newResource);
 		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
@@ -770,13 +777,13 @@ const Scheduler = ({
 	};
 
 	const onEventResize = (args: DayPilot.SchedulerEventResizeArgs) => {
-		if (!canEditResource(String(args.e.resource()))) {
+		if (isNarrow || !canEditResource(String(args.e.resource()))) {
 			args.preventDefault();
 		}
 	};
 
 	const onEventResized = (args: DayPilot.SchedulerEventResizedArgs) => {
-		if (!canEditResource(String(args.e.resource()))) {
+		if (isNarrow || !canEditResource(String(args.e.resource()))) {
 			return;
 		}
 		persistEventChange(args.e.id(), {
@@ -807,8 +814,8 @@ const Scheduler = ({
 			moveDisabled?: boolean;
 			resizeDisabled?: boolean;
 		};
-		eventData.moveDisabled = !editable || markedForDeletion;
-		eventData.resizeDisabled = !editable || markedForDeletion;
+		eventData.moveDisabled = isNarrow || !editable || markedForDeletion;
+		eventData.resizeDisabled = isNarrow || !editable || markedForDeletion;
 
 		const classNames = [
 			editable ? 'scheduler-event-editable' : 'scheduler-event-readonly',
@@ -838,12 +845,17 @@ const Scheduler = ({
 		const chipClass = markedForDeletion
 			? 'edit-status-chip-delete'
 			: `edit-status-chip-${saveStatus}`;
-		const statusChip = editable
-			? `<span class="edit-status-chip ${chipClass} edit-status-chip-on-event">${chipLabel}</span>`
-			: '';
+		const statusChip =
+			editable && !(isNarrow && saveStatus === 'ready' && !markedForDeletion)
+				? `<span class="edit-status-chip ${chipClass} edit-status-chip-on-event">${chipLabel}</span>`
+				: '';
 		const deleteTitle = markedForDeletion ? 'Undo delete' : 'Mark for deletion';
+		const deleteMark =
+			editable && !isNarrow
+				? `<span class="scheduler-event-delete-mark" title="${deleteTitle}" onmousedown="event.stopPropagation()">×</span>`
+				: '';
 		args.data.html = editable
-			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${statusChip}<span class="scheduler-event-delete-mark" title="${deleteTitle}" onmousedown="event.stopPropagation()">×</span></span>`
+			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${statusChip}${deleteMark}</span>`
 			: `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span></span>`;
 	};
 
@@ -854,7 +866,7 @@ const Scheduler = ({
 			target.closest('.scheduler-event-delete-mark')
 		) {
 			args.preventDefault();
-			if (!canEditResource(String(args.e.resource()))) {
+			if (isNarrow || !canEditResource(String(args.e.resource()))) {
 				return;
 			}
 			deleteEvent(args.e.id());
@@ -883,7 +895,7 @@ const Scheduler = ({
 	};
 
 	const onTimeRangeSelect = (args: DayPilot.SchedulerTimeRangeSelectArgs) => {
-		if (!canEditResource(String(args.resource))) {
+		if (isNarrow || !canEditResource(String(args.resource))) {
 			args.preventDefault();
 		}
 	};
@@ -891,7 +903,7 @@ const Scheduler = ({
 	const onTimeRangeSelected = (
 		args: DayPilot.SchedulerTimeRangeSelectedArgs
 	) => {
-		if (!canEditResource(String(args.resource))) {
+		if (isNarrow || !canEditResource(String(args.resource))) {
 			args.control.clearSelection();
 			return;
 		}
@@ -920,7 +932,7 @@ const Scheduler = ({
 		args.control.clearSelection();
 	};
 
-	const rowHeaderWidth = !isNarrow ? 180 : namesCollapsed ? 2 : 100;
+	const rowHeaderWidth = isNarrow && namesCollapsed ? 2 : 180;
 	const fontSizeConfig = SCHEDULER_FONT_SIZE[fontSize];
 
 	const config: DayPilot.SchedulerConfig = useMemo(
@@ -934,13 +946,13 @@ const Scheduler = ({
 			// Override DayPilot’s iOS default (floatingEvents off) so labels stay sticky.
 			floatingEvents: true,
 			rowClickHandling: 'Enabled',
-			eventMoveHandling: 'Update',
-			eventResizeHandling: 'Update',
+			eventMoveHandling: isNarrow ? 'Disabled' : 'Update',
+			eventResizeHandling: isNarrow ? 'Disabled' : 'Update',
 			eventClickHandling: 'Enabled',
 			eventDeleteHandling: 'Disabled',
-			timeRangeSelectedHandling: 'Enabled'
+			timeRangeSelectedHandling: isNarrow ? 'Disabled' : 'Enabled'
 		}),
-		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth]
+		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth, isNarrow]
 	);
 
 	return (
