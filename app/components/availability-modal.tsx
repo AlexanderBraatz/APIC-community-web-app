@@ -272,7 +272,7 @@ export function AvailabilityModal({
 					</DialogDescription>
 				</DialogHeader>
 
-				<div className="grid gap-4">
+				<div className="grid min-w-0 gap-4">
 					{isAdmin ? (
 						<div className="grid gap-2">
 							<p className="text-sm font-medium">Member attendance</p>
@@ -493,7 +493,7 @@ export function AvailabilityModal({
 					{formVisible ? (
 						<div
 							className={cn(
-								'grid gap-4 rounded-lg border p-3',
+								'grid min-w-0 gap-4 rounded-lg border p-3',
 								formMode === 'add'
 									? 'border-[#3d8b5a]/40 bg-[#e5f2e9]'
 									: 'border-[#d4a017]/40 bg-[#fff6dc]'
@@ -506,8 +506,8 @@ export function AvailabilityModal({
 								</p>
 							</div>
 
-							<div className="grid gap-3 sm:grid-cols-2">
-								<div className="grid gap-1.5">
+							<div className="grid min-w-0 gap-3 md:grid-cols-2">
+								<div className="grid min-w-0 gap-1.5">
 									<Label htmlFor="availability-start">Start date</Label>
 									<Input
 										id="availability-start"
@@ -515,10 +515,10 @@ export function AvailabilityModal({
 										value={startValue}
 										max={endValue || undefined}
 										onChange={event => setStartValue(event.target.value)}
-										className="bg-background"
+										className="max-w-full bg-background"
 									/>
 								</div>
-								<div className="grid gap-1.5">
+								<div className="grid min-w-0 gap-1.5">
 									<Label htmlFor="availability-end">End date</Label>
 									<Input
 										id="availability-end"
@@ -526,7 +526,7 @@ export function AvailabilityModal({
 										value={endValue}
 										min={startValue || undefined}
 										onChange={event => setEndValue(event.target.value)}
-										className="bg-background"
+										className="max-w-full bg-background"
 									/>
 								</div>
 							</div>

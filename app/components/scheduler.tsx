@@ -1014,7 +1014,7 @@ const Scheduler = ({
 						</DialogDescription>
 					</DialogHeader>
 
-					<div className="grid gap-4">
+					<div className="grid min-w-0 gap-4">
 						<div className="grid gap-1.5">
 							<Label id="scheduler-event-bar-color-label">
 								Your attendance bar colour
@@ -1112,8 +1112,8 @@ const Scheduler = ({
 							</ToggleGroup>
 						</div>
 
-						<div className="grid gap-3 sm:grid-cols-2">
-							<div className="grid gap-1.5">
+						<div className="grid min-w-0 gap-3 md:grid-cols-2">
+							<div className="grid min-w-0 gap-1.5">
 								<Label htmlFor="scheduler-start-date">Start date</Label>
 								<Input
 									id="scheduler-start-date"
@@ -1122,10 +1122,10 @@ const Scheduler = ({
 									max={endValue || undefined}
 									onChange={event => setStartValue(event.target.value)}
 									required
-									className="bg-muted"
+									className="max-w-full bg-muted"
 								/>
 							</div>
-							<div className="grid gap-1.5">
+							<div className="grid min-w-0 gap-1.5">
 								<Label htmlFor="scheduler-end-date">End date</Label>
 								<Input
 									id="scheduler-end-date"
@@ -1134,7 +1134,7 @@ const Scheduler = ({
 									min={startValue || undefined}
 									onChange={event => setEndValue(event.target.value)}
 									required
-									className="bg-muted"
+									className="max-w-full bg-muted"
 								/>
 							</div>
 						</div>
