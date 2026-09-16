@@ -3,6 +3,9 @@ import { withSentryConfig } from '@sentry/nextjs/config';
 
 const nextConfig: NextConfig = {
 	/* config options here */
+	// Phone / LAN testing: Next blocks /_next/* from non-localhost hosts unless listed.
+	// Dev-only. Prefer a specific LAN IP over private-range wildcards.
+	allowedDevOrigins: ['192.168.0.115'],
 	images: {
 		// TinaCloud repo media is served from the assets CDN in production
 		// (admin previews work; next/image needs these hosts or it returns 400).
