@@ -6,7 +6,9 @@ const PROTECTED_PREFIXES = [
 	'/community-calendar',
 	'/place',
 	'/account',
-	'/members'
+	'/members',
+	'/blog',
+	'/about'
 ] as const;
 
 const AUTH_ONLY_WHEN_SIGNED_OUT = ['/sign-in', '/forgot-password'] as const;
