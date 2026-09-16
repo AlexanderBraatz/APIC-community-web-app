@@ -1223,7 +1223,7 @@ const Scheduler = ({
 									Saving changes…
 								</p>
 								<p style={{ margin: 0, color: '#5c5348' }}>
-									Saving availability…
+									Saving attendance…
 								</p>
 							</>
 						) : null}
@@ -1239,7 +1239,7 @@ const Scheduler = ({
 									Changes saved
 								</p>
 								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-									Availability has been updated.
+									Attendance has been updated.
 								</p>
 								<button
 									type="button"
@@ -1375,7 +1375,7 @@ const Scheduler = ({
 			<h1 className="scheduler-page-title">Attendance Calendar</h1>
 
 			<section
-				aria-label="Availability calendar"
+				aria-label="Attendance calendar"
 				className="scheduler-shell"
 			>
 				<div className="scheduler-chrome">
@@ -1396,7 +1396,7 @@ const Scheduler = ({
 									data-icon="inline-start"
 									aria-hidden
 								/>
-								Manage availability
+								Manage attendance
 							</Button>
 						</div>
 
@@ -1411,7 +1411,7 @@ const Scheduler = ({
 									type="search"
 									value={query}
 									placeholder="Find people"
-									aria-label="Find people to compare availability"
+									aria-label="Find people to compare attendance"
 									aria-autocomplete="list"
 									aria-controls={
 										suggestions.length > 0

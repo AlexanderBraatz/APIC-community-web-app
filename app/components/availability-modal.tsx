@@ -225,7 +225,7 @@ export function AvailabilityModal({
 			return;
 		}
 		if (formMode === 'edit' && editingId == null) {
-			setFormError('Select an existing availability to update.');
+			setFormError('Select an existing attendance to update.');
 			return;
 		}
 		onSave({
@@ -239,7 +239,7 @@ export function AvailabilityModal({
 
 	const formVisible = formMode != null;
 	const formHeading =
-		formMode === 'add' ? 'Add a new availability' : 'Edit availability';
+		formMode === 'add' ? 'Add a new attendance' : 'Edit attendance';
 	const formDescription =
 		formMode === 'add'
 			? editingOther
@@ -247,8 +247,8 @@ export function AvailabilityModal({
 				: 'Fill in the dates, a short title, and an optional note for your new stay.'
 			: 'Adjust the dates, title, or note, then save your changes.';
 	const listHeading = editingOther
-		? `${targetMemberName}'s availabilities`
-		: 'Your availabilities';
+		? `${targetMemberName}'s attendance`
+		: 'Your attendance';
 
 	return (
 		<Dialog
@@ -264,7 +264,7 @@ export function AvailabilityModal({
 				showCloseButton
 			>
 				<DialogHeader>
-					<DialogTitle>Manage availability</DialogTitle>
+					<DialogTitle>Manage attendance</DialogTitle>
 					<DialogDescription>
 						{editingOther
 							? `Editing stays for ${targetMemberName}. Use the pencil rows to edit, or the plus row to add a new one.`
@@ -275,7 +275,7 @@ export function AvailabilityModal({
 				<div className="grid gap-4">
 					{isAdmin ? (
 						<div className="grid gap-2">
-							<p className="text-sm font-medium">Member availabilities</p>
+							<p className="text-sm font-medium">Member attendance</p>
 							{editingOther ? (
 								<div className="flex items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2">
 									<p className="min-w-0 flex-1 truncate text-sm">
@@ -308,7 +308,7 @@ export function AvailabilityModal({
 										type="search"
 										value={memberQuery}
 										placeholder="Find people"
-										aria-label="Find member to edit availability"
+										aria-label="Find member to edit attendance"
 										aria-autocomplete="list"
 										aria-controls={
 											memberSuggestions.length > 0
@@ -474,14 +474,14 @@ export function AvailabilityModal({
 														className="size-4"
 														aria-hidden
 													/>
-													<span className="sr-only">Add availability</span>
+													<span className="sr-only">Add attendance</span>
 												</span>
 											</TableCell>
 											<TableCell
 												colSpan={4}
 												className="text-sm text-muted-foreground"
 											>
-												Add a new availability
+												Add a new attendance
 											</TableCell>
 										</TableRow>
 									) : null}
