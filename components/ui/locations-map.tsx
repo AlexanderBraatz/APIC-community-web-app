@@ -155,6 +155,9 @@ type LocationsMapProps = {
 	showTooltipsByDefault?: boolean;
 	onSelect?: (listing: ListingWithCoords) => void;
 	onClearSelect?: () => void;
+	/** When true, show the bottom-right control to clear map focus. */
+	showClearFocus?: boolean;
+	onClearFocus?: () => void;
 	className?: string;
 };
 
@@ -409,6 +412,8 @@ export default function LocationsMap({
 	showTooltipsByDefault = false,
 	onSelect,
 	onClearSelect,
+	showClearFocus = false,
+	onClearFocus,
 	className
 }: LocationsMapProps) {
 	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -446,7 +451,7 @@ export default function LocationsMap({
 	return (
 		<div
 			className={cn(
-				'aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)]',
+				'relative aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)]',
 				className
 			)}
 		>
@@ -475,6 +480,16 @@ export default function LocationsMap({
 					/>
 				</Map>
 			</APIProvider>
+			{showClearFocus ? (
+				<button
+					type="button"
+					onClick={() => onClearFocus?.()}
+					className="font-heading absolute right-3 bottom-3 z-10 rounded-[2px] border border-[#b8a99a] bg-white/95 px-3 py-2 text-sm text-[#333333] shadow-sm transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec]"
+					aria-label="Show all places on map"
+				>
+					Show all
+				</button>
+			) : null}
 		</div>
 	);
 }

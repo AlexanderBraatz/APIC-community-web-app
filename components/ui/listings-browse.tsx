@@ -142,22 +142,23 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	);
 
 	const results = useMemo(() => {
-		if (selectedPlaceName) {
-			return listings.filter(listing => listing.name === selectedPlaceName);
-		}
-
 		if (activeTags.length === 0 && !deferredQuery.trim()) {
 			return listings;
 		}
 
 		return filterListings(listings, activeTags, deferredQuery, aliasMap);
-	}, [listings, activeTags, deferredQuery, selectedPlaceName, aliasMap]);
+	}, [listings, activeTags, deferredQuery, aliasMap]);
 
 	const mapLocations = useMemo(() => {
+		if (selectedPlaceName) {
+			const focused = listings.find(
+				listing => listing.name === selectedPlaceName
+			);
+			return focused && listingHasCoords(focused) ? [focused] : [];
+		}
+
 		const scoped =
-			activeTags.length > 0 || deferredQuery.trim() || selectedPlaceName
-				? results
-				: listings;
+			activeTags.length > 0 || deferredQuery.trim() ? results : listings;
 		return scoped.filter(listingHasCoords);
 	}, [listings, results, activeTags, deferredQuery, selectedPlaceName]);
 
@@ -167,9 +168,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		(suggestions.tags.length > 0 || suggestions.places.length > 0);
 
 	const isFiltered =
-		activeTags.length > 0 ||
-		Boolean(deferredQuery.trim()) ||
-		Boolean(selectedPlaceName);
+		activeTags.length > 0 || Boolean(deferredQuery.trim());
 
 	useEffect(() => {
 		const trimmed = deferredQuery.trim();
@@ -247,9 +246,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	}
 
 	function selectPlace(listing: Listing) {
-		requestScrollToSearch();
 		setSelectedPlaceName(listing.name);
-		setQuery('');
 		setPanelOpen(false);
 		track(AnalyticsEvents.PLACE_OPENED, {
 			category: listing.category
@@ -344,10 +341,13 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 								setSelectedPlaceName(null);
 								setPanelOpen(true);
 							}}
-							onFocus={() => setPanelOpen(true)}
+							onFocus={() => {
+								setSelectedPlaceName(null);
+								setPanelOpen(true);
+							}}
 							className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
 						/>
-						{(query || activeTags.length > 0 || selectedPlaceName) && (
+						{(query || activeTags.length > 0) && (
 							<button
 								type="button"
 								onClick={clearAll}
@@ -449,6 +449,8 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						highlightedName={highlightedPlaceName}
 						onSelect={listing => selectPlace(listing)}
 						onClearSelect={() => setSelectedPlaceName(null)}
+						showClearFocus={Boolean(selectedPlaceName)}
+						onClearFocus={() => setSelectedPlaceName(null)}
 						className="aspect-[1.618/1] md:aspect-auto md:h-[33vh] lg:h-[calc(100vh-186px)]"
 					/>
 				</div>
@@ -470,13 +472,23 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							{results.map((listing, index) => (
 								<div key={`${listing.category}-${listing.name}`}>
 									<div
-										className={`-mx-3 rounded-3xl px-3 py-8 transition-colors duration-200 ease-in-out ${
-											highlightedPlaceName === listing.name
+										role="button"
+										tabIndex={0}
+										className={`-mx-3 cursor-pointer rounded-3xl px-3 py-8 transition-colors duration-200 ease-in-out ${
+											highlightedPlaceName === listing.name ||
+											selectedPlaceName === listing.name
 												? 'bg-[#f7f3ec]'
 												: 'bg-transparent'
 										}`}
 										onMouseEnter={() => setHighlightedPlaceName(listing.name)}
 										onMouseLeave={() => setHighlightedPlaceName(null)}
+										onClick={() => selectPlace(listing)}
+										onKeyDown={event => {
+											if (event.key === 'Enter' || event.key === ' ') {
+												event.preventDefault();
+												selectPlace(listing);
+											}
+										}}
 									>
 										<ListingResultCard listing={listing} />
 									</div>

@@ -147,12 +147,13 @@ export default function ListingResultCard({ listing }: { listing: Listing }) {
 													? { target: '_blank', rel: 'noopener noreferrer' }
 													: {})}
 												className="underline-offset-2 hover:underline"
-												onClick={() =>
+												onClick={event => {
+													event.stopPropagation();
 													track(AnalyticsEvents.CONTACT_CLICKED, {
 														category: listing.category,
 														contact_kind: contact.kind
-													})
-												}
+													});
+												}}
 											>
 												{label
 													? `${label}: ${contactDisplay(contact)}`
@@ -177,6 +178,7 @@ export default function ListingResultCard({ listing }: { listing: Listing }) {
 							href={listing.sourceUrl}
 							target="_blank"
 							rel="noopener noreferrer"
+							onClick={event => event.stopPropagation()}
 							className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#3d2a16] px-3.5 py-2 text-sm font-medium text-[#3d2a16] transition-colors duration-200 ease-in-out hover:bg-[#3d2a16] hover:text-[#f7f2ec]"
 						>
 							<MapIcon
