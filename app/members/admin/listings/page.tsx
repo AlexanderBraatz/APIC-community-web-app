@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { ArrowRight } from 'lucide-react';
 import AdminListingsList from '@/components/admin/admin-listings-list';
 import MissingGeocodeAlert from '@/components/admin/missing-geocode-alert';
 import {
@@ -73,9 +74,14 @@ export default async function AdminListingsPage({
 				<h3 className="text-sm font-medium text-[#444]">Add new Listing</h3>
 				<Link
 					href="/members/admin/listings/new"
-					className="inline-flex h-8 items-center rounded-[2px] border border-[#634627] bg-[#805b32] px-3 text-sm font-medium text-white hover:bg-[#1f2d22]"
+					className="group inline-flex w-full items-center justify-between gap-3 rounded-[2px] border border-[#634627] bg-[#805b32] px-6 py-3 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22] sm:w-72"
 				>
-					New listing
+					<span>New listing</span>
+					<ArrowRight
+						className="size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+						strokeWidth={1.75}
+						aria-hidden
+					/>
 				</Link>
 			</div>
 
