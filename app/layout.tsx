@@ -20,7 +20,11 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
 	title: 'APIC Owners Community',
-	description: 'Your Private Owners Community in Castelfalfi'
+	description: 'Your Private Owners Community in Castelfalfi',
+	// Discourage auto-translate (e.g. Safari / Chrome on non-English devices)
+	other: {
+		google: 'notranslate'
+	}
 };
 
 export default function RootLayout({
@@ -31,7 +35,8 @@ export default function RootLayout({
 	return (
 		<html
 			lang="en"
-			className={`${inter.variable} ${playfair.variable} h-full antialiased`}
+			translate="no"
+			className={`notranslate ${inter.variable} ${playfair.variable} h-full antialiased`}
 		>
 			<body className="min-h-full bg-white font-sans text-[#444444]">
 				{/*
