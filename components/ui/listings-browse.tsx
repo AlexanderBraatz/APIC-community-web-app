@@ -23,7 +23,6 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { Search, X } from 'lucide-react';
 import {
-	useDeferredValue,
 	useEffect,
 	useId,
 	useLayoutEffect,
@@ -72,7 +71,6 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		string | null
 	>(null);
 	const [panelOpen, setPanelOpen] = useState(false);
-	const deferredQuery = useDeferredValue(query);
 	const rootRef = useRef<HTMLDivElement>(null);
 	// Non-sticky sentinel: scrollIntoView on the sticky bar is a no-op while it is
 	// already stuck at the top of the viewport, which is exactly when we need to scroll.
@@ -197,16 +195,17 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		};
 	}, [authStatus, category]);
 
+	// Suggestions follow every keystroke; map/list only update on confirmed picks.
 	const suggestions = useMemo(
-		() => suggest(deferredQuery, listings, activeTags, aliasMap),
-		[deferredQuery, listings, activeTags, aliasMap]
+		() => suggest(query, listings, activeTags, aliasMap),
+		[query, listings, activeTags, aliasMap]
 	);
 
 	const results = useMemo(() => {
 		const filtered =
-			activeTags.length === 0 && !deferredQuery.trim()
+			activeTags.length === 0
 				? listings
-				: filterListings(listings, activeTags, deferredQuery, aliasMap);
+				: filterListings(listings, activeTags, '', aliasMap);
 
 		// Place focus acts like a search: list + map show only that listing.
 		if (selectedPlaceName) {
@@ -214,7 +213,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		}
 
 		return filtered;
-	}, [listings, activeTags, deferredQuery, aliasMap, selectedPlaceName]);
+	}, [listings, activeTags, aliasMap, selectedPlaceName]);
 
 	const mapLocations = useMemo(
 		() => results.filter(listingHasCoords),
@@ -223,21 +222,16 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 
 	const showSuggestions =
 		panelOpen &&
-		deferredQuery.trim().length > 0 &&
+		query.trim().length > 0 &&
 		(suggestions.tags.length > 0 || suggestions.places.length > 0);
 
-	const isFiltered =
-		activeTags.length > 0 ||
-		Boolean(deferredQuery.trim()) ||
-		Boolean(selectedPlaceName);
+	const showSuggestionPanel =
+		panelOpen && query.trim().length > 0;
 
-	useEffect(() => {
-		const trimmed = deferredQuery.trim();
-		if (!trimmed || authStatus !== 'signed_in') return;
-		track(AnalyticsEvents.DIRECTORY_SEARCHED, {
-			query_length: trimmed.length
-		});
-	}, [deferredQuery, authStatus, track]);
+	const topKeyword = suggestions.tags[0] ?? null;
+
+	const isFiltered =
+		activeTags.length > 0 || Boolean(selectedPlaceName);
 
 	useEffect(() => {
 		const onPointerDown = (event: MouseEvent) => {
@@ -297,6 +291,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		clearPlaceSelection();
 		setPanelOpen(false);
 		track(AnalyticsEvents.DIRECTORY_FILTER_USED, { filter_key: 'tag' });
+		track(AnalyticsEvents.DIRECTORY_SEARCHED, {
+			query_length: tag.length
+		});
 	}
 
 	function removeTag(tag: string) {
@@ -314,6 +311,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		track(AnalyticsEvents.PLACE_OPENED, {
 			category: listing.category
 		});
+		track(AnalyticsEvents.DIRECTORY_SEARCHED, {
+			query_length: listing.name.length
+		});
 	}
 
 	function clearAll() {
@@ -321,6 +321,11 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		setActiveTags([]);
 		clearPlaceSelection();
 		setPanelOpen(false);
+	}
+
+	function confirmTopKeyword() {
+		if (!topKeyword) return;
+		addTag(topKeyword);
 	}
 
 	if (authStatus === 'loading') {
@@ -375,6 +380,15 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 				</div>
 			) : null}
 
+			{showSuggestionPanel ? (
+				<button
+					type="button"
+					aria-label="Dismiss search suggestions"
+					className="fixed inset-0 z-[35] border-0 bg-[#eeeae4]/25 backdrop-blur-sm"
+					onClick={() => setPanelOpen(false)}
+				/>
+			) : null}
+
 			<div
 				id={BROWSE_SEARCH_HASH}
 				ref={scrollAnchorRef}
@@ -386,6 +400,31 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 				className="sticky top-0 z-40 w-full bg-[#eeeae4] py-5 px-4 sm:px-6 sm:py-8 lg:px-8"
 			>
 				<div className="relative mx-auto w-full max-w-none lg:max-w-[33vw]">
+					{activeTags.length > 0 ? (
+						<div className="mb-3">
+							<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
+								Filtering by keywords:
+							</p>
+							<div className="flex flex-wrap gap-2">
+								{activeTags.map(tag => (
+									<button
+										key={tag}
+										type="button"
+										onClick={() => removeTag(tag)}
+										className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
+										aria-label={`Remove keyword ${tag}`}
+									>
+										{tag}
+										<X
+											className="size-3.5"
+											aria-hidden="true"
+										/>
+									</button>
+								))}
+							</div>
+						</div>
+					) : null}
+
 					<label
 						htmlFor={inputId}
 						className="sr-only"
@@ -412,6 +451,15 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 								clearPlaceSelection();
 								setPanelOpen(true);
 							}}
+							onKeyDown={event => {
+								if (event.key === 'Enter') {
+									event.preventDefault();
+									confirmTopKeyword();
+								}
+								if (event.key === 'Escape') {
+									setPanelOpen(false);
+								}
+							}}
 							className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
 						/>
 						{(query || activeTags.length > 0) && (
@@ -426,75 +474,68 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						)}
 					</div>
 
-					{showSuggestions ? (
+					{showSuggestionPanel ? (
 						<div className="absolute z-50 mt-1 w-full border border-[#b8a99a] bg-white shadow-sm">
-							{suggestions.tags.length > 0 ? (
-								<div className="border-b border-[#e8e4dc] px-4 py-3">
-									<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
-										Keywords
-									</p>
-									<div className="flex flex-wrap gap-2">
-										{suggestions.tags.map(tag => (
-											<button
-												key={tag}
-												type="button"
-												onClick={() => addTag(tag)}
-												className="font-heading border border-[#b8a99a] px-3 py-1.5 text-sm text-[#333333] transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec]"
-											>
-												{tag}
-											</button>
-										))}
-									</div>
-								</div>
-							) : null}
+							{showSuggestions ? (
+								<>
+									{suggestions.tags.length > 0 ? (
+										<div className="border-b border-[#e8e4dc] px-4 py-3">
+											<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
+												Keywords
+											</p>
+											<div className="flex flex-wrap gap-2">
+												{suggestions.tags.map((tag, index) => (
+													<button
+														key={tag}
+														type="button"
+														onClick={() => addTag(tag)}
+														className={cn(
+															'font-heading border px-3 py-1.5 text-sm text-[#333333] transition-colors',
+															index === 0
+																? 'border-[#7A5A32] bg-[#f7f3ec]'
+																: 'border-[#b8a99a] hover:border-[#7A5A32] hover:bg-[#f7f3ec]'
+														)}
+													>
+														{tag}
+													</button>
+												))}
+											</div>
+										</div>
+									) : null}
 
-							{suggestions.places.length > 0 ? (
-								<div className="px-2 py-2">
-									<p className="font-heading px-2 py-1 text-xs tracking-wide text-[#7A5A32] uppercase">
-										Places
-									</p>
-									<ul>
-										{suggestions.places.map(place => (
-											<li key={`${place.category}-${place.name}`}>
-												<button
-													type="button"
-													onClick={() => selectPlace(place)}
-													className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
-												>
-													<span className="text-base text-[#333333]">
-														{place.name}
-													</span>
-													<span className="text-sm text-[#666666]">
-														{[place.type, CATEGORY_LABELS[place.category]]
-															.filter(Boolean)
-															.join(' · ')}
-													</span>
-												</button>
-											</li>
-										))}
-									</ul>
-								</div>
-							) : null}
-						</div>
-					) : null}
-
-					{activeTags.length > 0 ? (
-						<div className="mt-3 flex flex-wrap gap-2">
-							{activeTags.map(tag => (
-								<button
-									key={tag}
-									type="button"
-									onClick={() => removeTag(tag)}
-									className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
-									aria-label={`Remove keyword ${tag}`}
-								>
-									{tag}
-									<X
-										className="size-3.5"
-										aria-hidden="true"
-									/>
-								</button>
-							))}
+									{suggestions.places.length > 0 ? (
+										<div className="px-2 py-2">
+											<p className="font-heading px-2 py-1 text-xs tracking-wide text-[#7A5A32] uppercase">
+												Places
+											</p>
+											<ul>
+												{suggestions.places.map(place => (
+													<li key={`${place.category}-${place.name}`}>
+														<button
+															type="button"
+															onClick={() => selectPlace(place)}
+															className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
+														>
+															<span className="text-base text-[#333333]">
+																{place.name}
+															</span>
+															<span className="text-sm text-[#666666]">
+																{[place.type, CATEGORY_LABELS[place.category]]
+																	.filter(Boolean)
+																	.join(' · ')}
+															</span>
+														</button>
+													</li>
+												))}
+											</ul>
+										</div>
+									) : null}
+								</>
+							) : (
+								<p className="font-heading px-4 py-3 text-sm text-[#666666]">
+									No places or keywords match your search.
+								</p>
+							)}
 						</div>
 					) : null}
 				</div>

@@ -85,14 +85,14 @@ export default function ListingResultCard({ listing }: { listing: Listing }) {
 		<article>
 			<div className="space-y-8">
 				<div className="space-y-3">
-					{listing.type ? (
-						<h3 className="font-heading text-2xl font-semibold leading-snug text-[#333333]">
-							{listing.type}
-						</h3>
-					) : null}
-					<p className="font-heading text-xl font-thin leading-snug text-[#333333]">
+					<h3 className="font-heading text-2xl font-semibold leading-snug text-[#333333]">
 						{listing.name}
-					</p>
+					</h3>
+					{listing.type ? (
+						<p className="font-heading text-xl font-thin leading-snug text-[#333333]">
+							{listing.type}
+						</p>
+					) : null}
 				</div>
 
 				{listing.notes ? (
