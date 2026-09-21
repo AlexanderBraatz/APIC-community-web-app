@@ -73,7 +73,8 @@ export function ProfileColorDialog({ currentColor }: ProfileColorDialogProps) {
 					<DialogHeader>
 						<DialogTitle>Change profile colour</DialogTitle>
 						<DialogDescription>
-							Choose the colour shown behind your profile initial.
+							Choose the colour shown behind your profile initial and
+							your name on the community calendar.
 						</DialogDescription>
 					</DialogHeader>
 

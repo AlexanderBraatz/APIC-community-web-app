@@ -28,8 +28,7 @@ export function attendanceToEvent(row: AttendanceRow): DayPilot.EventData {
 		text: title,
 		tags: {
 			title,
-			note,
-			saveStatus: 'ready'
+			note
 		}
 	};
 }

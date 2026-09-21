@@ -24,7 +24,6 @@ export type ColorScheme = {
 	cellSelectedBiz: string;
 	cellSelectedWeekend: string;
 	rowSelected: string;
-	rowLoggedIn: string;
 };
 
 /** Fixed Sandstone (flat) palette — solid event fill. */
@@ -53,8 +52,7 @@ export const SCHEDULER_SCHEME: ColorScheme = {
 	cellLoggedInWeekend: '#faf4e4',
 	cellSelectedBiz: '#e5ddd0',
 	cellSelectedWeekend: '#efe9df',
-	rowSelected: '#7d6b52',
-	rowLoggedIn: '#b8922e'
+	rowSelected: '#7d6b52'
 };
 
 export function schemeToCssVars(scheme: ColorScheme): Record<string, string> {

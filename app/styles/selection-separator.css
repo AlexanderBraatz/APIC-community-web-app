@@ -22,14 +22,6 @@
 	--dp-scheduler-font-size: 16px;
 }
 
-.scheduler-frame[data-font-size='medium'] .edit-status-chip-on-event {
-	font-size: 10px;
-}
-
-.scheduler-frame[data-font-size='large'] .edit-status-chip-on-event {
-	font-size: 11px;
-}
-
 .scheduler-names-chip {
 	position: absolute;
 	top: 0px;
@@ -130,15 +122,13 @@
 .brown_theme_rowheader.resource-name-cell-logged-in,
 .brown_theme_rowheader.resource-name-cell-logged-in
 	.brown_theme_rowheader_inner {
-	background: #c9a227 !important;
-	color: #3b2f0a !important;
+	color: #fff !important;
 }
 
 .brown_theme_rowheader.resource-name-cell-logged-in:hover,
 .brown_theme_rowheader.resource-name-cell-logged-in:hover
 	.brown_theme_rowheader_inner {
-	background: #b8911e !important;
-	filter: none;
+	filter: brightness(1.1);
 }
 
 .brown_theme_rowheader.resource-name-cell-selected .brown_theme_rowheader_inner,
@@ -186,15 +176,6 @@
 	text-decoration: underline;
 }
 
-.scheduler-event-delete-mark {
-	flex-shrink: 0;
-	font-size: 12px;
-	font-weight: 600;
-	line-height: 1;
-	opacity: 0.45;
-	cursor: pointer;
-}
-
 .brown_theme_event,
 .brown_theme_event .brown_theme_event_inner,
 .brown_theme_event.scheduler-event-readonly,
@@ -202,10 +183,6 @@
 .brown_theme_event.scheduler-event-editable,
 .brown_theme_event.scheduler-event-editable .brown_theme_event_inner {
 	cursor: pointer;
-}
-
-.scheduler-event-delete-mark:hover {
-	opacity: 0.9;
 }
 
 .save-overlay-spinner {
@@ -222,63 +199,4 @@
 	to {
 		transform: rotate(360deg);
 	}
-}
-
-.edit-status-chip {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.35rem 0.7rem;
-	border-radius: 999px;
-	border: 1px solid transparent;
-	font-size: 0.8125rem;
-	font-weight: 600;
-	line-height: 1.2;
-	user-select: none;
-}
-
-.edit-status-chip-ready {
-	border-color: #c8c0b4;
-	background: #f7f5f0;
-	color: #5c5348;
-}
-
-.edit-status-chip-unsaved {
-	border-color: #d4a017;
-	background: #fff6dc;
-	color: #8a5a12;
-}
-
-.edit-status-chip-saved {
-	border-color: #3d8b5a;
-	background: #e5f2e9;
-	color: #2f6b45;
-}
-
-.edit-status-chip-on-event {
-	padding: 0.1rem 0.35rem;
-	font-size: 9px;
-	font-weight: 700;
-	letter-spacing: 0.01em;
-	flex-shrink: 0;
-	pointer-events: none;
-}
-
-.brown_theme_event.scheduler-event-unsaved .brown_theme_event_inner {
-	border: 2px dashed #e6a800 !important;
-	background: linear-gradient(to bottom, #fff8d1 0%, #ffe99a 100%) !important;
-	box-shadow: 0 0 0 1px rgba(230, 168, 0, 0.25);
-}
-
-.brown_theme_event.scheduler-event-unsaved:hover .brown_theme_event_inner {
-	background: linear-gradient(to bottom, #fff4b8 0%, #ffdf7a 100%) !important;
-}
-
-.edit-status-chip-delete {
-	border-color: #8a1f1f;
-	background: #f8e4e4;
-	color: #8a1f1f;
-}
-
-.brown_theme_event.scheduler-event-marked-delete {
-	opacity: 0.5;
 }

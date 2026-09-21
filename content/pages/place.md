@@ -7,7 +7,7 @@ blocks:
     backgroundImage: /images/apicherovideo.jpg
     _template: heroBanner
   - body: |
-      Welcome to your private APIC community space. Here you can explore useful places, services, restaurants, activities, and local recommendations around Castelfalfi and Tuscany. You can also use the **Attendance Calendar** to let other members know when you will be in Castelfalfi. Simply add your arrival and departure dates, with an optional short note.
+      Welcome to your private APIC community space. Here you can explore useful places, services, restaurants, activities, and local recommendations around Castelfalfi and Tuscany. You can also use the **Attendance Calendar** to let other members know when you will be in Castelfalfi. Open **Manage attendance** to add, edit, or remove your arrival and departure dates, with an optional short note.
     _template: textSection
   - sectionTitle: 'Explore the community, discover helpful places, and stay connected with other APIC members.'
     items:
@@ -36,10 +36,10 @@ blocks:
     description: >-
       The Attendance Calendar makes it simple to see who else from the community
       will be in Castelfalfi, and to share your own stay with the same ease.
-      Add your arrival and departure dates, with an optional short note, and
-      discovering who is around becomes as relaxed and unhurried as life at
-      Castelfalfi itself. It is a gentle way to connect for coffee, a walk, or
-      an evening together while you are here.
+      Use Manage attendance to add, edit, or remove your arrival and departure
+      dates, with an optional short note, and discovering who is around becomes
+      as relaxed and unhurried as life at Castelfalfi itself. It is a gentle way
+      to connect for coffee, a walk, or an evening together while you are here.
     buttons:
       - label: Attendance Calendar
         link: /community-calendar

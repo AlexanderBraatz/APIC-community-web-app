@@ -121,7 +121,8 @@ export default async function AccountPage({ searchParams }: PageProps) {
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">Profile colour</h2>
 				<p className="text-sm text-[#666]">
-					Choose the colour shown behind your profile initial.
+					Choose the colour shown behind your profile initial and your
+					name on the community calendar.
 				</p>
 				<div className="flex items-center gap-3">
 					<span

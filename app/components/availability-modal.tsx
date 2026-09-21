@@ -51,7 +51,7 @@ type AvailabilityModalProps = {
 	targetMemberName?: string;
 	onSelectMember?: (memberId: string) => void;
 	onClearMember?: () => void;
-	onDiscard: () => void;
+	onClose: () => void;
 	onSave: (payload: {
 		eventId: string | null;
 		startValue: string;
@@ -59,6 +59,7 @@ type AvailabilityModalProps = {
 		title: string;
 		note: string;
 	}) => void;
+	onDelete: (eventId: string) => void;
 };
 
 function toInputDate(value: string | DayPilot.Date) {
@@ -67,10 +68,6 @@ function toInputDate(value: string | DayPilot.Date) {
 
 function formatDisplayDate(value: string | DayPilot.Date) {
 	return new DayPilot.Date(value).toString('d MMM yyyy');
-}
-
-function isMarkedForDeletion(event: DayPilot.EventData) {
-	return event.tags?.markedForDeletion === true;
 }
 
 function getEventTitle(event: DayPilot.EventData) {
@@ -98,8 +95,9 @@ export function AvailabilityModal({
 	targetMemberName = '',
 	onSelectMember,
 	onClearMember,
-	onDiscard,
-	onSave
+	onClose,
+	onSave,
+	onDelete
 }: AvailabilityModalProps) {
 	const [formMode, setFormMode] = useState<FormMode | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
@@ -110,6 +108,7 @@ export function AvailabilityModal({
 	const [formError, setFormError] = useState<string | null>(null);
 	const [memberQuery, setMemberQuery] = useState('');
 	const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+	const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
 	const editingOther =
 		isAdmin &&
@@ -119,13 +118,11 @@ export function AvailabilityModal({
 
 	const listEvents = useMemo(
 		() =>
-			[...userEvents]
-				.filter(event => !isMarkedForDeletion(event))
-				.sort(
-					(a, b) =>
-						new DayPilot.Date(a.start).getTotalTicks() -
-						new DayPilot.Date(b.start).getTotalTicks()
-				),
+			[...userEvents].sort(
+				(a, b) =>
+					new DayPilot.Date(a.start).getTotalTicks() -
+					new DayPilot.Date(b.start).getTotalTicks()
+			),
 		[userEvents]
 	);
 
@@ -156,6 +153,7 @@ export function AvailabilityModal({
 		setTitleValue('');
 		setNoteValue('');
 		setFormError(null);
+		setDeleteConfirmOpen(false);
 	};
 
 	useEffect(() => {
@@ -167,7 +165,7 @@ export function AvailabilityModal({
 			const event = userEvents.find(
 				item => String(item.id) === String(initialEventId)
 			);
-			if (event && !isMarkedForDeletion(event)) {
+			if (event) {
 				setFormMode('edit');
 				setEditingId(String(event.id));
 				setStartValue(toInputDate(event.start));
@@ -238,7 +236,37 @@ export function AvailabilityModal({
 		});
 	};
 
+	const handleDelete = () => {
+		if (formMode !== 'edit' || editingId == null) {
+			return;
+		}
+		setDeleteConfirmOpen(true);
+	};
+
+	const confirmDelete = () => {
+		if (editingId == null) {
+			return;
+		}
+		setDeleteConfirmOpen(false);
+		onDelete(editingId);
+	};
+
+	const editOtherAvailability = () => {
+		resetForm();
+	};
+
 	const formVisible = formMode != null;
+	const focusingEdit = formMode === 'edit' && editingId != null;
+	const focusingAdd = formMode === 'add';
+	const visibleListEvents = useMemo(() => {
+		if (focusingEdit) {
+			return listEvents.filter(event => String(event.id) === editingId);
+		}
+		if (focusingAdd) {
+			return [];
+		}
+		return listEvents;
+	}, [listEvents, focusingEdit, focusingAdd, editingId]);
 	const formHeading =
 		formMode === 'add' ? 'Add a new attendance' : 'Edit attendance';
 	const formDescription =
@@ -246,30 +274,36 @@ export function AvailabilityModal({
 			? editingOther
 				? `Fill in the dates, a short title, and an optional note for ${targetMemberName}'s new stay.`
 				: 'Fill in the dates, a short title, and an optional note for your new stay.'
-			: 'Adjust the dates, title, or note, then save your changes.';
+			: 'Adjust the dates, title, or note, then save your changes. You can also delete this stay.';
 	const listHeading = editingOther
 		? `${targetMemberName}'s attendance`
 		: 'Your attendance';
 
 	return (
-		<Dialog
-			open={open}
-			onOpenChange={nextOpen => {
-				if (!nextOpen) {
-					onDiscard();
-				}
-			}}
-		>
-			<DialogContent
-				className="sm:max-w-xl"
-				showCloseButton
+		<>
+			<Dialog
+				open={open}
+				onOpenChange={nextOpen => {
+					if (!nextOpen) {
+						setDeleteConfirmOpen(false);
+						onClose();
+					}
+				}}
 			>
-				<DialogHeader>
-					<DialogTitle>Manage attendance</DialogTitle>
+				<DialogContent
+					className="sm:max-w-xl"
+					showCloseButton
+				>
+					<DialogHeader>
+						<DialogTitle>Manage attendance</DialogTitle>
 					<DialogDescription>
-						{editingOther
-							? `Editing stays for ${targetMemberName}. Use the pencil rows to edit, or the plus row to add a new one.`
-							: 'Edit an existing stay with the pencil rows, or use the plus row to add a new one.'}
+						{formVisible
+							? focusingEdit
+								? 'You are editing one stay. Save to keep changes, or choose Edit other availability to pick a different stay without saving.'
+								: 'You are adding a new stay. Save to keep it, or choose Edit other availability to go back to the list without saving.'
+							: editingOther
+								? `Editing stays for ${targetMemberName}. Use the pencil rows to edit, the plus row to add, or Delete in the edit form to remove a stay.`
+								: 'Edit a stay with the pencil rows, use the plus row to add, or Delete in the edit form to remove a stay.'}
 					</DialogDescription>
 				</DialogHeader>
 
@@ -407,7 +441,7 @@ export function AvailabilityModal({
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{listEvents.map(event => {
+									{visibleListEvents.map(event => {
 										const id = String(event.id);
 										const selected =
 											formMode === 'edit' && editingId === id;
@@ -417,11 +451,14 @@ export function AvailabilityModal({
 												key={id}
 												data-state={selected ? 'selected' : undefined}
 												className={cn(
-													'group cursor-pointer border-border',
-													'hover:bg-[#fff6dc]',
-													selected && 'bg-[#fff6dc]'
+													'group border-border',
+													selected
+														? 'bg-[#fff6dc]'
+														: 'cursor-pointer hover:bg-[#fff6dc]'
 												)}
-												onClick={() => loadEvent(event)}
+												onClick={
+													selected ? undefined : () => loadEvent(event)
+												}
 											>
 												<TableCell
 													className={cn(
@@ -435,7 +472,9 @@ export function AvailabilityModal({
 															className="size-3.5"
 															aria-hidden
 														/>
-														<span className="sr-only">Edit</span>
+														<span className="sr-only">
+															{selected ? 'Editing' : 'Edit'}
+														</span>
 													</span>
 												</TableCell>
 												<TableCell className="max-w-36 truncate font-medium">
@@ -455,7 +494,7 @@ export function AvailabilityModal({
 											</TableRow>
 										);
 									})}
-									{formMode !== 'add' ? (
+									{!formVisible ? (
 										<TableRow
 											className={cn(
 												'group cursor-pointer border-border',
@@ -566,13 +605,25 @@ export function AvailabilityModal({
 				</div>
 
 				<DialogFooter>
-					<Button
-						type="button"
-						variant="outline"
-						onClick={onDiscard}
-					>
-						Discard
-					</Button>
+					{formMode === 'edit' && editingId != null ? (
+						<Button
+							type="button"
+							variant="destructive"
+							onClick={handleDelete}
+							className="sm:mr-auto"
+						>
+							Delete
+						</Button>
+					) : null}
+					{formVisible ? (
+						<Button
+							type="button"
+							variant="outline"
+							onClick={editOtherAvailability}
+						>
+							Edit other availability
+						</Button>
+					) : null}
 					<Button
 						type="button"
 						onClick={handleSave}
@@ -583,6 +634,41 @@ export function AvailabilityModal({
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
+			<Dialog
+				open={deleteConfirmOpen}
+				onOpenChange={setDeleteConfirmOpen}
+			>
+				<DialogContent
+					className="sm:max-w-md"
+					showCloseButton={false}
+				>
+					<DialogHeader>
+						<DialogTitle>Delete stay?</DialogTitle>
+						<DialogDescription>
+							{titleValue.trim()
+								? `This permanently removes “${titleValue.trim()}” from the attendance calendar. This cannot be undone.`
+								: 'This permanently removes this stay from the attendance calendar. This cannot be undone.'}
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setDeleteConfirmOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							type="button"
+							variant="destructive"
+							onClick={confirmDelete}
+						>
+							Delete
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }
 

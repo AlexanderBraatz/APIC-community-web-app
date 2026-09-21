@@ -53,10 +53,10 @@ As a **signed-in member**, I want to change my password from my account page so 
 As a **signed-in member**, I want to view current and upcoming attendance stays for other members on the community calendar so that I know who will be around when I am there.
 
 ### US-09 — Add my own stays
-As a **signed-in member**, I want to create attendance stays (arrival/departure dates, title, optional note), including overlapping stays, so that others can see when I will be present.
+As a **signed-in member**, I want to create attendance stays (arrival/departure dates, title, optional note), including overlapping stays, via **Manage attendance**, so that others can see when I will be present.
 
 ### US-10 — Edit or remove my stays
-As a **signed-in member**, I want to edit or soft-delete my own stays and then save or discard a draft batch so that I can keep my attendance accurate without accidental publishes.
+As a **signed-in member**, I want to edit or delete my own stays in **Manage attendance** (saved immediately) so that I can keep my attendance accurate.
 
 ### US-11 — Find and compare members on the calendar
 As a **signed-in member**, I want to search for people and pin/compare selected members on the scheduler so that I can focus on the people I care about.

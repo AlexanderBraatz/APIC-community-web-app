@@ -65,7 +65,7 @@ It is **not** a property booking or rental-availability product. Domain language
 | ------------- | ------------------------------------------------------------------------------------- |
 | Framework     | Next.js 16 App Router, React 19, Tailwind 4, shadcn                                   |
 | CMS           | TinaCMS — pages only; `/admin` rewrite → Tina static admin                            |
-| Attendance UI | DayPilot Scheduler at `/community-calendar` — full mock auth, draft/save, soft-delete |
+| Attendance UI | DayPilot Scheduler at `/community-calendar` — Manage attendance form create/edit/delete (immediate save) |
 | Listings UI   | Keyword/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages      |
 | Listings data | `content/data/listings.json` (~75 rows); only a few have `lat`/`lng`                  |
 | Auth          | None (scheduler “Log in as” + “Admin role” are test controls)                         |
@@ -92,7 +92,7 @@ Stored on `profiles.role`. Never trust client-provided role for authorization.
 | Sign in / reset / change own password                 | Supabase Auth                 |
 | Read profiles (id, full_name, avatar_url)             | No other emails               |
 | Read attendance bars in the scheduler window          | See §8                        |
-| Create / edit / soft-delete / save **own** attendance | Existing draft→save semantics |
+| Create / edit / delete **own** attendance | Via Manage attendance; immediate `saveAttendanceBatch` |
 | Read listings; search; map pins                       | Authenticated (see §5 gating) |
 | Update own `full_name`, `avatar_url`                  | Not `role`                    |
 
@@ -247,15 +247,13 @@ Existing: **DayPilot Scheduler** (`@daypilot/daypilot-lite-react`), not a month 
 - Default window ≈ current week Monday → ~2 years (existing config).
 - Interactions to preserve:
   - People search + pin/compare selected members
-  - Drag move / resize (permission-gated)
-  - Drag-select range to create draft stay
   - Event click → edit modal (own, or any member when admin) or read-only modal (others for non-admins)
-  - Soft-delete mark (×) then commit on Save
-  - Draft vs saved visual status (`ready` / `unsaved` / `saved`)
-  - Floating save / discard with leave guards
+  - **Manage attendance** modal: table create / edit / delete (immediate save via `saveAttendanceBatch`); centered success/error overlay
   - Settings: font/cell width, date range
   - Fixed Sandstone (flat) palette for members / own row
-  - “Manage availability” modal table (title / start / end / note); admins can search/select a member and edit that member’s stays in the same form
+  - Admins can search/select a member in Manage attendance and edit that member’s stays in the same form
+
+Drag-to-edit, drag-select create, status chips, floating Save/Discard, and soft-delete-until-save were removed. Archive: [`drag-to-edit-implementation.md`](./drag-to-edit-implementation.md).
 
 Primary files to evolve (not replace):
 
@@ -291,21 +289,21 @@ DayPilot bars use an **exclusive** end instant (seed comments already document t
 
 Do not change the modal field labels or user-facing “end date” meaning.
 
-### 8.4 Draft / save model (preserve)
+### 8.4 Save model (Manage attendance)
 
-Existing mental model is a **client draft buffer** then a single commit:
+Create, edit, and delete happen in the **Manage attendance** modal and call `saveAttendanceBatch` immediately (no client draft buffer, no floating confirm bar).
 
-| Role    | Save merge semantics (keep)                                                   |
+| Role    | Save merge semantics                                                          |
 | ------- | ----------------------------------------------------------------------------- |
-| `user`  | Replace **only that user’s** stays in the persisted set with committed drafts |
+| `user`  | Replace **only that user’s** stays in the persisted set with the committed set |
 | `admin` | Persist the full committed event set they edited                              |
 
 Implement as:
 
 - Preferred: one server action / RPC `save_attendance_batch` that accepts the member’s (or admin’s) committed stays + deleted ids, validates permissions, writes atomically, returns fresh rows.
-- Alternative: per-row CRUD if batch is hard — but UI must still feel like draft→Save.
+- UI shows a centered loading / success / error overlay after the write; event bars do **not** show status chips.
 
-Soft-delete: client marks `markedForDeletion`; only hard-delete on successful save.
+Historical draft → Save/Discard + drag-edit model: [`drag-to-edit-implementation.md`](./drag-to-edit-implementation.md).
 
 ### 8.5 Past attendance visibility
 
@@ -327,7 +325,7 @@ Soft-delete: client marks `markedForDeletion`; only hard-delete on successful sa
 | Member | Others’ current/window stays (and own) | Own only (`user_id = auth.uid()`) | Own only | Own only |
 | Admin  | All (incl. history if requested)       | Any user                          | Any      | Any      |
 
-RLS must enforce; UI gates drag/edit via `canEditResource` (session user + admin flag). Admins can also retarget the Manage availability form to any member (member search above the table); saves use that member’s `user_id`. Non-admins always edit themselves.
+RLS must enforce; UI gates edit/delete via `canEditResource` (session user + admin flag) for opening Manage attendance vs read-only. Admins can also retarget the Manage attendance form to any member (member search above the table); saves use that member’s `user_id`. Non-admins always edit themselves.
 
 ---
 
@@ -663,7 +661,7 @@ When adding auth/admin screens:
 2. Domain is **member attendance / stays**, surfaced by the existing DayPilot scheduler.
 3. Stays use calendar dates; overlapping stays allowed; title + note required/optional as today.
 4. DB end dates are **inclusive**; DayPilot adapter uses exclusive end.
-5. Draft → Save / Discard UX and soft-delete-until-save are required.
+5. Manage attendance create/edit/delete with immediate `saveAttendanceBatch` and success overlay are required.
 6. Past stays: keep in DB; default member load excludes fully past stays / loads by visible window.
 7. Listings use existing four category slugs and field model (`type`, `contact`, `remark`, keywords).
 8. Map: Google Maps JS via current component; geocode writes via secure backend.

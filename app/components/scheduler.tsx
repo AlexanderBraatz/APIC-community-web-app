@@ -3,7 +3,6 @@
 import {
 	useEffect,
 	useMemo,
-	useRef,
 	useState,
 	useSyncExternalStore
 } from 'react';
@@ -50,7 +49,6 @@ import {
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
 import {
 	attendanceToEvent,
-	dayPilotEndToModalInclusive,
 	eventToAttendanceStay,
 	modalInclusiveEndToDayPilotEnd
 } from '@/lib/attendance/adapters';
@@ -122,38 +120,7 @@ function escapeHtml(value: string) {
 		.replaceAll('"', '&quot;');
 }
 
-function stripDraftTags(event: DayPilot.EventData): DayPilot.EventData {
-	const restTags = { ...(event.tags ?? {}) };
-	delete restTags.markedForDeletion;
-	return {
-		...event,
-		tags: {
-			...restTags,
-			saveStatus: 'ready'
-		}
-	};
-}
-
 type SaveUiState = 'idle' | 'loading' | 'success' | 'error';
-type EditStatus = 'ready' | 'unsaved' | 'saved';
-
-const EVENT_STATUS_LABELS: Record<EditStatus, string> = {
-	ready: 'Drag to edit',
-	unsaved: 'Unsaved',
-	saved: 'Saved'
-};
-
-function getEventSaveStatus(event: DayPilot.EventData): EditStatus {
-	const status = event.tags?.saveStatus;
-	if (status === 'ready' || status === 'unsaved' || status === 'saved') {
-		return status;
-	}
-	return 'ready';
-}
-
-function isMarkedForDeletion(event: DayPilot.EventData): boolean {
-	return event.tags?.markedForDeletion === true;
-}
 
 function getEventTitle(event: DayPilot.EventData) {
 	const fromTags = event.tags?.title;
@@ -187,35 +154,6 @@ function withEventContent(
 			...event.tags,
 			title: content.title,
 			note: content.note
-		}
-	};
-}
-
-function withEventSaveStatus(
-	event: DayPilot.EventData,
-	saveStatus: EditStatus
-): DayPilot.EventData {
-	return {
-		...event,
-		tags: {
-			...event.tags,
-			saveStatus
-		}
-	};
-}
-
-function withMarkedForDeletion(
-	event: DayPilot.EventData,
-	markedForDeletion: boolean
-): DayPilot.EventData {
-	return {
-		...event,
-		tags: {
-			...event.tags,
-			markedForDeletion,
-			saveStatus: markedForDeletion
-				? 'unsaved'
-				: event.tags?.saveStatus ?? 'unsaved'
 		}
 	};
 }
@@ -268,27 +206,8 @@ const Scheduler = ({
 
 	useEffect(() => {
 		setDbEvents(attendance.map(attendanceToEvent));
-		setDraftEvents(null);
 	}, [attendance]);
 
-	/**
-	 * Working calendar with unsaved edits. `null` means "show the DB as-is"
-	 * (SSR-safe and resets cleanly on discard).
-	 */
-	const [draftEvents, setDraftEvents] = useState<DayPilot.EventData[] | null>(
-		null
-	);
-	const eventRows = draftEvents ?? dbEvents;
-	const setEventRows = (
-		update:
-			| DayPilot.EventData[]
-			| ((prev: DayPilot.EventData[]) => DayPilot.EventData[])
-	) => {
-		setDraftEvents(prev => {
-			const current = prev ?? dbEvents;
-			return typeof update === 'function' ? update(current) : update;
-		});
-	};
 	const [startValue, setStartValue] = useState(toInputDate(defaultStart));
 	const [endValue, setEndValue] = useState(toInputDate(defaultEnd));
 	const [query, setQuery] = useState('');
@@ -301,8 +220,6 @@ const Scheduler = ({
 		string | null
 	>(null);
 	const [saveUiState, setSaveUiState] = useState<SaveUiState>('idle');
-	const [savedThisSession, setSavedThisSession] = useState(false);
-	const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
 	const [availabilityOpen, setAvailabilityOpen] = useState(false);
 	const [availabilityFocusId, setAvailabilityFocusId] = useState<string | null>(
 		null
@@ -313,8 +230,6 @@ const Scheduler = ({
 		null
 	);
 	const [settingsOpen, setSettingsOpen] = useState(false);
-	const unsavedHistoryPushedRef = useRef(false);
-	const allowLeaveRef = useRef(false);
 	const isNarrow = useIsNarrowScreen();
 	const [namesCollapsed, setNamesCollapsed] = useState(true);
 	const [fontSizeOverride, setFontSizeOverride] =
@@ -375,71 +290,26 @@ const Scheduler = ({
 	const canEditResource = (resourceId: string) =>
 		isAdmin || resourceId === currentUserId;
 
-	const hasUnsavedChanges = useMemo(
-		() =>
-			eventRows.some(event => {
-				const resourceId = String(event.resource ?? '');
-				if (!(isAdmin || resourceId === currentUserId)) {
-					return false;
-				}
-				return (
-					getEventSaveStatus(event) === 'unsaved' || isMarkedForDeletion(event)
-				);
-			}),
-		[eventRows, isAdmin, currentUserId]
-	);
-
-	const saveChanges = async (eventsOverride?: DayPilot.EventData[]) => {
+	const persistAttendance = async (
+		nextEvents: DayPilot.EventData[],
+		analytics: { created: number; edited: number; deleted: number }
+	) => {
 		if (saveUiState === 'loading') {
 			return;
 		}
 
-		const rows = eventsOverride ?? eventRows;
-		const hasUnsavedInRows = rows.some(event => {
-			const resourceId = String(event.resource ?? '');
-			if (!(isAdmin || resourceId === currentUserId)) {
-				return false;
-			}
-			return (
-				getEventSaveStatus(event) === 'unsaved' || isMarkedForDeletion(event)
-			);
-		});
-		if (!hasUnsavedInRows) {
-			return;
-		}
-
-		if (eventsOverride) {
-			setDraftEvents(eventsOverride);
-			setSavedThisSession(false);
-		}
-
-		const ownedEvents = isAdmin
-			? rows
-			: rows.filter(event => String(event.resource) === currentUserId);
-		const eventsToSave = ownedEvents.filter(
-			event => !isMarkedForDeletion(event)
-		);
-		const unsavedIds = new Set(
-			eventsToSave
-				.filter(event => getEventSaveStatus(event) === 'unsaved')
-				.map(event => String(event.id))
-		);
-
-		const softDeletedIds = ownedEvents
-			.filter(event => isMarkedForDeletion(event))
-			.map(event => String(event.id));
+		const eventsToSave = isAdmin
+			? nextEvents
+			: nextEvents.filter(event => String(event.resource) === currentUserId);
 
 		const baselineOwnedIds = new Set(
 			(isAdmin
 				? dbEvents
-				: dbEvents.filter(e => String(e.resource) === currentUserId)
+				: dbEvents.filter(event => String(event.resource) === currentUserId)
 			).map(event => String(event.id))
 		);
 		const keptIds = new Set(eventsToSave.map(event => String(event.id)));
-		const droppedFromScope = [...baselineOwnedIds].filter(
-			id => !keptIds.has(id)
-		);
-		const deleteIds = [...new Set([...softDeletedIds, ...droppedFromScope])];
+		const deleteIds = [...baselineOwnedIds].filter(id => !keptIds.has(id));
 
 		setSaveUiState('loading');
 		try {
@@ -447,27 +317,15 @@ const Scheduler = ({
 				stays: eventsToSave.map(eventToAttendanceStay),
 				deleteIds
 			});
-			const nextDb = rowsFromDb.map(attendanceToEvent);
-			setDbEvents(nextDb);
-			setDraftEvents(
-				nextDb.map(event =>
-					unsavedIds.has(String(event.id))
-						? withEventSaveStatus(event, 'saved')
-						: event
-				)
-			);
-			setSavedThisSession(true);
-			unsavedHistoryPushedRef.current = false;
+			setDbEvents(rowsFromDb.map(attendanceToEvent));
 			setSaveUiState('success');
-			const createdCount = unsavedIds.size;
-			const editedCount = Math.max(0, eventsToSave.length - createdCount);
-			if (createdCount > 0) {
-				track(AnalyticsEvents.STAY_CREATED, { count: createdCount });
+			if (analytics.created > 0) {
+				track(AnalyticsEvents.STAY_CREATED, { count: analytics.created });
 			}
-			if (editedCount > 0 || deleteIds.length > 0) {
+			if (analytics.edited > 0 || analytics.deleted > 0 || deleteIds.length > 0) {
 				track(AnalyticsEvents.STAY_EDITED, {
-					count: editedCount,
-					deleted_count: deleteIds.length
+					count: analytics.edited,
+					deleted_count: Math.max(analytics.deleted, deleteIds.length)
 				});
 			}
 		} catch {
@@ -482,10 +340,10 @@ const Scheduler = ({
 
 	const userAvailabilityEvents = useMemo(
 		() =>
-			eventRows.filter(
+			dbEvents.filter(
 				event => String(event.resource) === availabilityTargetId
 			),
-		[eventRows, availabilityTargetId]
+		[dbEvents, availabilityTargetId]
 	);
 
 	const availabilityMembers = useMemo(
@@ -526,94 +384,65 @@ const Scheduler = ({
 		const note = payload.note.trim();
 		const start = `${payload.startValue}T00:00:00`;
 		const end = modalInclusiveEndToDayPilotEnd(payload.endValue);
-		const current = draftEvents ?? dbEvents;
 
 		const nextEvents =
 			payload.eventId == null
 				? [
-						...current,
-						withEventSaveStatus(
-							withEventContent(
-								{
-									id: crypto.randomUUID(),
-									resource: targetId,
-									start,
-									end,
-									text: title
-								},
-								{ title, note }
-							),
-							'unsaved'
+						...dbEvents,
+						withEventContent(
+							{
+								id: crypto.randomUUID(),
+								resource: targetId,
+								start,
+								end,
+								text: title
+							},
+							{ title, note }
 						)
 				  ]
-				: current.map(event =>
+				: dbEvents.map(event =>
 						String(event.id) === payload.eventId
-							? withEventSaveStatus(
-									withEventContent({ ...event, start, end }, { title, note }),
-									'unsaved'
-							  )
+							? withEventContent({ ...event, start, end }, { title, note })
 							: event
 				  );
 
 		setAvailabilityOpen(false);
 		setAvailabilityFocusId(null);
 		setAvailabilityTargetUserId(currentUserId);
-		await saveChanges(nextEvents);
+		await persistAttendance(nextEvents, {
+			created: payload.eventId == null ? 1 : 0,
+			edited: payload.eventId == null ? 0 : 1,
+			deleted: 0
+		});
+	};
+
+	const deleteAvailabilityFromModal = async (eventId: string) => {
+		const targetId = availabilityTargetId;
+		if (!isAdmin && targetId !== currentUserId) {
+			return;
+		}
+		const event = dbEvents.find(item => String(item.id) === eventId);
+		if (!event || String(event.resource) !== targetId) {
+			return;
+		}
+		if (!canEditResource(String(event.resource))) {
+			return;
+		}
+
+		const nextEvents = dbEvents.filter(item => String(item.id) !== eventId);
+		setAvailabilityOpen(false);
+		setAvailabilityFocusId(null);
+		setAvailabilityTargetUserId(currentUserId);
+		await persistAttendance(nextEvents, {
+			created: 0,
+			edited: 0,
+			deleted: 1
+		});
 	};
 
 	const dismissSaveOverlay = () => {
 		setSaveUiState('idle');
 	};
-
-	const stayOnPage = () => {
-		setLeaveDialogOpen(false);
-	};
-
-	const leaveWithoutSaving = () => {
-		allowLeaveRef.current = true;
-		setLeaveDialogOpen(false);
-		setDraftEvents(null);
-		setSavedThisSession(false);
-		unsavedHistoryPushedRef.current = false;
-		history.back();
-	};
-
-	const discardChanges = () => {
-		setDraftEvents(null);
-		setSavedThisSession(false);
-		unsavedHistoryPushedRef.current = false;
-	};
-
-	useEffect(() => {
-		if (!hasUnsavedChanges) {
-			return;
-		}
-		if (!unsavedHistoryPushedRef.current) {
-			history.pushState({ schedulerUnsavedGuard: true }, '');
-			unsavedHistoryPushedRef.current = true;
-		}
-
-		const onBeforeUnload = (event: BeforeUnloadEvent) => {
-			event.preventDefault();
-			event.returnValue = '';
-		};
-
-		const onPopState = () => {
-			if (allowLeaveRef.current) {
-				allowLeaveRef.current = false;
-				return;
-			}
-			history.pushState({ schedulerUnsavedGuard: true }, '');
-			setLeaveDialogOpen(true);
-		};
-
-		window.addEventListener('beforeunload', onBeforeUnload);
-		window.addEventListener('popstate', onPopState);
-		return () => {
-			window.removeEventListener('beforeunload', onBeforeUnload);
-			window.removeEventListener('popstate', onPopState);
-		};
-	}, [hasUnsavedChanges]);
 
 	const range = useMemo(
 		() => rangeFromInputs(startValue, endValue),
@@ -641,13 +470,11 @@ const Scheduler = ({
 
 	const userIdsWithAttendance = useMemo(() => {
 		const ids = new Set<string>();
-		for (const event of eventRows) {
-			if (!isMarkedForDeletion(event)) {
-				ids.add(String(event.resource));
-			}
+		for (const event of dbEvents) {
+			ids.add(String(event.resource));
 		}
 		return ids;
-	}, [eventRows]);
+	}, [dbEvents]);
 
 	const orderedResources = useMemo(() => {
 		const byAttendanceThenName = (
@@ -712,7 +539,8 @@ const Scheduler = ({
 			args.row.cssClass = isSelected
 				? 'resource-name-cell resource-name-cell-logged-in resource-name-cell-has-deselect'
 				: 'resource-name-cell resource-name-cell-logged-in';
-			args.row.backColor = activeScheme.rowLoggedIn;
+			args.row.backColor = resolveEventBarColor(id);
+			args.row.fontColor = '#ffffff';
 		} else if (isSelected) {
 			args.row.cssClass = 'resource-name-cell resource-name-cell-selected';
 			args.row.backColor = activeScheme.rowSelected;
@@ -729,7 +557,7 @@ const Scheduler = ({
 						width: 18,
 						html: '×',
 						cssClass: 'resource-deselect-mark',
-						fontColor: isLoggedIn ? '#3b2f0a' : '#ffffff',
+						fontColor: '#ffffff',
 						verticalAlignment: 'center',
 						horizontalAlignment: 'center',
 						toolTip: 'Deselect',
@@ -759,120 +587,24 @@ const Scheduler = ({
 		toggleSelected(String(args.row.id));
 	};
 
-	const persistEventChange = (
-		id: DayPilot.EventId,
-		patch: Pick<DayPilot.EventData, 'start' | 'end' | 'resource'>
-	) => {
-		setEventRows(current =>
-			current.map(event =>
-				String(event.id) === String(id)
-					? withEventSaveStatus({ ...event, ...patch }, 'unsaved')
-					: event
-			)
-		);
-		setSavedThisSession(false);
-	};
-
-	const onEventMove = (args: DayPilot.SchedulerEventMoveArgs) => {
-		if (isNarrow) {
-			args.preventDefault();
-			return;
-		}
-		const fromResource = String(args.e.resource());
-		const toResource = String(args.newResource);
-		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
-			args.preventDefault();
-		}
-	};
-
-	const onEventMoved = (args: DayPilot.SchedulerEventMovedArgs) => {
-		if (isNarrow) {
-			return;
-		}
-		const fromResource = String(args.e.resource());
-		const toResource = String(args.newResource);
-		if (!canEditResource(fromResource) || !canEditResource(toResource)) {
-			return;
-		}
-		setEventRows(current =>
-			current.map(event =>
-				String(event.id) === String(args.e.id())
-					? withEventSaveStatus(
-							{
-								...event,
-								start: args.newStart.toString(),
-								end: args.newEnd.toString(),
-								resource: args.newResource
-							},
-							'unsaved'
-					  )
-					: event
-			)
-		);
-		setSavedThisSession(false);
-	};
-
-	const onEventResize = (args: DayPilot.SchedulerEventResizeArgs) => {
-		if (isNarrow || !canEditResource(String(args.e.resource()))) {
-			args.preventDefault();
-		}
-	};
-
-	const onEventResized = (args: DayPilot.SchedulerEventResizedArgs) => {
-		if (isNarrow || !canEditResource(String(args.e.resource()))) {
-			return;
-		}
-		persistEventChange(args.e.id(), {
-			start: args.newStart.toString(),
-			end: args.newEnd.toString()
-		});
-	};
-
-	const deleteEvent = (id: DayPilot.EventId) => {
-		setEventRows(current =>
-			current.map(event => {
-				if (String(event.id) !== String(id)) {
-					return event;
-				}
-				return withMarkedForDeletion(event, !isMarkedForDeletion(event));
-			})
-		);
-		setSavedThisSession(false);
-	};
-
 	const onBeforeEventRender = (
 		args: DayPilot.SchedulerBeforeEventRenderArgs
 	) => {
 		const editable = canEditResource(String(args.data.resource ?? ''));
-		const saveStatus = getEventSaveStatus(args.data);
-		const markedForDeletion = isMarkedForDeletion(args.data);
 		const eventData = args.data as DayPilot.EventData & {
 			moveDisabled?: boolean;
 			resizeDisabled?: boolean;
 		};
-		eventData.moveDisabled = isNarrow || !editable || markedForDeletion;
-		eventData.resizeDisabled = isNarrow || !editable || markedForDeletion;
+		eventData.moveDisabled = true;
+		eventData.resizeDisabled = true;
 
-		const classNames = [
-			editable ? 'scheduler-event-editable' : 'scheduler-event-readonly',
-			editable && saveStatus === 'unsaved' && !markedForDeletion
-				? 'scheduler-event-unsaved'
-				: '',
-			editable && markedForDeletion ? 'scheduler-event-marked-delete' : ''
-		]
-			.filter(Boolean)
-			.join(' ');
-		args.data.cssClass = classNames;
+		args.data.cssClass = editable
+			? 'scheduler-event-editable'
+			: 'scheduler-event-readonly';
 
 		const barColor = resolveEventBarColor(String(args.data.resource ?? ''));
 		args.data.barColor = barColor;
 		args.data.barBackColor = `${barColor}33`;
-
-		if (editable && saveStatus === 'unsaved' && !markedForDeletion) {
-			args.data.backColor = '#fff3b0';
-			args.data.borderColor = '#e6a800';
-			args.data.fontColor = '#5c3d00';
-		}
 
 		const name = escapeHtml(getEventTitle(args.data));
 		const preview = notePreviewText(getEventNote(args.data));
@@ -881,42 +613,12 @@ const Scheduler = ({
 					preview
 			  )}</span>`
 			: '';
-		const chipLabel = markedForDeletion
-			? 'To delete'
-			: EVENT_STATUS_LABELS[saveStatus];
-		const chipClass = markedForDeletion
-			? 'edit-status-chip-delete'
-			: `edit-status-chip-${saveStatus}`;
-		const statusChip =
-			editable && !(isNarrow && saveStatus === 'ready' && !markedForDeletion)
-				? `<span class="edit-status-chip ${chipClass} edit-status-chip-on-event">${chipLabel}</span>`
-				: '';
-		const deleteTitle = markedForDeletion ? 'Undo delete' : 'Mark for deletion';
-		const deleteMark =
-			editable && !isNarrow
-				? `<span class="scheduler-event-delete-mark" title="${deleteTitle}" onmousedown="event.stopPropagation()">×</span>`
-				: '';
-		args.data.html = editable
-			? `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${noteSnippet}${statusChip}${deleteMark}</span>`
-			: `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${noteSnippet}</span>`;
+		args.data.html = `<span class="scheduler-event-content"><span class="scheduler-event-name">${name}</span>${noteSnippet}</span>`;
 	};
 
 	const onEventClick = (args: DayPilot.SchedulerEventClickArgs) => {
-		const target = args.originalEvent.target;
-		if (
-			target instanceof Element &&
-			target.closest('.scheduler-event-delete-mark')
-		) {
-			args.preventDefault();
-			if (isNarrow || !canEditResource(String(args.e.resource()))) {
-				return;
-			}
-			deleteEvent(args.e.id());
-			return;
-		}
-
 		const eventId = String(args.e.id());
-		const event = eventRows.find(item => String(item.id) === eventId);
+		const event = dbEvents.find(item => String(item.id) === eventId);
 		if (!event) {
 			return;
 		}
@@ -936,44 +638,6 @@ const Scheduler = ({
 		setReadOnlyEvent(event);
 	};
 
-	const onTimeRangeSelect = (args: DayPilot.SchedulerTimeRangeSelectArgs) => {
-		if (isNarrow || !canEditResource(String(args.resource))) {
-			args.preventDefault();
-		}
-	};
-
-	const onTimeRangeSelected = (
-		args: DayPilot.SchedulerTimeRangeSelectedArgs
-	) => {
-		if (isNarrow || !canEditResource(String(args.resource))) {
-			args.control.clearSelection();
-			return;
-		}
-		const resourceName =
-			resources.find(resource => String(resource.id) === String(args.resource))
-				?.name ?? '';
-		setEventRows(current => {
-			return [
-				...current,
-				withEventSaveStatus(
-					withEventContent(
-						{
-							id: crypto.randomUUID(),
-							resource: args.resource,
-							start: args.start.toString(),
-							end: args.end.toString(),
-							text: resourceName
-						},
-						{ title: resourceName, note: '' }
-					),
-					'unsaved'
-				)
-			];
-		});
-		setSavedThisSession(false);
-		args.control.clearSelection();
-	};
-
 	const rowHeaderWidth = isNarrow && namesCollapsed ? 2 : 180;
 	const fontSizeConfig = SCHEDULER_FONT_SIZE[fontSize];
 
@@ -988,13 +652,13 @@ const Scheduler = ({
 			// Override DayPilot’s iOS default (floatingEvents off) so labels stay sticky.
 			floatingEvents: true,
 			rowClickHandling: 'Enabled',
-			eventMoveHandling: isNarrow ? 'Disabled' : 'Update',
-			eventResizeHandling: isNarrow ? 'Disabled' : 'Update',
+			eventMoveHandling: 'Disabled',
+			eventResizeHandling: 'Disabled',
 			eventClickHandling: 'Enabled',
 			eventDeleteHandling: 'Disabled',
-			timeRangeSelectedHandling: isNarrow ? 'Disabled' : 'Enabled'
+			timeRangeSelectedHandling: 'Disabled'
 		}),
-		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth, isNarrow]
+		[startDate, days, rowHeaderWidth, fontSizeConfig.cellWidth]
 	);
 
 	return (
@@ -1002,44 +666,6 @@ const Scheduler = ({
 			data-scheduler-scheme="sandstone-flat"
 			style={schemeToCssVars(activeScheme)}
 		>
-			{hasUnsavedChanges ? (
-				<div
-					role="status"
-					aria-live="polite"
-					className="fixed right-4 bottom-4 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-[#d4a017]/60 bg-popover p-4 shadow-lg ring-1 ring-foreground/10"
-				>
-					<p className="mb-1 text-sm font-medium text-foreground">
-						Keep your updates?
-					</p>
-					<p className="mb-3 text-sm text-muted-foreground">
-						You’ve changed your calendar. Save to keep them, or discard to go
-						back to what you had before.
-					</p>
-					<div className="flex flex-wrap justify-end gap-2">
-						<Button
-							type="button"
-							variant="outline"
-							size="lg"
-							onClick={discardChanges}
-							disabled={saveUiState === 'loading'}
-						>
-							Discard
-						</Button>
-						<Button
-							type="button"
-							size="lg"
-							onClick={() => {
-								void saveChanges();
-							}}
-							disabled={saveUiState === 'loading'}
-							className="border border-[#d4a017] bg-[#ffe566] text-[#5c3d00] hover:bg-[#ffd633] hover:text-[#5c3d00]"
-						>
-							Save
-						</Button>
-					</div>
-				</div>
-			) : null}
-
 			<Dialog
 				open={settingsOpen}
 				onOpenChange={setSettingsOpen}
@@ -1062,8 +688,8 @@ const Scheduler = ({
 								Your attendance bar colour
 							</Label>
 							<p className="text-xs text-muted-foreground">
-								Colours the top strip on your calendar events. Others see this
-								colour on your stays.
+								Colours your name row and the top strip on your calendar
+								events. Others see this colour on your stays.
 							</p>
 							<div
 								role="radiogroup"
@@ -1219,9 +845,12 @@ const Scheduler = ({
 						setAvailabilityFocusId(null);
 						setAvailabilityTargetUserId(currentUserId);
 					}}
-					onDiscard={closeAvailabilityModal}
+					onClose={closeAvailabilityModal}
 					onSave={payload => {
 						void saveAvailabilityFromModal(payload);
+					}}
+					onDelete={eventId => {
+						void deleteAvailabilityFromModal(eventId);
 					}}
 				/>
 			) : null}
@@ -1321,8 +950,7 @@ const Scheduler = ({
 									Save failed
 								</p>
 								<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-									The database write did not succeed. Your local edits are still
-									here — try again.
+									The database write did not succeed. Please try again.
 								</p>
 								<button
 									type="button"
@@ -1340,86 +968,6 @@ const Scheduler = ({
 								</button>
 							</>
 						) : null}
-					</div>
-				</div>
-			) : null}
-
-			{leaveDialogOpen ? (
-				<div
-					role="dialog"
-					aria-modal="true"
-					aria-live="polite"
-					style={{
-						position: 'fixed',
-						inset: 0,
-						zIndex: 1000,
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'center',
-						background: 'rgba(40, 32, 24, 0.45)'
-					}}
-				>
-					<div
-						style={{
-							minWidth: '16rem',
-							maxWidth: '22rem',
-							padding: '1.5rem 1.75rem',
-							borderRadius: '8px',
-							background: '#fff',
-							boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
-							textAlign: 'center'
-						}}
-					>
-						<p
-							style={{
-								margin: '0 0 0.75rem',
-								fontWeight: 600,
-								color: '#8a5a12'
-							}}
-						>
-							You have unsaved changes
-						</p>
-						<p style={{ margin: '0 0 1.25rem', color: '#5c5348' }}>
-							Leave this page without saving? Your local edits will still be in
-							this browser, but they are not saved to the database yet.
-						</p>
-						<div
-							style={{
-								display: 'flex',
-								gap: '0.5rem',
-								justifyContent: 'center',
-								flexWrap: 'wrap'
-							}}
-						>
-							<button
-								type="button"
-								onClick={stayOnPage}
-								style={{
-									padding: '0.4rem 1rem',
-									border: '1px solid #6b512b',
-									borderRadius: '4px',
-									background: '#6b512b',
-									color: '#fff',
-									cursor: 'pointer'
-								}}
-							>
-								Stay
-							</button>
-							<button
-								type="button"
-								onClick={leaveWithoutSaving}
-								style={{
-									padding: '0.4rem 1rem',
-									border: '1px solid #8a1f1f',
-									borderRadius: '4px',
-									background: '#fff',
-									color: '#8a1f1f',
-									cursor: 'pointer'
-								}}
-							>
-								Leave without saving
-							</button>
-						</div>
 					</div>
 				</div>
 			) : null}
@@ -1605,18 +1153,12 @@ const Scheduler = ({
 								{...config}
 								theme="brown_theme"
 								resources={orderedResources}
-								events={eventRows}
+								events={dbEvents}
 								onBeforeRowHeaderRender={onBeforeRowHeaderRender}
 								onBeforeCellRender={onBeforeCellRender}
 								onBeforeEventRender={onBeforeEventRender}
 								onRowClick={onRowClick}
 								onEventClick={onEventClick}
-								onEventMove={onEventMove}
-								onEventMoved={onEventMoved}
-								onEventResize={onEventResize}
-								onEventResized={onEventResized}
-								onTimeRangeSelect={onTimeRangeSelect}
-								onTimeRangeSelected={onTimeRangeSelected}
 							/>
 						</div>
 					</div>

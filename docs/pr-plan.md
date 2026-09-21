@@ -245,17 +245,17 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 - DayPilot adapter: inclusive DB dates ↔ exclusive scheduler ends.
 - Load stays for visible window / `end_date >= current_date`.
 - Wire `scheduler.tsx` to Supabase; remove mock login, admin checkbox, seed localStorage paths.
-- Keep draft → save / discard / soft-delete UX unchanged.
+- Manage attendance create/edit/delete with immediate save (no drag-edit / draft confirm bar).
 - Optional seed script mapping old seed stays → real profile ids (dev only).
 
 **Out of scope:** App admin “edit anyone” screens beyond what the scheduler already allows for admins.
 
 **Independently testable**
 
-- [ ] Member A creates stay → Save → reload → stay persists; B sees it, cannot edit.
+- [ ] Member A creates stay via Manage attendance → reload → stay persists; B sees it, cannot edit.
 - [ ] Overlapping stays for same user allowed.
-- [ ] Drag resize/move drafts then Save commits; Discard restores.
-- [ ] Soft-delete × then Save removes row.
+- [ ] Manage attendance edit/delete saves immediately; success overlay shows; no status chips on bars.
+- [ ] Delete in Manage attendance removes the row after confirm.
 - [ ] Past stays outside default window not shown (or filtered per spec).
 - [ ] Admin can edit another user’s bar and Save.
 - [ ] RLS blocks forged `user_id` inserts as non-admin.
