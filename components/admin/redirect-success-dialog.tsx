@@ -17,10 +17,12 @@ const REDIRECT_DELAY_MS = 3000;
 export default function RedirectSuccessDialog({
 	open,
 	title,
+	href = LISTINGS_PATH,
 	description = 'You are being redirected back to the listings page…'
 }: {
 	open: boolean;
 	title: string;
+	href?: string;
 	description?: string;
 }) {
 	const router = useRouter();
@@ -28,11 +30,11 @@ export default function RedirectSuccessDialog({
 	useEffect(() => {
 		if (!open) return;
 		const timer = window.setTimeout(() => {
-			router.push(LISTINGS_PATH, { scroll: true });
+			router.push(href, { scroll: true });
 			router.refresh();
 		}, REDIRECT_DELAY_MS);
 		return () => window.clearTimeout(timer);
-	}, [open, router]);
+	}, [open, href, router]);
 
 	return (
 		<Dialog

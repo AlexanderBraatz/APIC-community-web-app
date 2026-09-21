@@ -24,6 +24,7 @@ import TypeNameStep from '@/components/admin/listing-form/steps/type-name-step';
 import type { SelectedTagChip } from '@/components/admin/listing-tags-editor';
 import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import { Button } from '@/components/ui/button';
+import { BROWSE_SEARCH_HASH } from '@/lib/listings/browse-url';
 import { createListing, updateListing } from '@/lib/listings/admin-actions';
 import {
 	contactsToFormRows,
@@ -59,6 +60,10 @@ export default function ListingFormStepper({
 	const [error, setError] = useState<string | null>(null);
 	const [message, setMessage] = useState<string | null>(null);
 	const [successTitle, setSuccessTitle] = useState<string | null>(null);
+	const [successHref, setSuccessHref] = useState<string | undefined>();
+	const [successDescription, setSuccessDescription] = useState<
+		string | undefined
+	>();
 
 	const [currentStep, setCurrentStep] = useState(
 		mode === 'edit' ? STEP_TYPE_NAME : STEP_CATEGORY
@@ -254,6 +259,8 @@ export default function ListingFormStepper({
 		}
 
 		const formData = buildFormData();
+		const placeName = name.trim();
+		const categorySlug = category;
 		startTransition(async () => {
 			setError(null);
 			setMessage(null);
@@ -263,6 +270,10 @@ export default function ListingFormStepper({
 					setError(result.error);
 					return;
 				}
+				setSuccessHref(
+					`/${categorySlug}?place=${encodeURIComponent(placeName)}#${BROWSE_SEARCH_HASH}`
+				);
+				setSuccessDescription('Opening it on the map…');
 				setSuccessTitle('Listing created');
 				return;
 			}
@@ -273,6 +284,8 @@ export default function ListingFormStepper({
 				setError(result.error);
 				return;
 			}
+			setSuccessHref(undefined);
+			setSuccessDescription(undefined);
 			setSuccessTitle('Listing saved');
 		});
 	}
@@ -325,7 +338,7 @@ export default function ListingFormStepper({
 					}}
 				/>
 
-				<div className="min-w-0 flex-1 space-y-8">
+				<div className="min-w-0 flex-1 space-y-8 pb-24">
 					{currentStep === STEP_CATEGORY ? (
 						<CategoryStep
 							category={category}
@@ -412,35 +425,49 @@ export default function ListingFormStepper({
 					{currentStep === STEP_INSPECT ? (
 						<InspectStep preview={previewListing} />
 					) : null}
+				</div>
+			</div>
 
-					<div className="flex flex-wrap items-center justify-end gap-3 border-t border-[#b8a99a]/30 pt-6">
-						<Button
-							type="button"
-							variant="outline"
-							onClick={goBack}
-							disabled={currentStep === 0 || pending}
-						>
-							Back
-						</Button>
-						<Button
-							type="button"
-							loading={pending}
-							className="w-full sm:w-auto"
-							onClick={goNext}
-						>
-							{isLastStep
+			<div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#b8a99a]/30 bg-[#f7f2ec]/95 backdrop-blur-sm">
+				<div className="mx-auto flex max-w-5xl flex-wrap items-center justify-end gap-3 px-4 py-4">
+					<Button
+						type="button"
+						variant="outline"
+						onClick={goBack}
+						disabled={currentStep === 0 || pending}
+					>
+						Back
+					</Button>
+					<Button
+						type="button"
+						loading={pending}
+						className={
+							isLastStep && mode === 'create'
+								? 'border-emerald-800 bg-emerald-700 text-white hover:border-emerald-900 hover:bg-emerald-800'
+								: undefined
+						}
+						onClick={goNext}
+					>
+						{pending
+							? isLastStep
+								? mode === 'create'
+									? 'Creating…'
+									: 'Saving…'
+								: 'Next'
+							: isLastStep
 								? mode === 'create'
 									? 'Create listing'
 									: 'Save changes'
 								: 'Next'}
-						</Button>
-					</div>
+					</Button>
 				</div>
 			</div>
 
 			<RedirectSuccessDialog
 				open={successTitle !== null}
 				title={successTitle ?? ''}
+				href={successHref}
+				description={successDescription}
 			/>
 		</div>
 	);

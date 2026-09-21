@@ -33,7 +33,10 @@ function Button({
 			aria-disabled={isDisabled || undefined}
 		>
 			{loading ? (
-				<Loader2 className="animate-spin" aria-hidden />
+				<>
+					<Loader2 className="animate-spin" aria-hidden />
+					{children}
+				</>
 			) : (
 				children
 			)}

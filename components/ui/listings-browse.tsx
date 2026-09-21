@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
 	categoryFromPathname,
 	filterListings,
@@ -9,6 +9,13 @@ import {
 	suggest,
 	type Listing
 } from '@/lib/listings-search';
+import {
+	BROWSE_SEARCH_HASH,
+	browseUrlHref,
+	browseUrlSearchParams,
+	parseBrowseUrl,
+	type BrowseUrlState
+} from '@/lib/listings/browse-url';
 import {
 	fetchListingsForCategory,
 	fetchTagAliasMap
@@ -44,6 +51,8 @@ type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 
 export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const pathname = usePathname();
+	const router = useRouter();
+	const searchParams = useSearchParams();
 	const category = categoryFromPathname(pathname);
 	const { track } = useAnalytics();
 
@@ -57,7 +66,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	const [query, setQuery] = useState('');
 	const [activeTags, setActiveTags] = useState<string[]>([]);
 	const [selectedPlaceName, setSelectedPlaceName] = useState<string | null>(
-		null
+		() => parseBrowseUrl(searchParams).place ?? null
 	);
 	const [highlightedPlaceName, setHighlightedPlaceName] = useState<
 		string | null
@@ -75,6 +84,56 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	function requestScrollToSearch() {
 		pendingScrollToSearchRef.current = true;
 	}
+
+	function replaceBrowseState(patch: Partial<BrowseUrlState>) {
+		const nextParams = browseUrlSearchParams(searchParams, patch);
+		const nextHref = browseUrlHref(pathname, nextParams);
+		const currentHref = browseUrlHref(
+			pathname,
+			new URLSearchParams(searchParams.toString())
+		);
+		if (nextHref !== currentHref) {
+			router.replace(nextHref, { scroll: false });
+		}
+	}
+
+	function clearPlaceSelection() {
+		setSelectedPlaceName(null);
+		replaceBrowseState({ place: undefined });
+	}
+
+	useEffect(() => {
+		const placeFromUrl = parseBrowseUrl(searchParams).place ?? null;
+		setSelectedPlaceName(prev => (prev === placeFromUrl ? prev : placeFromUrl));
+		// Mirror place focus in the search box so list + map read like a search.
+		if (placeFromUrl) {
+			setQuery(prev => (prev === placeFromUrl ? prev : placeFromUrl));
+			setPanelOpen(false);
+		}
+	}, [searchParams]);
+
+	// Deep links (`?place=` / `#listings-browse-search`) land with the search bar
+	// flush to the top of the viewport (hero content scrolled away).
+	useLayoutEffect(() => {
+		if (authStatus !== 'signed_in') return;
+
+		const placeFromUrl = parseBrowseUrl(searchParams).place;
+		const hashTargetsSearch =
+			typeof window !== 'undefined' &&
+			window.location.hash === `#${BROWSE_SEARCH_HASH}`;
+		if (!placeFromUrl && !hashTargetsSearch) return;
+
+		const anchor = scrollAnchorRef.current;
+		if (!anchor) return;
+
+		const scrollAnchorToTop = () => {
+			const top = anchor.getBoundingClientRect().top + window.scrollY;
+			window.scrollTo({ top, behavior: 'auto' });
+		};
+
+		scrollAnchorToTop();
+		requestAnimationFrame(scrollAnchorToTop);
+	}, [authStatus, searchParams, listings.length]);
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -144,25 +203,23 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	);
 
 	const results = useMemo(() => {
-		if (activeTags.length === 0 && !deferredQuery.trim()) {
-			return listings;
-		}
+		const filtered =
+			activeTags.length === 0 && !deferredQuery.trim()
+				? listings
+				: filterListings(listings, activeTags, deferredQuery, aliasMap);
 
-		return filterListings(listings, activeTags, deferredQuery, aliasMap);
-	}, [listings, activeTags, deferredQuery, aliasMap]);
-
-	const mapLocations = useMemo(() => {
+		// Place focus acts like a search: list + map show only that listing.
 		if (selectedPlaceName) {
-			const focused = listings.find(
-				listing => listing.name === selectedPlaceName
-			);
-			return focused && listingHasCoords(focused) ? [focused] : [];
+			return filtered.filter(listing => listing.name === selectedPlaceName);
 		}
 
-		const scoped =
-			activeTags.length > 0 || deferredQuery.trim() ? results : listings;
-		return scoped.filter(listingHasCoords);
-	}, [listings, results, activeTags, deferredQuery, selectedPlaceName]);
+		return filtered;
+	}, [listings, activeTags, deferredQuery, aliasMap, selectedPlaceName]);
+
+	const mapLocations = useMemo(
+		() => results.filter(listingHasCoords),
+		[results]
+	);
 
 	const showSuggestions =
 		panelOpen &&
@@ -170,7 +227,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		(suggestions.tags.length > 0 || suggestions.places.length > 0);
 
 	const isFiltered =
-		activeTags.length > 0 || Boolean(deferredQuery.trim());
+		activeTags.length > 0 ||
+		Boolean(deferredQuery.trim()) ||
+		Boolean(selectedPlaceName);
 
 	useEffect(() => {
 		const trimmed = deferredQuery.trim();
@@ -235,7 +294,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 				: [...prev, tag]
 		);
 		setQuery('');
-		setSelectedPlaceName(null);
+		clearPlaceSelection();
 		setPanelOpen(false);
 		track(AnalyticsEvents.DIRECTORY_FILTER_USED, { filter_key: 'tag' });
 	}
@@ -244,11 +303,13 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		setActiveTags(prev =>
 			prev.filter(t => t.toLowerCase() !== tag.toLowerCase())
 		);
-		setSelectedPlaceName(null);
+		clearPlaceSelection();
 	}
 
 	function selectPlace(listing: Listing) {
 		setSelectedPlaceName(listing.name);
+		setQuery(listing.name);
+		replaceBrowseState({ place: listing.name });
 		setPanelOpen(false);
 		track(AnalyticsEvents.PLACE_OPENED, {
 			category: listing.category
@@ -258,7 +319,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	function clearAll() {
 		setQuery('');
 		setActiveTags([]);
-		setSelectedPlaceName(null);
+		clearPlaceSelection();
 		setPanelOpen(false);
 	}
 
@@ -273,7 +334,8 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 	}
 
 	if (authStatus === 'signed_out') {
-		const next = pathname || '/place';
+		const search = searchParams.toString();
+		const next = `${pathname || '/place'}${search ? `?${search}` : ''}`;
 		return (
 			<section className="bg-white px-4 pb-16 sm:px-6 lg:px-8 lg:pb-20">
 				<div className="mx-auto max-w-[1400px]">
@@ -314,7 +376,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 			) : null}
 
 			<div
-				id="listings-browse-search"
+				id={BROWSE_SEARCH_HASH}
 				ref={scrollAnchorRef}
 				className="h-0 scroll-mt-0"
 				aria-hidden="true"
@@ -343,11 +405,11 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							placeholder="Search by keyword or place name"
 							onChange={event => {
 								setQuery(event.target.value);
-								setSelectedPlaceName(null);
+								clearPlaceSelection();
 								setPanelOpen(true);
 							}}
 							onFocus={() => {
-								setSelectedPlaceName(null);
+								clearPlaceSelection();
 								setPanelOpen(true);
 							}}
 							className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
@@ -453,9 +515,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						selectedName={selectedPlaceName}
 						highlightedName={highlightedPlaceName}
 						onSelect={listing => selectPlace(listing)}
-						onClearSelect={() => setSelectedPlaceName(null)}
+						onClearSelect={clearPlaceSelection}
 						showClearFocus={Boolean(selectedPlaceName)}
-						onClearFocus={() => setSelectedPlaceName(null)}
+						onClearFocus={clearPlaceSelection}
 						className="aspect-[1.618/1] md:aspect-auto md:h-[33vh] lg:h-[calc(100vh-186px)]"
 					/>
 				</div>
