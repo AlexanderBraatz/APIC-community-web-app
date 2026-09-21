@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import InvitationActions from '@/components/admin/invitation-actions';
 import { inviteUser, listInvitations } from '@/lib/invitations/actions';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -73,12 +73,9 @@ export default async function AdminInvitationsPage({
 							autoComplete="email"
 						/>
 					</div>
-					<Button
-						type="submit"
-						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-					>
+					<SubmitButton className="w-full sm:w-auto">
 						Send invitation
-					</Button>
+					</SubmitButton>
 				</form>
 			</section>
 

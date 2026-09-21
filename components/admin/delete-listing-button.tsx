@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react';
 import { X } from 'lucide-react';
 import { deleteListing } from '@/lib/listings/admin-actions';
 import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
-import { CLEAR_ACTION_BUTTON_CLASS } from '@/components/admin/listing-form/constants';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -45,7 +44,7 @@ export default function DeleteListingButton({
 			<Button
 				type="button"
 				size="icon"
-				className={CLEAR_ACTION_BUTTON_CLASS}
+				variant="secondary"
 				aria-label={`Delete ${name}`}
 				onClick={() => setOpen(true)}
 			>
@@ -69,7 +68,6 @@ export default function DeleteListingButton({
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							onClick={() => setOpen(false)}
 							disabled={pending}
 						>
@@ -77,11 +75,11 @@ export default function DeleteListingButton({
 						</Button>
 						<Button
 							type="button"
-							className="rounded-[2px] border border-red-800 bg-red-700 text-white hover:bg-red-800"
+							variant="destructive"
 							onClick={confirmDelete}
-							disabled={pending}
+							loading={pending}
 						>
-							{pending ? 'Deleting…' : 'Delete'}
+							Delete
 						</Button>
 					</DialogFooter>
 				</DialogContent>

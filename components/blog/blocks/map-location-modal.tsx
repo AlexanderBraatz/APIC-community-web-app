@@ -248,9 +248,10 @@ export default function MapLocationModal({
 								<Button
 									type="button"
 									onClick={handleSave}
-									disabled={pending || lat === null || lng === null}
+									loading={pending}
+									disabled={lat === null || lng === null}
 								>
-									{pending ? 'Saving…' : 'Save location'}
+									Save location
 								</Button>
 							</>
 						)}

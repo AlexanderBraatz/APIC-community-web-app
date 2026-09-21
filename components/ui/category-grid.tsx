@@ -4,6 +4,8 @@ import { PageBlocksCategoryGrid } from '@/tina/__generated__/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function CategoryGrid(props: PageBlocksCategoryGrid) {
 	return (
@@ -50,7 +52,10 @@ export default function CategoryGrid(props: PageBlocksCategoryGrid) {
 
 								<span
 									data-tina-field={tinaField(item, 'buttonLabel')}
-									className="mt-4 inline-flex w-full items-center justify-center rounded-[2px] border border-[#634627] bg-[#805b32] px-4 py-2.5 text-center text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 group-hover:border-[#0a0f0b] group-hover:bg-[#1f2d22]"
+									className={cn(
+										buttonVariants({ variant: 'default' }),
+										'mt-4 w-full group-hover:border-[#0a0f0b] group-hover:bg-[#1f2d22]'
+									)}
 								>
 									{buttonLabel}
 								</span>

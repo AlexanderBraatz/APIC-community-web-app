@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { saveInvitePrivacyChoices } from '@/lib/privacy/actions';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Label } from '@/components/ui/label';
 
 type Props = {
@@ -128,8 +128,7 @@ export function InvitePrivacyStep({ error }: Props) {
 				</p>
 
 				<div className="space-y-3">
-					<Button
-						type="submit"
+					<SubmitButton
 						name="choice"
 						value="decline"
 						disabled={!termsAccepted}
@@ -138,12 +137,11 @@ export function InvitePrivacyStep({ error }: Props) {
 							setAnalyticsEnabled(false);
 							setSessionReplayEnabled(false);
 						}}
-						className="w-full rounded-[2px] border-[#634627] disabled:opacity-50"
+						className="w-full sm:w-auto"
 					>
 						Continue without optional analytics
-					</Button>
-					<Button
-						type="submit"
+					</SubmitButton>
+					<SubmitButton
 						name="choice"
 						value="accept"
 						disabled={!termsAccepted}
@@ -151,10 +149,10 @@ export function InvitePrivacyStep({ error }: Props) {
 							setAnalyticsEnabled(true);
 							setSessionReplayEnabled(true);
 						}}
-						className="w-full rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22] disabled:opacity-50"
+						className="w-full sm:w-auto"
 					>
 						Accept all and continue
-					</Button>
+					</SubmitButton>
 				</div>
 			</form>
 		</main>

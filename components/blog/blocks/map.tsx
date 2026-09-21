@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Map as MapIcon, Pencil } from 'lucide-react';
-import { SECONDARY_ACTION_BUTTON_CLASS } from '@/components/admin/listing-form/constants';
 import MapLocationModal from '@/components/blog/blocks/map-location-modal';
+import { buttonVariants } from '@/components/ui/button';
 import LocationsMap from '@/components/ui/locations-map';
+import { cn } from '@/lib/utils';
 import {
 	getBlogMapLocation,
 	type BlogMapLocation
@@ -174,7 +175,10 @@ export default function BlogMap(props: BlogBlocksMap) {
 									href={googleMapsHref(location)}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="font-sans inline-flex items-center gap-2 rounded-[2px] border border-[#634627] bg-[#805b32] px-3.5 py-2 text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 hover:bg-[#ebe6dc] hover:text-[#805b32]"
+									className={cn(
+										buttonVariants({ variant: 'default', size: 'sm' }),
+										'gap-2'
+									)}
 								>
 									<MapIcon
 										className="size-4 shrink-0"
@@ -186,7 +190,10 @@ export default function BlogMap(props: BlogBlocksMap) {
 									<button
 										type="button"
 										onClick={() => setModalOpen(true)}
-										className={`inline-flex h-8 items-center gap-1.5 px-3 text-sm font-medium ${SECONDARY_ACTION_BUTTON_CLASS}`}
+										className={cn(
+											buttonVariants({ variant: 'secondary', size: 'sm' }),
+											'gap-1.5'
+										)}
 									>
 										<Pencil
 											className="size-3.5"
@@ -216,7 +223,10 @@ export default function BlogMap(props: BlogBlocksMap) {
 							<button
 								type="button"
 								onClick={() => setModalOpen(true)}
-								className="inline-flex items-center justify-center rounded-[2px] border border-[#634627] bg-[#805b32] px-5 py-2.5 text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22]"
+								className={cn(
+									buttonVariants({ variant: 'default' }),
+									'w-full sm:w-auto'
+								)}
 							>
 								Set location
 							</button>

@@ -1,10 +1,6 @@
 'use client';
 
 import OpeningHoursEditor from '@/components/admin/listing-form/opening-hours-editor';
-import {
-	CLEAR_ACTION_BUTTON_CLASS,
-	SECONDARY_ACTION_BUTTON_CLASS
-} from '@/components/admin/listing-form/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -61,7 +57,7 @@ export default function ContactStep({
 					</div>
 					<Button
 						type="button"
-						className={SECONDARY_ACTION_BUTTON_CLASS}
+						variant="secondary"
 						onClick={() =>
 							onContactsChange(
 								sortByContactKind([...contacts, newContactFormRow()])
@@ -147,7 +143,7 @@ export default function ContactStep({
 								<Button
 									type="button"
 									size="icon"
-									className={CLEAR_ACTION_BUTTON_CLASS}
+									variant="secondary"
 									aria-label="Remove contact info"
 									onClick={() =>
 										onContactsChange(contacts.filter(c => c.key !== row.key))
@@ -173,11 +169,7 @@ export default function ContactStep({
 					</div>
 					<Button
 						type="button"
-						className={
-							showHours
-								? CLEAR_ACTION_BUTTON_CLASS
-								: SECONDARY_ACTION_BUTTON_CLASS
-						}
+						variant="secondary"
 						onClick={handleOpeningHoursToggle}
 						aria-expanded={showHours}
 					>

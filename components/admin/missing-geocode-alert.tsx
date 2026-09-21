@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { Pencil } from 'lucide-react';
-import { SECONDARY_ACTION_BUTTON_CLASS } from '@/components/admin/listing-form/constants';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
+import { SubmitButton } from '@/components/ui/submit-button';
+import { cn } from '@/lib/utils';
 import type { AdminListing } from '@/lib/listings/types';
 
 type MissingGeocodeAlertProps = {
@@ -46,7 +47,10 @@ export default function MissingGeocodeAlert({
 						</div>
 						<Link
 							href={`/members/admin/listings/${listing.id}`}
-							className={`inline-flex h-8 shrink-0 items-center gap-1.5 px-3 text-sm font-medium ${SECONDARY_ACTION_BUTTON_CLASS}`}
+							className={cn(
+								buttonVariants({ variant: 'secondary', size: 'sm' }),
+								'shrink-0 gap-1.5'
+							)}
 						>
 							<Pencil className="size-3.5" aria-hidden />
 							Edit
@@ -56,9 +60,9 @@ export default function MissingGeocodeAlert({
 			</ul>
 
 			<form action={action}>
-				<Button type="submit" variant="outline" className="rounded-[2px]">
+				<SubmitButton variant="outline" className="w-full sm:w-auto">
 					Geocode missing ({listings.length})
-				</Button>
+				</SubmitButton>
 			</form>
 		</section>
 	);

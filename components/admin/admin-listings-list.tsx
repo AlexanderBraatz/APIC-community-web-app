@@ -4,9 +4,10 @@ import { useDeferredValue, useState } from 'react';
 import Link from 'next/link';
 import { Pencil } from 'lucide-react';
 import DeleteListingButton from '@/components/admin/delete-listing-button';
-import { SECONDARY_ACTION_BUTTON_CLASS } from '@/components/admin/listing-form/constants';
+import { buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import type { AdminListing } from '@/lib/listings/types';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -79,7 +80,10 @@ export default function AdminListingsList({
 							<div className="flex flex-wrap gap-2">
 								<Link
 									href={`/members/admin/listings/${listing.id}`}
-									className={`inline-flex h-8 items-center gap-1.5 px-3 text-sm font-medium ${SECONDARY_ACTION_BUTTON_CLASS}`}
+									className={cn(
+										buttonVariants({ variant: 'secondary', size: 'sm' }),
+										'gap-1.5'
+									)}
 								>
 									<Pencil className="size-3.5" aria-hidden />
 									Edit

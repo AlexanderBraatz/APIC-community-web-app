@@ -6,10 +6,6 @@ import {
 	cancelInvitation,
 	resendInvitation
 } from '@/lib/invitations/actions';
-import {
-	CLEAR_ACTION_BUTTON_CLASS,
-	SECONDARY_ACTION_BUTTON_CLASS
-} from '@/components/admin/listing-form/constants';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -58,14 +54,14 @@ export default function InvitationActions({
 			<div className="flex flex-wrap gap-2">
 				<Button
 					type="button"
-					className={SECONDARY_ACTION_BUTTON_CLASS}
+					variant="secondary"
 					onClick={() => setKind('resend')}
 				>
 					Resend
 				</Button>
 				<Button
 					type="button"
-					className={CLEAR_ACTION_BUTTON_CLASS}
+					variant="secondary"
 					onClick={() => setKind('cancel')}
 				>
 					Cancel
@@ -93,7 +89,6 @@ export default function InvitationActions({
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							disabled={pending}
 							onClick={() => setKind(null)}
 						>
@@ -101,19 +96,11 @@ export default function InvitationActions({
 						</Button>
 						<Button
 							type="button"
-							className={
-								kind === 'cancel'
-									? 'rounded-[2px] border border-red-800 bg-red-700 text-white hover:bg-red-800'
-									: 'rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]'
-							}
-							disabled={pending}
+							variant={kind === 'cancel' ? 'destructive' : 'default'}
+							loading={pending}
 							onClick={runConfirm}
 						>
-							{pending
-								? 'Working…'
-								: kind === 'resend'
-									? 'Resend'
-									: 'Cancel invitation'}
+							{kind === 'resend' ? 'Resend' : 'Cancel invitation'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

@@ -19,7 +19,7 @@ export function SentryDevTestButton() {
 			<Button
 				type="button"
 				variant="outline"
-				className="rounded-[2px] border-amber-700 text-amber-950"
+				className="border-amber-700 text-amber-950"
 				onClick={() => {
 					throw new Error('Sentry Phase 2 test client');
 				}}

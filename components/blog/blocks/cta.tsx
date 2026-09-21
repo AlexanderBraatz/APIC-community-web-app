@@ -3,6 +3,8 @@
 import { BlogBlocksCta } from '@/tina/__generated__/types';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function BlogCta(props: BlogBlocksCta) {
 	return (
@@ -30,7 +32,10 @@ export default function BlogCta(props: BlogBlocksCta) {
 					<Link
 						href={props.buttonLink || '#'}
 						data-tina-field={tinaField(props, 'buttonLabel')}
-						className="mt-6 inline-flex rounded-[2px] border border-[#634627] bg-[#805b32] px-6 py-3 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22]"
+						className={cn(
+							buttonVariants({ variant: 'default', size: 'lg' }),
+							'mt-6 w-full sm:w-auto'
+						)}
 					>
 						{props.buttonLabel}
 					</Link>

@@ -120,11 +120,10 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 				<Button
 					type="button"
 					variant="outline"
-					className="rounded-[2px]"
 					onClick={runFillMissing}
-					disabled={pending}
+					loading={pending}
 				>
-					{pending ? 'Working…' : 'Fill missing aliases'}
+					Fill missing aliases
 				</Button>
 			</div>
 
@@ -162,7 +161,6 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 									<Button
 										type="button"
 										variant="outline"
-										className="rounded-[2px]"
 										onClick={() => openEdit(tag)}
 									>
 										Edit
@@ -170,7 +168,6 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 									<Button
 										type="button"
 										variant="outline"
-										className="rounded-[2px]"
 										onClick={() => setDeleteId(tag.id)}
 									>
 										Delete
@@ -219,7 +216,6 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							onClick={() => setEditId(null)}
 							disabled={pending}
 						>
@@ -227,11 +223,10 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 						</Button>
 						<Button
 							type="button"
-							className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
 							onClick={saveEdit}
-							disabled={pending}
+							loading={pending}
 						>
-							{pending ? 'Saving…' : 'Save'}
+							Save
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -255,7 +250,6 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							onClick={() => setDeleteId(null)}
 							disabled={pending}
 						>
@@ -263,11 +257,11 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 						</Button>
 						<Button
 							type="button"
-							className="rounded-[2px] border border-red-800 bg-red-700 text-white hover:bg-red-800"
+							variant="destructive"
 							onClick={confirmDelete}
-							disabled={pending}
+							loading={pending}
 						>
-							{pending ? 'Deleting…' : 'Delete'}
+							Delete
 						</Button>
 					</DialogFooter>
 				</DialogContent>

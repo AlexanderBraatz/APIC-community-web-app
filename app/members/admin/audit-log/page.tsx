@@ -92,7 +92,7 @@ export default async function AdminAuditLogPage({
 						))}
 					</select>
 				</div>
-				<Button type="submit" variant="outline" className="rounded-[2px]">
+				<Button type="submit" variant="outline">
 					Filter
 				</Button>
 			</form>

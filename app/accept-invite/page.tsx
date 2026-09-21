@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { completeInviteAcceptance } from '@/lib/invitations/actions';
 import { createClient } from '@/lib/supabase/server';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InvitePrivacyStep } from '@/components/privacy/invite-privacy-step';
@@ -128,12 +128,9 @@ export default async function AcceptInvitePage({
 						required
 					/>
 				</div>
-				<Button
-					type="submit"
-					className="w-full rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-				>
+				<SubmitButton className="w-full sm:w-auto">
 					Continue
-				</Button>
+				</SubmitButton>
 			</form>
 		</main>
 	);

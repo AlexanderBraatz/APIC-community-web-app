@@ -3,6 +3,8 @@ import { ArrowRight } from 'lucide-react';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import AdminUsersList from '@/components/admin/admin-users-list';
 import { listAdminUsers } from '@/lib/admin/users-actions';
+import { buttonVariants } from '@/components/ui/button-variants';
+import { cn } from '@/lib/utils';
 
 export default async function AdminUsersPage({
 	searchParams
@@ -48,7 +50,10 @@ export default async function AdminUsersPage({
 				<h3 className="text-sm font-medium text-[#444]">Invite a member</h3>
 				<Link
 					href="/members/admin/invitations"
-					className="group inline-flex w-full items-center justify-between gap-3 rounded-[2px] border border-[#634627] bg-[#805b32] px-6 py-3 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22] sm:w-72"
+					className={cn(
+						buttonVariants({ variant: 'default', size: 'lg' }),
+						'group w-full justify-between sm:w-72'
+					)}
 				>
 					<span>Go to invitations</span>
 					<ArrowRight

@@ -2,10 +2,6 @@
 
 import { useState } from 'react';
 import AdminPinMap from '@/components/admin/pin-map';
-import {
-	CLEAR_ACTION_BUTTON_CLASS,
-	SECONDARY_ACTION_BUTTON_CLASS
-} from '@/components/admin/listing-form/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -139,7 +135,7 @@ export default function LocationStep({
 						{adjustingPin ? (
 							<Button
 								type="button"
-								className={SECONDARY_ACTION_BUTTON_CLASS}
+								variant="secondary"
 								onClick={handleDoneAdjusting}
 							>
 								Lock Pin
@@ -147,7 +143,7 @@ export default function LocationStep({
 						) : (
 							<Button
 								type="button"
-								className={SECONDARY_ACTION_BUTTON_CLASS}
+								variant="secondary"
 								onClick={() => setAdjustingPin(true)}
 							>
 								Adjust pin
@@ -155,7 +151,7 @@ export default function LocationStep({
 						)}
 						<Button
 							type="button"
-							className={CLEAR_ACTION_BUTTON_CLASS}
+							variant="secondary"
 							onClick={handleClearPin}
 						>
 							Clear pin

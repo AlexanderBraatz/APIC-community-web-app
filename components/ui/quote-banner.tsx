@@ -4,6 +4,8 @@ import { PageBlocksQuoteBanner } from '@/tina/__generated__/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function QuoteBanner(props: PageBlocksQuoteBanner) {
 	return (
@@ -41,7 +43,10 @@ export default function QuoteBanner(props: PageBlocksQuoteBanner) {
 					<Link
 						href={props.buttonLink || '#'}
 						data-tina-field={tinaField(props, 'buttonLabel')}
-						className="mt-8 inline-flex bg-white px-5 py-2.5 text-sm font-medium text-[#444444] transition-colors hover:bg-[#F8F6F2]"
+						className={cn(
+							buttonVariants({ variant: 'outline' }),
+							'mt-8 w-full border-white bg-white text-[#444444] hover:bg-[#F8F6F2] sm:w-auto'
+						)}
 					>
 						{props.buttonLabel}
 					</Link>

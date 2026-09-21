@@ -417,7 +417,6 @@ export default function ListingFormStepper({
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							onClick={goBack}
 							disabled={currentStep === 0 || pending}
 						>
@@ -425,17 +424,15 @@ export default function ListingFormStepper({
 						</Button>
 						<Button
 							type="button"
-							disabled={pending}
-							className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
+							loading={pending}
+							className="w-full sm:w-auto"
 							onClick={goNext}
 						>
-							{pending
-								? 'Saving…'
-								: isLastStep
-									? mode === 'create'
-										? 'Create listing'
-										: 'Save changes'
-									: 'Next'}
+							{isLastStep
+								? mode === 'create'
+									? 'Create listing'
+									: 'Save changes'
+								: 'Next'}
 						</Button>
 					</div>
 				</div>

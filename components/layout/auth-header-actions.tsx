@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type AuthHeaderActionsProps = {
@@ -83,8 +84,8 @@ export default function AuthHeaderActions({
 	}, [pathname]);
 
 	const linkClass = cn(
-		'rounded-[2px] border border-[#634627] bg-[#805b32] px-[30px] py-2.5 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22]',
-		mobile && 'flex w-full items-center justify-center px-4'
+		buttonVariants({ variant: 'default', size: 'lg' }),
+		mobile && 'w-full'
 	);
 
 	if (signedIn === null) {
@@ -137,7 +138,7 @@ export default function AuthHeaderActions({
 			) : (
 				<Link
 					href="/account"
-					className="rounded-[2px] border border-[#634627] px-3 py-2 text-sm font-medium text-[#805b32] hover:bg-[#f7f2ec]"
+					className={buttonVariants({ variant: 'outline' })}
 				>
 					Account
 				</Link>

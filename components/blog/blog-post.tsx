@@ -18,6 +18,8 @@ import {
 	AnalyticsEvents,
 	useAnalytics
 } from '@/components/analytics/posthog-provider';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export type BlogNeighbor = {
 	slug: string;
@@ -35,11 +37,11 @@ function formatPublishedAt(value?: string | null) {
 	});
 }
 
-const lightButtonClassName =
-	'inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[2px] border border-[#c4b5a4] bg-[#ebe6dc] px-3 py-2.5 font-sans text-sm font-medium text-[#805b32] transition-[color,background-color,border-color] duration-100 hover:border-[#634627] hover:bg-[#805b32] hover:text-white sm:px-4';
-
-const lightButtonDisabledClassName =
-	'inline-flex shrink-0 cursor-not-allowed items-center gap-1.5 whitespace-nowrap rounded-[2px] border border-[#e8e0d6] bg-[#f7f4ef] px-3 py-2.5 font-sans text-sm font-medium text-[#b5a898] sm:px-4';
+const lightButtonClassName = cn(buttonVariants({ variant: 'outline' }), 'gap-1.5');
+const lightButtonDisabledClassName = cn(
+	buttonVariants({ variant: 'outline' }),
+	'cursor-not-allowed gap-1.5 opacity-50'
+);
 
 export default function BlogPost({
 	previousPost,

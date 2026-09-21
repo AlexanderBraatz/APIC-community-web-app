@@ -26,6 +26,8 @@ import {
 } from 'react';
 import ListingResultCard from './listing-result-card';
 import LocationsMap from './locations-map';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import {
 	AnalyticsEvents,
 	useAnalytics
@@ -285,7 +287,10 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						</p>
 						<Link
 							href={`/sign-in?next=${encodeURIComponent(next)}`}
-							className="mt-6 inline-flex h-10 items-center rounded-[2px] border border-[#634627] bg-[#805b32] px-5 text-sm font-medium text-white transition-colors hover:bg-[#1f2d22]"
+							className={cn(
+								buttonVariants({ variant: 'default' }),
+								'mt-6 w-full sm:w-auto'
+							)}
 						>
 							Sign in to browse
 						</Link>

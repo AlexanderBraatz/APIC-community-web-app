@@ -4,10 +4,6 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { changeUserRole, deleteUser } from '@/lib/admin/users-actions';
-import {
-	CLEAR_ACTION_BUTTON_CLASS,
-	SECONDARY_ACTION_BUTTON_CLASS
-} from '@/components/admin/listing-form/constants';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -79,7 +75,7 @@ export default function UserRoleActions({
 				{role === 'user' ? (
 					<Button
 						type="button"
-						className={SECONDARY_ACTION_BUTTON_CLASS}
+						variant="secondary"
 						disabled={isSelf}
 						onClick={() => setKind('promote')}
 					>
@@ -88,7 +84,7 @@ export default function UserRoleActions({
 				) : (
 					<Button
 						type="button"
-						className={CLEAR_ACTION_BUTTON_CLASS}
+						variant="secondary"
 						disabled={isSelf}
 						onClick={() => setKind('demote')}
 					>
@@ -98,7 +94,7 @@ export default function UserRoleActions({
 				<Button
 					type="button"
 					size="icon"
-					className={CLEAR_ACTION_BUTTON_CLASS}
+					variant="secondary"
 					disabled={isSelf}
 					aria-label={`Delete ${fullName}`}
 					onClick={() => setKind('delete')}
@@ -122,7 +118,6 @@ export default function UserRoleActions({
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							disabled={pending}
 							onClick={() => setKind(null)}
 						>
@@ -130,21 +125,19 @@ export default function UserRoleActions({
 						</Button>
 						<Button
 							type="button"
-							className={
+							variant={
 								kind === 'delete' || kind === 'demote'
-									? 'rounded-[2px] border border-red-800 bg-red-700 text-white hover:bg-red-800'
-									: 'rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]'
+									? 'destructive'
+									: 'default'
 							}
-							disabled={pending}
+							loading={pending}
 							onClick={runConfirm}
 						>
-							{pending
-								? 'Working…'
-								: kind === 'promote'
-									? 'Promote'
-									: kind === 'demote'
-										? 'Demote'
-										: 'Delete'}
+							{kind === 'promote'
+								? 'Promote'
+								: kind === 'demote'
+									? 'Demote'
+									: 'Delete'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

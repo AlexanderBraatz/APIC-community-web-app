@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { updatePrivacyPreferences } from '@/lib/privacy/actions';
 import { useAnalytics } from '@/components/analytics/posthog-provider';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Label } from '@/components/ui/label';
 
 type Props = {
@@ -142,12 +142,9 @@ export function AccountPrivacyForm({
 					</button>
 				</div>
 
-				<Button
-					type="submit"
-					className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-				>
+				<SubmitButton className="w-full sm:w-auto">
 					Save privacy preferences
-				</Button>
+				</SubmitButton>
 			</form>
 		</section>
 	);

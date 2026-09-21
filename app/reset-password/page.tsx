@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { updatePassword } from '@/app/auth/actions';
-import { Button } from '@/components/ui/button';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -50,12 +50,9 @@ export default async function ResetPasswordPage({ searchParams }: PageProps) {
 						required
 					/>
 				</div>
-				<Button
-					type="submit"
-					className="w-full rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-				>
+				<SubmitButton className="w-full sm:w-auto">
 					Save password
-				</Button>
+				</SubmitButton>
 			</form>
 
 			<p className="mt-6 text-sm">

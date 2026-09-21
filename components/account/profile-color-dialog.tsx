@@ -58,11 +58,7 @@ export function ProfileColorDialog({ currentColor }: ProfileColorDialogProps) {
 
 	return (
 		<>
-			<Button
-				type="button"
-				className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-				onClick={openDialog}
-			>
+			<Button type="button" onClick={openDialog}>
 				Change colour
 			</Button>
 
@@ -122,7 +118,6 @@ export function ProfileColorDialog({ currentColor }: ProfileColorDialogProps) {
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							onClick={closeDialog}
 							disabled={pending}
 						>
@@ -130,11 +125,11 @@ export function ProfileColorDialog({ currentColor }: ProfileColorDialogProps) {
 						</Button>
 						<Button
 							type="button"
-							className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
 							onClick={save}
-							disabled={pending || !draftColor || draftColor === currentColor}
+							loading={pending}
+							disabled={!draftColor || draftColor === currentColor}
 						>
-							{pending ? 'Saving…' : 'Save'}
+							Save
 						</Button>
 					</DialogFooter>
 				</DialogContent>

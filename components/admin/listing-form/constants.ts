@@ -28,11 +28,3 @@ export const CATEGORY_LABELS: Record<CategorySlug, string> = {
 };
 
 export { CATEGORY_SLUGS };
-
-/** Mid-weight action (Add contact info / Add hours / Adjust pin) — stronger than outline, softer than Next. */
-export const SECONDARY_ACTION_BUTTON_CLASS =
-	'rounded-[2px] border border-[#d4a05a] bg-[#f7bc74] text-black hover:bg-[#f0a84f]';
-
-/** Clear / remove action — same weight as secondary, muted reddish. */
-export const CLEAR_ACTION_BUTTON_CLASS =
-	'rounded-[2px] border border-[#c49286] bg-[#e2b0a4] text-black hover:bg-[#d4a195]';

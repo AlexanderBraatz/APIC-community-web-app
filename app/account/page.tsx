@@ -4,11 +4,13 @@ import { changePassword, updateFullName } from '@/lib/account/actions';
 import { ProfileColorDialog } from '@/components/account/profile-color-dialog';
 import { SentryDevTestButton } from '@/components/analytics/sentry-dev-test-button';
 import { AccountPrivacyForm } from '@/components/privacy/account-privacy-form';
-import { Button } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button-variants';
+import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { createClient } from '@/lib/supabase/server';
 import { getPrivacyPreferencesForCurrentUser } from '@/lib/privacy/get-preferences';
+import { cn } from '@/lib/utils';
 
 type PageProps = {
 	searchParams: Promise<{ error?: string; message?: string }>;
@@ -110,12 +112,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
 							autoComplete="name"
 						/>
 					</div>
-					<Button
-						type="submit"
-						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-					>
+					<SubmitButton className="w-full sm:w-auto">
 						Save name
-					</Button>
+					</SubmitButton>
 				</form>
 			</section>
 
@@ -176,12 +175,9 @@ export default async function AccountPage({ searchParams }: PageProps) {
 							required
 						/>
 					</div>
-					<Button
-						type="submit"
-						className="rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22]"
-					>
+					<SubmitButton className="w-full sm:w-auto">
 						Update password
-					</Button>
+					</SubmitButton>
 				</form>
 			</section>
 
@@ -192,18 +188,17 @@ export default async function AccountPage({ searchParams }: PageProps) {
 			<div className="mt-10 flex flex-wrap gap-3 border-t border-[#e5e5e5] pt-6">
 				<Link
 					href="/place"
-					className="inline-flex h-8 items-center rounded-[2px] border border-[#634627] bg-[#805b32] px-3 text-sm font-medium text-white hover:bg-[#1f2d22]"
+					className={cn(
+						buttonVariants({ variant: 'default' }),
+						'w-full sm:w-auto'
+					)}
 				>
 					Members hub
 				</Link>
 				<form action={signOut}>
-					<Button
-						type="submit"
-						variant="outline"
-						className="rounded-[2px] border-[#634627]"
-					>
+					<SubmitButton variant="outline">
 						Sign out
-					</Button>
+					</SubmitButton>
 				</form>
 			</div>
 		</main>

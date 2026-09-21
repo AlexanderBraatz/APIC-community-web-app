@@ -230,6 +230,7 @@ export default function ListingTagsEditor({
 
 	function runSuggest() {
 		startSuggest(async () => {
+			setSuggestAttempted(true);
 			setSuggestError(null);
 			const result = await suggestListingTags({
 				name,
@@ -241,7 +242,6 @@ export default function ListingTagsEditor({
 				placesTypes,
 				selectedTags: selected.map(tag => tag.name)
 			});
-			setSuggestAttempted(true);
 			if (!result.ok) {
 				setSuggestError(result.error);
 				applySuggestions(
@@ -295,7 +295,7 @@ export default function ListingTagsEditor({
 		selected.length === 0 &&
 		!suggestError;
 
-	const showRetry = !suggestPending && suggestAttempted;
+	const showRetry = suggestAttempted;
 
 	return (
 		<div className="space-y-4 sm:col-span-2">
@@ -379,8 +379,8 @@ export default function ListingTagsEditor({
 				<Button
 					type="button"
 					onClick={runSuggest}
-					disabled={suggestPending}
-					className="rounded-[2px] border border-amber-400 bg-amber-300 text-amber-950 hover:bg-amber-400"
+					loading={suggestPending}
+					variant="secondary"
 				>
 					{suggestError || selected.length === 0
 						? 'Try again'
@@ -462,14 +462,13 @@ export default function ListingTagsEditor({
 						<Button
 							type="button"
 							variant="outline"
-							className="rounded-[2px]"
 							onClick={() => setRemoveCandidate(null)}
 						>
 							Cancel
 						</Button>
 						<Button
 							type="button"
-							className="rounded-[2px] border border-red-800 bg-red-700 text-white hover:bg-red-800"
+							variant="destructive"
 							onClick={confirmRemove}
 						>
 							Remove

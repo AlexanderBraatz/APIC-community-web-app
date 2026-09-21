@@ -4,9 +4,8 @@ import { PageBlocksButtonList } from '@/tina/__generated__/types';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { tinaField } from 'tinacms/tina-field';
-
-const navButtonClassName =
-	'group inline-flex w-full items-center justify-between gap-3 rounded-[2px] border border-[#634627] bg-[#805b32] px-6 py-3 text-base font-medium text-white transition-[color,background-color,border-color] duration-100 hover:border-[#0a0f0b] hover:bg-[#1f2d22] sm:w-72';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function ButtonList(props: PageBlocksButtonList) {
 	if (!props.buttons || props.buttons.length === 0) return null;
@@ -41,7 +40,10 @@ export default function ButtonList(props: PageBlocksButtonList) {
 								key={i}
 								href={button.link || '#'}
 								data-tina-field={tinaField(button)}
-								className={navButtonClassName}
+								className={cn(
+									buttonVariants({ variant: 'default', size: 'lg' }),
+									'group w-full justify-between sm:w-72'
+								)}
 							>
 								<span>{button.label}</span>
 								<ArrowRight

@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { useTina } from 'tinacms/react';
 import { tinaField } from 'tinacms/tina-field';
+import { buttonVariants } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export type BlogIndexItem = {
 	slug: string;
@@ -130,7 +132,12 @@ export default function BlogIndex({
 											/>
 										) : null}
 										<span className="mt-5 flex justify-end">
-											<span className="inline-flex items-center gap-2 rounded-[2px] border border-[#634627] bg-[#805b32] px-5 py-2.5 font-sans text-sm font-medium text-white transition-[color,background-color,border-color] duration-100 group-hover:bg-[#ebe6dc] group-hover:text-[#805b32]">
+											<span
+												className={cn(
+													buttonVariants({ variant: 'default' }),
+													'gap-2 group-hover:border-[#0a0f0b] group-hover:bg-[#1f2d22]'
+												)}
+											>
 												Read article
 												<ArrowRight
 													className="size-4"
