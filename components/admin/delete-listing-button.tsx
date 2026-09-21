@@ -56,7 +56,7 @@ export default function DeleteListingButton({
 					<DialogHeader>
 						<DialogTitle>Delete listing?</DialogTitle>
 						<DialogDescription>
-							This permanently removes “{name}” and its tag assignments. This
+							This permanently removes “{name}” and its keyword assignments. This
 							cannot be undone.
 						</DialogDescription>
 					</DialogHeader>

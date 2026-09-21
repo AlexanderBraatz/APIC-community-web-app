@@ -72,7 +72,7 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 					.sort((a, b) => a.name.localeCompare(b.name))
 			);
 			setEditId(null);
-			setMessage('Tag updated.');
+			setMessage('Keyword updated.');
 		});
 	}
 
@@ -87,7 +87,7 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 			}
 			setTags(prev => prev.filter(tag => tag.id !== deleteId));
 			setDeleteId(null);
-			setMessage('Tag deleted.');
+			setMessage('Keyword deleted.');
 		});
 	}
 
@@ -102,8 +102,8 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 			}
 			setMessage(
 				result.filled === 0
-					? `No empty alias arrays among ${result.scanned} tag(s).`
-					: `Filled aliases on ${result.filled} of ${result.scanned} empty tag(s). Refresh if needed.`
+					? `No empty alias arrays among ${result.scanned} keyword(s).`
+					: `Filled aliases on ${result.filled} of ${result.scanned} empty keyword(s). Refresh if needed.`
 			);
 			// Soft refresh from server would be ideal; reload page list via router.refresh pattern:
 			window.location.reload();
@@ -114,7 +114,7 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 		<div className="space-y-4">
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<p className="text-sm text-[#666]">
-					{tags.length} tag{tags.length === 1 ? '' : 's'}. Aliases are used for
+					{tags.length} keyword{tags.length === 1 ? '' : 's'}. Aliases are used for
 					resolve/search only.
 				</p>
 				<Button
@@ -190,9 +190,9 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 			>
 				<DialogContent className="sm:max-w-lg" showCloseButton={false}>
 					<DialogHeader>
-						<DialogTitle>Edit tag</DialogTitle>
+						<DialogTitle>Edit keyword</DialogTitle>
 						<DialogDescription>
-							Rename the canonical tag or edit its under-the-hood aliases
+							Rename the canonical keyword or edit its under-the-hood aliases
 							(comma-separated).
 						</DialogDescription>
 					</DialogHeader>
@@ -245,7 +245,7 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 			>
 				<DialogContent className="sm:max-w-md" showCloseButton={false}>
 					<DialogHeader>
-						<DialogTitle>Delete tag?</DialogTitle>
+						<DialogTitle>Delete keyword?</DialogTitle>
 						<DialogDescription>
 							This permanently removes “{deleteName}” and cascades all listing
 							assignments. This cannot be undone.

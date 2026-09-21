@@ -49,7 +49,7 @@ export default function AdminListingsList({
 					id="q"
 					value={query}
 					onChange={e => setQuery(e.target.value)}
-					placeholder="Name, address, tag"
+					placeholder="Name, address, keyword"
 					autoComplete="off"
 				/>
 			</div>

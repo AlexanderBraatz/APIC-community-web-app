@@ -46,7 +46,7 @@ It is **not** a property booking or rental-availability product. Domain language
 - Invite users; view pending and historical invitations; resend / cancel.
 - Manage users and roles; delete users (with final-admin safeguards).
 - Manage any member’s attendance.
-- Create / edit / delete listings (and tags).
+- Create / edit / delete listings (and keywords).
 - View an administrative audit log.
 
 ### Out of scope for v1 (explicit)
@@ -66,7 +66,7 @@ It is **not** a property booking or rental-availability product. Domain language
 | Framework     | Next.js 16 App Router, React 19, Tailwind 4, shadcn                                   |
 | CMS           | TinaCMS — pages only; `/admin` rewrite → Tina static admin                            |
 | Attendance UI | DayPilot Scheduler at `/community-calendar` — full mock auth, draft/save, soft-delete |
-| Listings UI   | Tag/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages      |
+| Listings UI   | Keyword/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages      |
 | Listings data | `content/data/listings.json` (~75 rows); only a few have `lat`/`lng`                  |
 | Auth          | None (scheduler “Log in as” + “Admin role” are test controls)                         |
 | Supabase      | Not installed                                                                         |
@@ -100,7 +100,7 @@ Stored on `profiles.role`. Never trust client-provided role for authorization.
 
 - Invite, view invitations, manage roles, delete users
 - Read other users’ emails
-- Mutate listings / tags
+- Mutate listings / keywords
 - Mutate another member’s attendance
 - Access app admin routes or audit log
 - Access TinaCMS unless separately provisioned (CMS access is orthogonal)
@@ -113,7 +113,7 @@ Stored on `profiles.role`. Never trust client-provided role for authorization.
 - Promote / demote (except final-admin cases)
 - Delete users (except final-admin / self without handoff)
 - Create / update / delete any attendance record
-- Create / update / delete listings and tags
+- Create / update / delete listings and keywords
 - Read audit log
 
 ### Final-admin protection (required)
@@ -373,13 +373,13 @@ Matches routes: `/food-dining`, `/services-maintenance`, `/health-wellness`, `/s
 
 `MockMap` composition (evolve naming away from “mock” when convenient):
 
-1. Search input with suggestions (tags + place names).
-2. Active tag chips (AND filter).
+1. Search input with suggestions (keywords + place names).
+2. Active keyword chips (AND filter).
 3. Results list: **non-card** label/value rows (`Category`, `Name`, `Type`, `Contact`, `Remark`).
 4. Map showing pins for the relevant set (filtered when searching; all geocoded when idle).
 5. Selecting a place focuses that result + marker; bounds fit pins.
 
-Search matching today: **name, type, tags** (accent-insensitive fuzzy). Address is **not** required for v1 search; optional enhancement: add address to `listingMatchesQuery` without redesigning the panel.
+Search matching today: **name, type, keywords** (accent-insensitive fuzzy). Address is **not** required for v1 search; optional enhancement: add address to `listingMatchesQuery` without redesigning the panel.
 
 ### 9.5 Map stack
 
@@ -422,14 +422,14 @@ Constraints: lat ∈ [-90,90], lng ∈ [-180,180] when not null. Pin display req
 
 | location/listing_id | tag_id | unique pair |
 
-Normalize tags for admin creatable multi-select; hydrate `tags: string[]` in API responses so existing `listings-search` helpers stay usable.
+Normalize keywords for admin creatable multi-select; hydrate `tags: string[]` in API responses so existing `listings-search` helpers stay usable.
 
 ### 9.7 Listing permissions
 
 | Actor  | Read                         | Write                                     |
 | ------ | ---------------------------- | ----------------------------------------- |
 | Member | Yes (all published listings) | No                                        |
-| Admin  | Yes                          | Create / update / delete + tag management |
+| Admin  | Yes                          | Create / update / delete + keyword management |
 
 No member-authored listings in v1.
 
@@ -483,7 +483,7 @@ Append-only from trusted server paths / triggers. Record at least:
 - invite / resend / cancel
 - promote / demote / delete user
 - listing create / update / delete
-- tag create (optional)
+- keyword create (optional)
 - admin edits to another user’s attendance
 
 Members’ self-edits to attendance/profile need not appear.
@@ -500,7 +500,7 @@ Enable RLS on every app table.
 | ----------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
 | profiles                      | Select public fields (id, name, avatar); update own name/avatar | Select all needed via policies or admin RPC for emails |
 | attendance                    | Select intersecting window / non-expired; mutate own            | Full mutate                                            |
-| listings + tags + assignments | Select                                                          | Full mutate                                            |
+| listings + keywords + assignments | Select                                                          | Full mutate                                            |
 | user_invitations              | None                                                            | Via backend / admin policies carefully                 |
 | admin_audit_log               | None                                                            | Select only                                            |
 
@@ -520,7 +520,7 @@ Prefer **privileged Edge Functions / Server Actions with service role** for invi
 | `delete_user`                                          | Final-admin / self-handoff guard; delete auth user; purge future attendance; keep audit; decide avatar cleanup |
 | `save_attendance_batch`                                | Enforce role merge rules; validate dates; return rows                                                          |
 | `geocode_listing`                                      | Proxy Google Geocoding                                                                                         |
-| `create_listing` / `update_listing` / `delete_listing` | Validate, tags, coords, audit                                                                                  |
+| `create_listing` / `update_listing` / `delete_listing` | Validate, keywords, coords, audit                                                                                  |
 
 Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Server Actions under `app/` with service role. Prefer one pattern and stick to it.
 
@@ -586,7 +586,7 @@ Fix or remove dead `/add-attendance` link in `content/pages/place.md` (point to 
 - Auth forms (sign-in, invite accept, password flows)
 - Account page (avatar upload, name, password)
 - Permission-denied / gated layout for members & app admin
-- App admin shells: users, invitations, listings form (creatable tag multi-select), audit table
+- App admin shells: users, invitations, listings form (creatable keyword multi-select), audit table
 - Confirmation dialogs for promote / demote / delete (reuse shadcn Dialog)
 - Session provider / middleware for route protection
 
@@ -606,7 +606,7 @@ The ChatGPT “Main Calendar Components” list (month heading, Today button as 
 | Edit/delete own stays               | Yes        | Yes                             |
 | Manage others’ stays                | No         | Yes                             |
 | View listings / search / map        | Yes\*      | Yes                             |
-| Mutate listings / tags              | No         | Yes                             |
+| Mutate listings / keywords              | No         | Yes                             |
 | View others’ emails                 | No         | Yes                             |
 | Update own profile / password       | Yes        | Yes                             |
 | Change own role                     | No         | Only via admin action on others |
@@ -623,7 +623,7 @@ The ChatGPT “Main Calendar Components” list (month heading, Today button as 
 
 **Attendance:** `(user_id)`, `(start_date, end_date)`, optionally GiST/range if filtering by window becomes heavy.
 
-**Listings:** `(category)`, `(name)`, trigram (`pg_trgm`) on `name`, `type`, and tag names for optional server-side fuzzy search. v1 may keep client-side filter over fetched listings if count stays ~100.
+**Listings:** `(category)`, `(name)`, trigram (`pg_trgm`) on `name`, `type`, and keyword names for optional server-side fuzzy search. v1 may keep client-side filter over fetched listings if count stays ~100.
 
 **Invitations:** `(status)`, `(email)`, partial unique pending email.
 
@@ -665,9 +665,9 @@ When adding auth/admin screens:
 4. DB end dates are **inclusive**; DayPilot adapter uses exclusive end.
 5. Draft → Save / Discard UX and soft-delete-until-save are required.
 6. Past stays: keep in DB; default member load excludes fully past stays / loads by visible window.
-7. Listings use existing four category slugs and field model (`type`, `contact`, `remark`, tags).
+7. Listings use existing four category slugs and field model (`type`, `contact`, `remark`, keywords).
 8. Map: Google Maps JS via current component; geocode writes via secure backend.
-9. Tags normalized in DB; API still exposes `string[]` for UI.
+9. Keywords normalized in DB; API still exposes `string[]` for UI.
 10. Invitation-only registration; emails admin-only.
 11. Final admin cannot be demoted/deleted into a zero-admin state.
 12. App admin ≠ Tina `/admin`; use `/members/admin/*`.
@@ -699,7 +699,7 @@ Use these as PR / epic boundaries:
 3. **Attendance persistence** — `attendance` table + RLS + `save_attendance_batch`; adapt scheduler off localStorage; remove mock login.
 4. **Account** — profile name/avatar Storage; password change.
 5. **Listings migration** — schema + seed from JSON; switch MockMap to Supabase fetch; category filter; geocode remaining pins (admin tool or script).
-6. **App admin listings** — CRUD UI, tags creatable select, geocode flows, audit.
+6. **App admin listings** — CRUD UI, keywords creatable select, geocode flows, audit.
 7. **App admin users** — list with emails, promote/demote/delete + final-admin guards + audit.
 8. **App admin dashboard + audit UI** — counts, recent actions, audit browser.
 9. **Hardening** — indexes, email templates, rate limits, replace dead links, rename mockMap, O1/O5 product polish.
@@ -739,7 +739,7 @@ docs/developer/architecture-spec.md    # this document
 | Location fields description-only                 | **Replaced** by Listing shape                                                 |
 | `/availability`, `/locations`, `/admin/*` routes | **Replaced** by `/community-calendar`, category/map pages, `/members/admin/*` |
 | Locations page order Map→Search→Register         | **Replaced** by existing MockMap order/behaviour                              |
-| Fuzzy search name/category/address/tags          | **Partial**: name/type/tags now; address optional later                       |
+| Fuzzy search name/category/address/keywords          | **Partial**: name/type/keywords now; address optional later                       |
 | Shared generic “component inventory”             | Filtered to keep/evolve vs add                                                |
 
 This document is the single spec to split into implementation tickets.

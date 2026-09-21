@@ -197,7 +197,7 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] `npm run seed:listings` imports ~75 rows from `content/data/listings.json`.
 - [ ] Signed-out category page (`/food-dining` etc.) shows CTA, not listing data.
 - [ ] Signed-in category page shows only that category’s listings (O5).
-- [ ] Tag chips + query filter behave as before.
+- [ ] Keyword chips + query filter behave as before.
 - [ ] Map pins only for rows with lat/lng (most wait for PR-06 geocoding).
 - [ ] JSON file is seed-only — not imported at runtime by `lib/listings-search.ts`.
 
@@ -207,7 +207,7 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Admin opens `/members/admin/listings`, creates a listing with confirmed pin.
 - [ ] Listing appears on the matching category page for signed-in members.
 - [ ] Ambiguous geocode shows candidates; manual “Find on map” pin works.
-- [ ] Delete asks for confirmation and removes the row + tag assignments.
+- [ ] Delete asks for confirmation and removes the row + keyword assignments.
 - [ ] `admin_audit_log` records listing create/update/delete (and auto-geocode).
 - [ ] Non-admin cannot mutate listings (UI redirects; Data API policies block).
 
@@ -232,7 +232,7 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 
 ## Smoke checks (PR-09)
 
-- [ ] Migration `listings_trigram_indexes` applied (`pg_trgm` + GIN indexes on listing name/type and tag name).
+- [ ] Migration `listings_trigram_indexes` applied (`pg_trgm` + GIN indexes on listing name/type and keyword name).
 - [ ] `/place` Attendance Calendar button works; **Add Attendance** button removed (no `/add-attendance`).
 - [ ] Footer Privacy Policy → `/privacy` loads stub policy page.
 - [ ] Category pages still show listings browse + map (`locationsMap` Tina block / `ListingsBrowse`).

@@ -323,7 +323,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 						htmlFor={inputId}
 						className="sr-only"
 					>
-						Search places and tags
+						Search places and keywords
 					</label>
 					<div className="relative">
 						<Search
@@ -335,7 +335,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							type="search"
 							value={query}
 							autoComplete="off"
-							placeholder="Search by tag or place name"
+							placeholder="Search by keyword or place name"
 							onChange={event => {
 								setQuery(event.target.value);
 								setSelectedPlaceName(null);
@@ -364,7 +364,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							{suggestions.tags.length > 0 ? (
 								<div className="border-b border-[#e8e4dc] px-4 py-3">
 									<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
-										Tags
+										Keywords
 									</p>
 									<div className="flex flex-wrap gap-2">
 										{suggestions.tags.map(tag => (
@@ -419,7 +419,7 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 									type="button"
 									onClick={() => removeTag(tag)}
 									className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
-									aria-label={`Remove tag ${tag}`}
+									aria-label={`Remove keyword ${tag}`}
 								>
 									{tag}
 									<X

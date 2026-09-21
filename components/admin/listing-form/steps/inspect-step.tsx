@@ -55,7 +55,7 @@ export default function InspectStep({ preview }: InspectStepProps) {
 
 			<div className="space-y-2">
 				<h4 className="text-sm font-medium text-[#444]">
-					Tags used to search for this business
+					Keywords used to search for this business
 				</h4>
 				{tags.length > 0 ? (
 					<div className="flex flex-wrap gap-2">
@@ -69,7 +69,7 @@ export default function InspectStep({ preview }: InspectStepProps) {
 						))}
 					</div>
 				) : (
-					<p className="text-xs text-[#999]">No tags selected yet.</p>
+					<p className="text-xs text-[#999]">No keywords selected yet.</p>
 				)}
 			</div>
 		</section>

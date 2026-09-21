@@ -7,7 +7,7 @@ export const LISTING_FORM_STEPS = [
 	{ id: 'location', label: 'Location' },
 	{ id: 'contact', label: 'Contact info' },
 	{ id: 'apic-description', label: 'APIC description' },
-	{ id: 'tags', label: 'Tags' },
+	{ id: 'tags', label: 'Keywords' },
 	{ id: 'inspect', label: 'Inspect & Accept' }
 ] as const;
 

@@ -8,7 +8,7 @@ import {
 	useTransition,
 	type KeyboardEvent
 } from 'react';
-import { X } from 'lucide-react';
+import { RotateCcw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -32,10 +32,8 @@ export type SelectedTagChip = {
 	isNew: boolean;
 };
 
-const EXISTING_CHIP_CLASS =
-	'border-amber-300 bg-amber-50 text-amber-950';
-const NEW_CHIP_CLASS =
-	'border-emerald-300 bg-emerald-50 text-emerald-900';
+const EXISTING_CHIP_CLASS = 'border-amber-300 bg-amber-50 text-amber-950';
+const NEW_CHIP_CLASS = 'border-emerald-300 bg-emerald-50 text-emerald-900';
 
 type ListingTagsEditorProps = {
 	knownTags: KnownTag[];
@@ -279,7 +277,10 @@ export default function ListingTagsEditor({
 			addCanonical(typedTag, true);
 			return;
 		}
-		if (exactVocabularyMatch && !selectedKeys.has(tagKey(exactVocabularyMatch))) {
+		if (
+			exactVocabularyMatch &&
+			!selectedKeys.has(tagKey(exactVocabularyMatch))
+		) {
 			addCanonical(exactVocabularyMatch, false);
 			return;
 		}
@@ -304,22 +305,26 @@ export default function ListingTagsEditor({
 						className="size-2 shrink-0 rounded-full bg-amber-400"
 						aria-hidden
 					/>
-					Existing tag
+					Existing keyword
 				</span>
 				<span className="inline-flex items-center gap-1.5">
 					<span
 						className="size-2 shrink-0 rounded-full bg-emerald-500"
 						aria-hidden
 					/>
-					New tag (created on save)
+					New keyword (created on save)
 				</span>
 			</div>
 
 			{suggestPending ? (
-				<div className="space-y-3" role="status" aria-live="polite">
+				<div
+					className="space-y-3"
+					role="status"
+					aria-live="polite"
+				>
 					<p className="text-xs text-[#666]">
-						Matching this listing against known tags and Places data, then
-						asking AI for the best existing tags — or new ones when needed…
+						Matching this listing against known keywords and Places data, then
+						asking AI for the best existing keywords — or new ones when needed…
 					</p>
 					<div className="flex flex-wrap gap-2">
 						{[0, 1, 2].map(i => (
@@ -355,38 +360,43 @@ export default function ListingTagsEditor({
 				</div>
 			) : showEmptyAfterSuggest ? (
 				<p className="text-xs text-[#999]">
-					No strong matches found. Type below to add tags.
+					No strong matches found. Type below to add keywords.
 				</p>
 			) : (
-				<p className="text-xs text-[#999]">No tags selected yet.</p>
+				<p className="text-xs text-[#999]">No keywords selected yet.</p>
 			)}
 
 			{suggestError ? (
-				<p className="text-xs text-amber-800" role="status">
+				<p
+					className="text-xs text-amber-800"
+					role="status"
+				>
 					{suggestError} Applied Places-based hints when available.
 				</p>
 			) : null}
 
 			{showRetry ? (
-				<button
+				<Button
 					type="button"
 					onClick={runSuggest}
-					className="text-xs text-[#805b32] underline-offset-2 hover:underline"
+					disabled={suggestPending}
+					className="rounded-[2px] border border-amber-400 bg-amber-300 text-amber-950 hover:bg-amber-400"
 				>
 					{suggestError || selected.length === 0
 						? 'Try again'
 						: 'Suggest again'}
-				</button>
+					<RotateCcw className="size-4" aria-hidden />
+				</Button>
 			) : null}
 
 			<div className="space-y-2">
-				<Label htmlFor="tag_search">Add a tag</Label>
+				<Label htmlFor="tag_search">Add a keyword</Label>
 				<Input
 					id="tag_search"
 					value={search}
 					onChange={e => setSearch(e.target.value)}
 					onKeyDown={handleSearchKeyDown}
-					placeholder="Match name or alias, or type a new tag…"
+					placeholder="Match name or alias, or type a new keyword…"
 					disabled={suggestPending}
 				/>
 				{typedTag ? (
@@ -437,9 +447,12 @@ export default function ListingTagsEditor({
 					if (!open) setRemoveCandidate(null);
 				}}
 			>
-				<DialogContent className="sm:max-w-md" showCloseButton={false}>
+				<DialogContent
+					className="sm:max-w-md"
+					showCloseButton={false}
+				>
 					<DialogHeader>
-						<DialogTitle>Remove tag?</DialogTitle>
+						<DialogTitle>Remove keyword?</DialogTitle>
 						<DialogDescription>
 							Remove “{removeCandidate}” from this listing? You can add it again
 							later.

@@ -37,7 +37,7 @@ It is **not** a property booking or rental-availability product. Domain language
 - Invite users; resend / cancel invitations
 - Manage users and roles; delete users (with final-admin safeguards)
 - Manage any member’s attendance
-- Create / edit / delete listings and tags
+- Create / edit / delete listings and keywords
 - View the administrative audit log at `/members/admin/audit-log`
 - Edit marketing pages and blog via TinaCMS `/admin`
 
@@ -67,7 +67,7 @@ It is **not** a property booking or rental-availability product. Domain language
 | CMS | TinaCMS / TinaCloud — marketing pages & blog; UI at `/admin` |
 | Attendance UI | DayPilot Lite scheduler (`app/components/scheduler.tsx`) |
 | Maps / places | Google Maps JavaScript API, Places API, Geocoding |
-| AI helpers | OpenAI — admin tag suggest / alias backfill |
+| AI helpers | OpenAI — admin keyword suggest / alias backfill |
 | Error monitoring | Sentry EU (`de.sentry.io`) — always on when DSN is set |
 | Product analytics | PostHog EU (`eu.i.posthog.com`) — consent-gated |
 | Auth email redirects | Supabase Auth + `NEXT_PUBLIC_SITE_URL` |
@@ -86,7 +86,7 @@ Request ownership transfer or admin invite for each console. Secrets stay in Ver
 | **Supabase** | Auth, Postgres, RLS, invites, service role | **Yes** | Project ref / API URL in dashboard |
 | **TinaCloud** | CMS auth (`NEXT_PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`) | **Yes** for content editing & Tina build step | Also used at build time |
 | **Google Cloud** | Maps JS, Places, Geocoding API keys | **Yes** for map / place features | Restrict Maps key by HTTP referrer; server keys by IP in prod |
-| **OpenAI** | Admin tag suggest / alias backfill | Optional for core app; **required** for those AI admin features | Server-only `OPENAI_API_KEY` |
+| **OpenAI** | Admin keyword suggest / alias backfill | Optional for core app; **required** for those AI admin features | Server-only `OPENAI_API_KEY` |
 | **PostHog** (EU) | Product analytics + session replay | Optional — omit key to disable | Prefer separate projects for local vs production |
 | **Sentry** (EU `de.sentry.io`) | Errors, source maps, optional Slack alerts | Strongly recommended | Separate projects for local vs production |
 | **Domain / DNS** | Production hostname → Vercel | **Yes** for public relaunch | Must match `NEXT_PUBLIC_SITE_URL` / Auth redirect URLs |
@@ -105,7 +105,7 @@ Request ownership transfer or admin invite for each console. Secrets stay in Ver
 | **Sentry** | Error history, releases, alerts | Org/project invite (EU `de.sentry.io`) |
 | **Vercel** | Deploy history, env vars, domains | Team/project invite |
 | **Google Cloud** | API keys, quotas, billing | GCP project IAM |
-| **OpenAI** | API usage for tag/AI features | Org invite or new key under client billing |
+| **OpenAI** | API usage for keyword/AI features | Org invite or new key under client billing |
 
 Access requests go through the **client**. The original developer (§11) can help with handoff when available.
 
@@ -164,7 +164,7 @@ Copy `.env.example` → `.env.local` for local work. Set the same keys on the **
 
 | Variable | Scope | Purpose |
 | --- | --- | --- |
-| `OPENAI_API_KEY` | **Server only** | Admin tag suggest / alias backfill |
+| `OPENAI_API_KEY` | **Server only** | Admin keyword suggest / alias backfill |
 
 ### TinaCMS / TinaCloud
 
@@ -207,7 +207,7 @@ Anything prefixed `NEXT_PUBLIC_` is visible in the browser bundle. Treat service
 8. **Env:** fill `.env.local` from `.env.example`; mirror values on Vercel for Production (and Preview as needed).
 9. **Domain:** point DNS at Vercel; confirm Auth redirect URLs and `NEXT_PUBLIC_SITE_URL`.
 10. **Deploy:** `npm run build` locally to verify, then deploy via Vercel.
-11. **Smoke-test:** invite/accept invite; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, tags); audit log; Sentry test error if DSN set; PostHog only when consent on.
+11. **Smoke-test:** invite/accept invite; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; Sentry test error if DSN set; PostHog only when consent on.
 
 Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough for typical maintenance.
 
@@ -223,7 +223,7 @@ Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough fo
 | `/members/admin/users` | Roles, promote/demote, delete |
 | `/members/admin/invitations` | Invite / resend / cancel |
 | `/members/admin/listings` | CRUD listings |
-| `/members/admin/tags` | Tag management + AI helpers |
+| `/members/admin/tags` | Keyword management + AI helpers |
 | `/members/admin/audit-log` | Read-only audit of sensitive admin actions |
 
 Non-admins hitting `/members/admin/*` are redirected (typically to `/place`).
@@ -234,7 +234,7 @@ Non-admins hitting `/members/admin/*` are redirected (typically to `/place`).
 
 ### Audit logging
 
-Sensitive admin actions write to `admin_audit_log` (invites, role changes, user deletes, listing/tag changes, etc.). Admins can read via the audit log UI; RLS prevents non-admin writes from the client.
+Sensitive admin actions write to `admin_audit_log` (invites, role changes, user deletes, listing/keyword changes, etc.). Admins can read via the audit log UI; RLS prevents non-admin writes from the client.
 
 ---
 

@@ -229,7 +229,7 @@ async function syncListingTags(
 	const resolved = resolveTagInputs(tags, vocabulary);
 	const invalid = resolved.find(r => r.status === 'invalid');
 	if (invalid && invalid.status === 'invalid') {
-		throw new Error(`Invalid tag “${invalid.raw}”: ${invalid.reason}`);
+		throw new Error(`Invalid keyword “${invalid.raw}”: ${invalid.reason}`);
 	}
 
 	const tagIds: string[] = [];
@@ -265,7 +265,7 @@ async function syncListingTags(
 		await writeAudit(supabase, {
 			action: 'tag.create',
 			targetId: 'batch',
-			summary: `Created ${toInsert.length} listing tag(s)`,
+			summary: `Created ${toInsert.length} listing keyword(s)`,
 			newValues: { tags: toInsert.map(t => t.name) }
 		});
 	}

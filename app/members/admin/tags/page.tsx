@@ -7,9 +7,9 @@ export default async function AdminTagsPage() {
 	return (
 		<div className="space-y-8">
 			<section>
-				<h2 className="text-xl font-medium text-[#444]">Manage tags</h2>
+				<h2 className="text-xl font-medium text-[#444]">Manage keywords</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Edit canonical names and hidden aliases. Deleting a tag removes it
+					Edit canonical names and hidden aliases. Deleting a keyword removes it
 					from all listings.
 				</p>
 			</section>

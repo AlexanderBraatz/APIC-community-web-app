@@ -83,7 +83,7 @@ export async function updateTag(
 			.eq('id', id)
 			.maybeSingle();
 		if (loadError) return { ok: false, error: loadError.message };
-		if (!existing) return { ok: false, error: 'Tag not found.' };
+		if (!existing) return { ok: false, error: 'Keyword not found.' };
 
 		const aliases = dedupeAliases(input.aliases).filter(
 			alias => tagKey(alias) !== tagKey(name)
@@ -98,7 +98,7 @@ export async function updateTag(
 		await writeTagAudit(supabase, {
 			action: 'tag.update',
 			targetId: id,
-			summary: `Updated tag “${name}”`,
+			summary: `Updated keyword “${name}”`,
 			oldValues: {
 				name: existing.name,
 				aliases: existing.aliases
@@ -126,7 +126,7 @@ export async function deleteTag(
 			.eq('id', id)
 			.maybeSingle();
 		if (loadError) return { ok: false, error: loadError.message };
-		if (!existing) return { ok: false, error: 'Tag not found.' };
+		if (!existing) return { ok: false, error: 'Keyword not found.' };
 
 		const { error } = await supabase.from('listing_tags').delete().eq('id', id);
 		if (error) return { ok: false, error: error.message };
@@ -134,7 +134,7 @@ export async function deleteTag(
 		await writeTagAudit(supabase, {
 			action: 'tag.delete',
 			targetId: id,
-			summary: `Deleted tag “${existing.name}”`,
+			summary: `Deleted keyword “${existing.name}”`,
 			oldValues: {
 				name: existing.name,
 				aliases: existing.aliases

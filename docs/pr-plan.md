@@ -304,12 +304,12 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 - Pins: only rows with lat/lng; document that most need geocoding in PR-06.
 - Keep fuzzy helpers in `lib/listings-search.ts`.
 
-**Out of scope:** Admin CRUD, geocoding UI, tag administration.
+**Out of scope:** Admin CRUD, geocoding UI, keyword administration.
 
 **Independently testable**
 
 - [ ] Category page shows only that category’s listings.
-- [ ] Tag chips + query filter behave as before.
+- [ ] Keyword chips + query filter behave as before.
 - [ ] Map pins match filtered geocoded set.
 - [ ] Unauthenticated behaviour matches O1 decision (redirect/CTA vs empty).
 - [ ] JSON file no longer required at runtime (can remain as seed source).
@@ -327,9 +327,9 @@ Each PR lists: purpose, scope, out of scope, migrations, test plan, merge criter
 **Includes**
 
 - `/members/admin/listings` table + create/edit/delete.
-- Creatable multi-select tags.
+- Creatable multi-select keywords.
 - Server `geocode_listing` + Find-on-map fallback using `LocationsMap`.
-- Audit log entries for listing/tag mutations.
+- Audit log entries for listing/keyword mutations.
 - Optional batch “geocode missing” for seed rows without coords.
 
 **Out of scope:** Full audit UI browser (PR-08); user promote/delete.

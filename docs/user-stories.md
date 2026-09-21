@@ -75,7 +75,7 @@ As an **admin**, I want to create, edit, and delete any member’s attendance (i
 As a **signed-in member**, I want to browse curated listings by category (Food & Dining, Services & Maintenance, Health & Wellness, Shop & Market) so that I can find useful places around Castelfalfi and Tuscany.
 
 ### US-15 — Search and filter listings
-As a **signed-in member**, I want to search by name, type, and tags and filter with tag chips so that I can quickly narrow down recommendations.
+As a **signed-in member**, I want to search by name, type, and keywords and filter with keyword chips so that I can quickly narrow down recommendations.
 
 ### US-16 — See listings on a map
 As a **signed-in member**, I want to view listing pins on a map centered on Castelfalfi, select a place to focus it, and see contact/remark details so that I can plan visits locally.
@@ -93,8 +93,8 @@ As an **admin**, I want to view pending and historical invitations and resend or
 ### US-19 — Manage users and roles
 As an **admin**, I want to list members (including emails), promote/demote roles, and delete users—without removing the last admin—so that community access stays correct and safe.
 
-### US-20 — Manage listings and tags
-As an **admin**, I want to create, edit, and delete listings and tags, including setting address/coordinates via geocode or map placement, so that the local directory stays accurate.
+### US-20 — Manage listings and keywords
+As an **admin**, I want to create, edit, and delete listings and keywords, including setting address/coordinates via geocode or map placement, so that the local directory stays accurate.
 
 ### US-21 — Review admin audit activity
 As an **admin**, I want to read an audit log of sensitive actions (invites, role changes, user deletes, listing changes, admin attendance edits) so that I can see what changed and by whom.

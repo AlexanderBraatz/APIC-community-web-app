@@ -49,7 +49,7 @@ export default async function MembersAdminLayout({
 						href="/members/admin/tags"
 						className="text-[#805b32] underline"
 					>
-						Tags
+						Keywords
 					</Link>
 					<Link
 						href="/members/admin/audit-log"
