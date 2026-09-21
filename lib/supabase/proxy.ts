@@ -18,6 +18,7 @@ const PRIVACY_ONBOARDING_ALLOWLIST = [
 	'/accept-invite',
 	'/terms',
 	'/privacy',
+	'/legal',
 	'/auth',
 	'/reset-password',
 	'/sign-out'

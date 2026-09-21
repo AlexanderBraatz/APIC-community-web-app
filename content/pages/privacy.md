@@ -127,9 +127,9 @@ blocks:
       restrict certain processing, to object to certain processing, and to data
       portability. You may also lodge a complaint with a supervisory authority. For
       inquiries regarding your personal data, contact us at
-      **associazioneproprietaricastelfalfi@pec.it**, or use the association
-      details in the site footer. You can update many profile and privacy settings
-      yourself in Account.
+      **associazioneproprietaricastelfalfi@pec.it**, or see the association
+      details on the [Legal Information](/legal) page. You can update many profile
+      and privacy settings yourself in Account.
 
 
       We may update this Privacy Policy from time to time. The version published

@@ -109,7 +109,7 @@ blocks:
 
       **Contact.** For questions about these Terms, the community website, or
       your personal data, contact **IMMOBILIARI DI CASTELFALFI ETS** at
-      **associazioneproprietaricastelfalfi@pec.it**, or use the details in the
-      site footer.
+      **associazioneproprietaricastelfalfi@pec.it**, or see the details on the
+      [Legal Information](/legal) page.
     _template: textSection
 ---
