@@ -1,9 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { EmailOtpType } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/client';
+import {
+	APIC_ADMIN_EMAIL,
+	authLinkErrorCopy,
+	isExpiredAuthLinkError,
+	resolveAuthLinkFlow,
+	type AuthLinkErrorKind,
+	type AuthLinkFlow
+} from '@/lib/auth/link-errors';
 
 function safeNextPath(next: string | null) {
 	if (!next || !next.startsWith('/') || next.startsWith('//')) {
@@ -22,6 +31,31 @@ function readHashParams() {
 	return new URLSearchParams(hash);
 }
 
+function clearHashFromUrl() {
+	window.history.replaceState(
+		null,
+		'',
+		`${window.location.pathname}${window.location.search}`
+	);
+}
+
+type ConfirmErrorState = {
+	kind: AuthLinkErrorKind;
+	flow: AuthLinkFlow;
+};
+
+function authErrorCode(error: unknown): string | null {
+	if (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof (error as { code?: unknown }).code === 'string'
+	) {
+		return (error as { code: string }).code;
+	}
+	return null;
+}
+
 export default function AuthConfirmClient({
 	code,
 	tokenHash,
@@ -34,19 +68,53 @@ export default function AuthConfirmClient({
 	next: string | null;
 }) {
 	const router = useRouter();
-	const [message, setMessage] = useState('Confirming your invitation…');
+	const [statusMessage, setStatusMessage] = useState(
+		'Confirming your email link…'
+	);
+	const [errorState, setErrorState] = useState<ConfirmErrorState | null>(null);
 
 	useEffect(() => {
 		let cancelled = false;
+
+		function showError(kind: AuthLinkErrorKind, flow: AuthLinkFlow) {
+			if (cancelled) return;
+			setErrorState({ kind, flow });
+			setStatusMessage('');
+		}
 
 		async function run() {
 			const supabase = createClient();
 			const next = safeNextPath(nextParam);
 			const hashParams = readHashParams();
+			const searchParams = new URLSearchParams(window.location.search);
+
+			const hashType = hashParams.get('type');
+			const flow = resolveAuthLinkFlow({
+				type,
+				hashType,
+				next: nextParam
+			});
+
+			const errorCode =
+				hashParams.get('error_code') || searchParams.get('error_code');
+			const errorDescription =
+				hashParams.get('error_description') ||
+				searchParams.get('error_description');
+			const hashError = hashParams.get('error') || searchParams.get('error');
+
+			if (errorCode || errorDescription || hashError) {
+				clearHashFromUrl();
+				const expired = isExpiredAuthLinkError({
+					errorCode,
+					errorDescription,
+					message: hashError
+				});
+				showError(expired ? 'expired' : 'generic', flow);
+				return;
+			}
 
 			const accessToken = hashParams.get('access_token');
 			const refreshToken = hashParams.get('refresh_token');
-			const hashType = hashParams.get('type');
 
 			try {
 				if (accessToken && refreshToken) {
@@ -57,11 +125,7 @@ export default function AuthConfirmClient({
 					if (error) {
 						throw error;
 					}
-					window.history.replaceState(
-						null,
-						'',
-						`${window.location.pathname}${window.location.search}`
-					);
+					clearHashFromUrl();
 					const destination = nextParam
 						? safeNextPath(nextParam)
 						: hashType === 'recovery'
@@ -97,12 +161,15 @@ export default function AuthConfirmClient({
 				throw new Error('Auth link is invalid or has expired.');
 			} catch (error) {
 				if (cancelled) return;
-				const text =
+				const message =
 					error instanceof Error
 						? error.message
 						: 'Auth link is invalid or has expired.';
-				setMessage(text);
-				router.replace(`/sign-in?error=${encodeURIComponent(text)}`);
+				const expired = isExpiredAuthLinkError({
+					code: authErrorCode(error),
+					message
+				});
+				showError(expired ? 'expired' : 'generic', flow);
 			}
 		}
 
@@ -112,9 +179,45 @@ export default function AuthConfirmClient({
 		};
 	}, [code, tokenHash, type, nextParam, router]);
 
+	if (errorState) {
+		const copy = authLinkErrorCopy(errorState.kind, errorState.flow);
+		return (
+			<main className="mx-auto flex min-h-[40vh] w-full max-w-md flex-col justify-center px-4 py-16">
+				<h1 className="font-heading text-3xl text-[#805b32]">{copy.title}</h1>
+				<p className="mt-3 text-sm text-[#666]" role="alert">
+					{copy.body}
+				</p>
+				<p className="mt-6 text-sm">
+					<a
+						href={`mailto:${APIC_ADMIN_EMAIL}`}
+						className="text-[#805b32] underline"
+					>
+						Contact APIC admins
+					</a>
+					{copy.showForgotPassword ? (
+						<>
+							{' · '}
+							<Link
+								href="/forgot-password"
+								className="text-[#805b32] underline"
+							>
+								Request a new reset link
+							</Link>
+						</>
+					) : null}
+				</p>
+				<p className="mt-4 text-sm">
+					<Link href="/sign-in" className="text-[#805b32] underline">
+						Back to sign in
+					</Link>
+				</p>
+			</main>
+		);
+	}
+
 	return (
 		<main className="mx-auto flex min-h-[40vh] w-full max-w-md flex-col justify-center px-4 py-16">
-			<p className="text-sm text-[#666]">{message}</p>
+			<p className="text-sm text-[#666]">{statusMessage}</p>
 		</main>
 	);
 }
