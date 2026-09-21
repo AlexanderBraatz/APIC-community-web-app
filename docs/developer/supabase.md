@@ -91,9 +91,20 @@ Already expected for this app:
 - Add matching Redirect URLs for local and production, including `/auth/confirm` (and `/accept-invite` if listed).
 - Set `NEXT_PUBLIC_SITE_URL` to that origin (`.env.local` locally; Vercel env in production) so invite and password-reset emails build the correct `redirectTo`.
 - [ ] **Leaked password protection** — Authentication → Attack Protection (HaveIBeenPwned); enable when ready for production.
-- [ ] **Invite / recovery email copy** — Authentication → Email Templates; keep APIC tone and links to `/auth/confirm` + `/accept-invite` / `/reset-password`.
+- [x] **Invite / recovery email templates** — APIC-branded HTML in [`supabase/templates/`](../../supabase/templates/) (`invite.html`, `recovery.html`); wired for local Auth in `supabase/config.toml`. Hosted project is updated via Management API (or paste into Authentication → Email Templates). Admin previews: `/members/admin` disclosures. CTAs use `{{ .ConfirmationURL }}` (app `redirectTo` still targets `/auth/confirm` → accept-invite / reset-password).
 
 TinaCMS `/admin` is unrelated to Supabase Auth.
+
+### Auth email templates (source of truth)
+
+| Concern | Location |
+|---------|----------|
+| HTML + subjects (git) | `supabase/templates/invite.html`, `recovery.html` + `[auth.email.template.*]` in `config.toml` |
+| Local Auth | `config.toml` `content_path` (restart local stack after changes) |
+| Hosted Auth | Management API `PATCH …/config/auth` (`mailer_subjects_invite` / `mailer_templates_invite_content`, same for `recovery`) or Dashboard → Authentication → Email Templates |
+| Admin preview | `/members/admin` — Invitation email / Password reset email `<details>` (reads the same HTML files) |
+
+When you change a template file, update hosted Auth the same way (API or Dashboard paste) so live emails match the admin preview.
 
 ## Maps / Places / Geocoding keys
 
@@ -238,7 +249,8 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [ ] Category pages still show listings browse + map (`locationsMap` Tina block / `ListingsBrowse`).
 - [ ] Invite/resend and geocode actions return a friendly error when rate-limited.
 - [ ] `lib/supabase/database.types.ts` exists; `npm run supabase:types` regenerates it.
-- [ ] Dashboard: leaked-password protection + email template polish (manual).
+- [ ] Dashboard: leaked-password protection (manual).
+- [x] Invite / recovery email templates branded in git + hosted Auth (see Auth email templates above).
 - [ ] Dashboard / Cloud Console: Maps JS key referrer-restricted; Geocoding/Places server keys IP-locked for production (PR-10 — Things left to do). Local may stay unrestricted for now.
 
 ### Auth redirects for invites

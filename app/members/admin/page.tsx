@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { getAdminDashboardCounts } from '@/lib/admin/audit-actions';
+import { getAuthEmailPreviews } from '@/lib/emails/auth-email-previews';
 
 /** Set these when walkthrough videos are published on Vimeo. */
 const MEMBER_WALKTHROUGH_VIMEO_ID = '';
@@ -38,8 +39,47 @@ function VimeoEmbed({
 	);
 }
 
+function AuthEmailPreviewDetails({
+	title,
+	subject,
+	html
+}: {
+	title: string;
+	subject: string;
+	html: string;
+}) {
+	return (
+		<details className="border border-[#e5e5e5]">
+			<summary className="cursor-pointer px-4 py-3 text-lg font-medium text-[#444]">
+				{title}
+			</summary>
+			<div className="border-t border-[#e5e5e5] px-4 py-3">
+				<p className="text-sm text-[#666]">
+					This is the template used by Supabase Auth; live emails include a
+					one-time link.
+				</p>
+				<p className="mt-2 text-sm text-[#444]">
+					<span className="text-[#888]">Subject:</span> {subject}
+				</p>
+				<div className="mt-3 overflow-hidden border border-[#e5e5e5] bg-[#f7f4ef]">
+					<iframe
+						title={`${title} preview`}
+						srcDoc={html}
+						sandbox=""
+						className="h-105 w-full bg-white"
+					/>
+				</div>
+			</div>
+		</details>
+	);
+}
+
 export default async function MembersAdminDashboardPage() {
 	const counts = await getAdminDashboardCounts();
+	const emailPreviews = getAuthEmailPreviews();
+
+	const invitePreview = emailPreviews.find(p => p.kind === 'invite')!;
+	const recoveryPreview = emailPreviews.find(p => p.kind === 'recovery')!;
 
 	const tiles = [
 		{
@@ -158,7 +198,7 @@ export default async function MembersAdminDashboardPage() {
 				</div>
 			</section>
 
-			<section>
+			<section className="space-y-3">
 				<details className="border border-[#e5e5e5]">
 					<summary className="cursor-pointer px-4 py-3 text-lg font-medium text-[#444]">
 						Technical handover
@@ -180,6 +220,17 @@ export default async function MembersAdminDashboardPage() {
 						</p>
 					</div>
 				</details>
+
+				<AuthEmailPreviewDetails
+					title="Invitation email"
+					subject={invitePreview.subject}
+					html={invitePreview.html}
+				/>
+				<AuthEmailPreviewDetails
+					title="Password reset email"
+					subject={recoveryPreview.subject}
+					html={recoveryPreview.html}
+				/>
 			</section>
 		</div>
 	);
