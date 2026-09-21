@@ -335,7 +335,14 @@ export async function cancelInvitation(
 export async function completeInviteAcceptance(formData: FormData): Promise<void> {
 	const password = String(formData.get('password') ?? '');
 	const confirm = String(formData.get('confirm') ?? '');
+	const fullName = String(formData.get('full_name') ?? '').trim();
 
+	if (!fullName) {
+		throw new Error('Name is required.');
+	}
+	if (fullName.length > 200) {
+		throw new Error('Name must be 200 characters or fewer.');
+	}
 	if (password.length < 8) {
 		throw new Error('Password must be at least 8 characters.');
 	}
@@ -359,6 +366,14 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 		});
 		if (passwordError) {
 			throw new Error(passwordError.message);
+		}
+
+		const { error: profileError } = await supabase
+			.from('profiles')
+			.update({ full_name: fullName })
+			.eq('id', user.id);
+		if (profileError) {
+			throw new Error(profileError.message);
 		}
 
 		const admin = createServiceRoleClient();
@@ -385,6 +400,8 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 		const message = error instanceof Error ? error.message : '';
 		const isUserFacing =
 			message === 'Open the invitation link from your email first.' ||
+			message === 'Name is required.' ||
+			message === 'Name must be 200 characters or fewer.' ||
 			message === 'Password must be at least 8 characters.' ||
 			message === 'Passwords do not match.';
 		if (!isUserFacing) {

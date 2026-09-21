@@ -2,7 +2,7 @@
 title: Home
 blocks:
   - heading: Welcome to APIC
-    subtitle: Your Private Owners Community in Castelfalfi
+    subtitle: Associazione Proprietari Castelfalfi — your private owners community
     backgroundVideo: /videos/apicherovideo.mp4
     backgroundImage: /images/apicherovideo.jpg
     _template: heroBanner

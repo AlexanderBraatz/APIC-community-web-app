@@ -15,8 +15,8 @@ blocks:
 
       The members area is invitation-only and is intended for Castelfalfi
       property owners and authorised community members. Public pages (such as the
-      home page, About, and blog) are not used for product analytics or session
-      recording.
+      home page, About, and blog) are not used for usage analytics or product
+      insights.
 
 
       **Purposes.** APIC ETS processes personal data of its members solely for
@@ -44,29 +44,32 @@ blocks:
       we can deliver accounts, the members area, and site content.
 
 
-      **Optional analytics and session recording.** With your consent, we use
-      **PostHog** (Cloud EU) to understand how signed-in members use the service
-      and — if you also allow it — to record sessions for product improvement.
-      Usage analytics and session recording are optional and independent of each
-      other. Both default to off until you choose. There is no public visitor
-      tracking and no cookie banner for anonymous browsing.
+      **Optional usage analytics and product insights.** With your consent, we use
+      **PostHog** (Cloud EU) for two optional, independent settings. Both default
+      to off until you choose. There is no public visitor tracking and no cookie
+      banner for anonymous browsing.
 
 
-      When analytics is enabled, we may collect events such as page views and
-      feature use (for example opening the calendar or directory filters). Event
+      **Usage analytics** helps us understand which pages and features are most
+      useful. When enabled, we may collect events such as page views and feature
+      use (for example opening the calendar or directory filters). Event
       properties are limited to non-identifying details where possible. We
       identify analytics profiles with your account UUID only — not your email,
-      name, or phone number. When session recording is enabled, recordings may
-      include pages you visit while signed in (including community calendar and
-      member content). Password and similar credential fields are masked. Auth
+      name, or phone number.
+
+
+      **Product insights** provides optional insights into how you use the site
+      so we can improve it. When enabled, this may include signed-in page visits
+      (including community calendar and member content) so we can find friction
+      and fix problems. Password and similar credential fields are masked. Auth
       credential routes (sign-in, accept invite, forgot/reset password) are
-      excluded from recording.
+      excluded.
 
 
       Community administrators may be invited to the PostHog project externally to
-      review aggregate product insights. There is no in-app analytics dashboard.
-      Declining or turning off analytics does not reduce your access to community
-      features.
+      review aggregate insights. There is no in-app analytics dashboard.
+      Declining or turning off these options does not reduce your access to
+      community features.
 
 
       **Essential error monitoring.** To keep the service reliable we use
@@ -81,12 +84,12 @@ blocks:
 
 
       **Consent and your choices.** When you accept an invitation you must agree
-      to the Terms & Conditions. Separately, you are asked to accept, decline, or
-      manage optional analytics and session recording. Agreeing to the Terms is
-      required to join; optional analytics choices are not. After joining, you can
-      change usage analytics and session recording at any time under **Account →
-      Privacy**. Turning a preference off stops further capture or recording as
-      soon as the preference is applied. Essential error monitoring remains on.
+      to the Terms & Conditions. Separately, you are asked to choose optional
+      usage analytics and product insights. Agreeing to the Terms is required to
+      join; these optional choices are not. After joining, you can change usage
+      analytics and product insights at any time under **Account → Privacy**.
+      Turning a preference off stops further capture as soon as the preference is
+      applied. Essential error monitoring remains on.
       Returning members are not shown a soft consent banner; preferences are
       managed from Account → Privacy.
 
@@ -96,18 +99,18 @@ blocks:
       events are designed to avoid unnecessary personal content (for example
       search text is not sent as a raw query). Account and membership data are
       retained while your membership is active and as needed for administration,
-      security, and legal obligations. Optional analytics and recording data are
-      processed according to your preferences and the retention settings of our
-      PostHog EU project. Error reports are retained according to our Sentry
-      project settings for diagnosing and fixing issues.
+      security, and legal obligations. Optional usage analytics and product
+      insights data are processed according to your preferences and the retention
+      settings of our PostHog EU project. Error reports are retained according to
+      our Sentry project settings for diagnosing and fixing issues.
 
 
       **Cookies and similar technologies.** This website uses technically
       necessary cookies (and similar storage) required for login and core site
-      functionality. Optional usage analytics and session recording run only if
+      functionality. Optional usage analytics and product insights run only if
       you consent; when enabled, PostHog may use cookies or local storage for
-      those purposes. Declining optional analytics means those optional
-      technologies are not used for you.
+      those purposes. Declining them means those optional technologies are not
+      used for you.
 
 
       **Sharing and access.** Membership information you share in community

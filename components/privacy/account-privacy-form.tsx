@@ -55,7 +55,7 @@ export function AccountPrivacyForm({
 		<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 			<h2 className="text-lg font-medium text-[#444]">Privacy &amp; analytics</h2>
 			<p className="text-sm text-[#666]">
-				Control optional usage analytics and session recording. Essential error
+				Control optional usage analytics and product insights. Essential error
 				monitoring stays on. See the{' '}
 				<Link
 					href="/privacy"
@@ -98,7 +98,7 @@ export function AccountPrivacyForm({
 					<div>
 						<Label className="text-base text-[#444]">Usage analytics</Label>
 						<p className="mt-1 text-sm text-[#666]">
-							Help APIC understand which pages and features are most useful.
+							Helps us understand which pages and features are most useful.
 						</p>
 					</div>
 					<button
@@ -120,10 +120,9 @@ export function AccountPrivacyForm({
 
 				<div className="flex items-start justify-between gap-4">
 					<div>
-						<Label className="text-base text-[#444]">Session recording</Label>
+						<Label className="text-base text-[#444]">Product insights</Label>
 						<p className="mt-1 text-sm text-[#666]">
-							Allow privacy-protected recordings of your interactions to help
-							diagnose problems and improve APIC.
+							Optional insights into how you use the site so we can improve it.
 						</p>
 					</div>
 					<button

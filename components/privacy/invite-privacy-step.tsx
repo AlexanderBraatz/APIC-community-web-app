@@ -11,20 +11,19 @@ type Props = {
 };
 
 export function InvitePrivacyStep({ error }: Props) {
-	const [mode, setMode] = useState<'choose' | 'manage'>('choose');
-	const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
-	const [sessionReplayEnabled, setSessionReplayEnabled] = useState(true);
+	const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
+	const [sessionReplayEnabled, setSessionReplayEnabled] = useState(false);
 	const [termsAccepted, setTermsAccepted] = useState(false);
 
 	return (
-		<main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
+		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
 			<h1 className="font-heading text-3xl text-[#805b32]">
 				Privacy &amp; analytics
 			</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Optional usage analytics and session recording help improve APIC. You
-				can change these later under Account. Essential error monitoring stays
-				on for reliability.
+				APIC — Associazione Proprietari Castelfalfi. Optional usage analytics
+				and product insights help improve the community. Essential error
+				monitoring stays on for reliability.
 			</p>
 
 			{error ? (
@@ -67,140 +66,97 @@ export function InvitePrivacyStep({ error }: Props) {
 				</label>
 			</div>
 
-			{mode === 'choose' ? (
-				<form
-					action={saveInvitePrivacyChoices}
-					className="mt-8 space-y-3"
-				>
-					<input
-						type="hidden"
-						name="terms_accepted"
-						value={termsAccepted ? 'true' : 'false'}
-					/>
-					<Button
-						type="submit"
-						name="choice"
-						value="accept"
-						disabled={!termsAccepted}
-						className="w-full rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22] disabled:opacity-50"
-					>
-						Accept optional analytics
-					</Button>
+			<form action={saveInvitePrivacyChoices} className="mt-8 space-y-6">
+				<input
+					type="hidden"
+					name="terms_accepted"
+					value={termsAccepted ? 'true' : 'false'}
+				/>
+
+				<div className="space-y-4">
+					<div className="flex items-start justify-between gap-4">
+						<div>
+							<Label className="text-base text-[#444]">Usage analytics</Label>
+							<p className="mt-1 text-sm text-[#666]">
+								Helps us understand which pages and features are most useful.
+							</p>
+						</div>
+						<button
+							type="button"
+							role="switch"
+							aria-checked={analyticsEnabled}
+							onClick={() => setAnalyticsEnabled(value => !value)}
+							className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+								analyticsEnabled ? 'bg-[#805b32]' : 'bg-[#ccc]'
+							}`}
+						>
+							<span
+								className={`absolute top-0.5 left-0.5 size-6 rounded-full bg-white transition-transform ${
+									analyticsEnabled ? 'translate-x-5' : ''
+								}`}
+							/>
+						</button>
+					</div>
+
+					<div className="flex items-start justify-between gap-4">
+						<div>
+							<Label className="text-base text-[#444]">Product insights</Label>
+							<p className="mt-1 text-sm text-[#666]">
+								Optional insights into how you use the site so we can improve it.
+							</p>
+						</div>
+						<button
+							type="button"
+							role="switch"
+							aria-checked={sessionReplayEnabled}
+							onClick={() => setSessionReplayEnabled(value => !value)}
+							className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+								sessionReplayEnabled ? 'bg-[#805b32]' : 'bg-[#ccc]'
+							}`}
+						>
+							<span
+								className={`absolute top-0.5 left-0.5 size-6 rounded-full bg-white transition-transform ${
+									sessionReplayEnabled ? 'translate-x-5' : ''
+								}`}
+							/>
+						</button>
+					</div>
+				</div>
+
+				<p className="text-sm text-[#666]">
+					You can change these later in your account settings.
+				</p>
+
+				<div className="space-y-3">
 					<Button
 						type="submit"
 						name="choice"
 						value="decline"
 						disabled={!termsAccepted}
 						variant="outline"
+						onClick={() => {
+							setAnalyticsEnabled(false);
+							setSessionReplayEnabled(false);
+						}}
 						className="w-full rounded-[2px] border-[#634627] disabled:opacity-50"
 					>
-						Decline
+						Continue without optional analytics
 					</Button>
-					<button
-						type="button"
-						disabled={!termsAccepted}
-						onClick={() => setMode('manage')}
-						className="w-full py-2 text-sm text-[#805b32] underline disabled:opacity-50"
-					>
-						Manage preferences
-					</button>
-				</form>
-			) : (
-				<form
-					action={saveInvitePrivacyChoices}
-					className="mt-8 space-y-6"
-				>
-					<input
-						type="hidden"
-						name="terms_accepted"
-						value={termsAccepted ? 'true' : 'false'}
-					/>
-					<input
-						type="hidden"
-						name="choice"
-						value="manage"
-					/>
-					<input
-						type="hidden"
-						name="analytics_enabled"
-						value={analyticsEnabled ? 'true' : 'false'}
-					/>
-					<input
-						type="hidden"
-						name="session_replay_enabled"
-						value={sessionReplayEnabled ? 'true' : 'false'}
-					/>
-
-					<div className="space-y-4">
-						<div className="flex items-start justify-between gap-4">
-							<div>
-								<Label className="text-base text-[#444]">Usage analytics</Label>
-								<p className="mt-1 text-sm text-[#666]">
-									Help APIC understand which pages and features are most useful.
-								</p>
-							</div>
-							<button
-								type="button"
-								role="switch"
-								aria-checked={analyticsEnabled}
-								onClick={() => setAnalyticsEnabled(value => !value)}
-								className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-									analyticsEnabled ? 'bg-[#805b32]' : 'bg-[#ccc]'
-								}`}
-							>
-								<span
-									className={`absolute top-0.5 left-0.5 size-6 rounded-full bg-white transition-transform ${
-										analyticsEnabled ? 'translate-x-5' : ''
-									}`}
-								/>
-							</button>
-						</div>
-
-						<div className="flex items-start justify-between gap-4">
-							<div>
-								<Label className="text-base text-[#444]">
-									Session recording
-								</Label>
-								<p className="mt-1 text-sm text-[#666]">
-									Allow privacy-protected recordings of how you interact with
-									APIC to help identify problems. Passwords are masked; login
-									pages are not recorded.
-								</p>
-							</div>
-							<button
-								type="button"
-								role="switch"
-								aria-checked={sessionReplayEnabled}
-								onClick={() => setSessionReplayEnabled(value => !value)}
-								className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
-									sessionReplayEnabled ? 'bg-[#805b32]' : 'bg-[#ccc]'
-								}`}
-							>
-								<span
-									className={`absolute top-0.5 left-0.5 size-6 rounded-full bg-white transition-transform ${
-										sessionReplayEnabled ? 'translate-x-5' : ''
-									}`}
-								/>
-							</button>
-						</div>
-					</div>
-
 					<Button
 						type="submit"
+						name="choice"
+						value="accept"
 						disabled={!termsAccepted}
+						onClick={() => {
+							setAnalyticsEnabled(true);
+							setSessionReplayEnabled(true);
+						}}
 						className="w-full rounded-[2px] border border-[#634627] bg-[#805b32] text-white hover:bg-[#1f2d22] disabled:opacity-50"
 					>
-						Save and continue
+						Accept all and continue
 					</Button>
-					<button
-						type="button"
-						onClick={() => setMode('choose')}
-						className="w-full py-2 text-sm text-[#666] underline"
-					>
-						Back
-					</button>
-				</form>
-			)}
+				</div>
+			</form>
 		</main>
 	);
 }

@@ -46,13 +46,10 @@ export async function saveInvitePrivacyChoices(formData: FormData) {
 	} else if (choice === 'decline') {
 		analyticsEnabled = false;
 		sessionReplayEnabled = false;
-	} else if (choice === 'manage') {
-		analyticsEnabled = parseBool(formData.get('analytics_enabled'));
-		sessionReplayEnabled = parseBool(formData.get('session_replay_enabled'));
 	} else {
 		redirect(
 			`/accept-invite?step=privacy&error=${encodeURIComponent(
-				'Choose Accept, Decline, or Manage preferences.'
+				'Choose Accept all and continue, or Continue without optional analytics.'
 			)}`
 		);
 	}

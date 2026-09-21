@@ -32,7 +32,7 @@ export default async function AcceptInvitePage({
 
 	if (!user) {
 		return (
-			<main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
+			<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
 				<h1 className="font-heading text-3xl text-[#805b32]">Accept invitation</h1>
 				<p className="mt-3 text-sm text-[#666]">
 					Open the invitation link from your email to continue. If the link is
@@ -61,12 +61,24 @@ export default async function AcceptInvitePage({
 		return <InvitePrivacyStep error={params.error} />;
 	}
 
+	const { data: profile } = await supabase
+		.from('profiles')
+		.select('full_name')
+		.eq('id', user.id)
+		.maybeSingle();
+
+	const defaultName =
+		profile?.full_name && profile.full_name !== 'Member'
+			? profile.full_name
+			: '';
+
 	return (
-		<main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
-			<h1 className="font-heading text-3xl text-[#805b32]">Choose a password</h1>
+		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
+			<h1 className="font-heading text-3xl text-[#805b32]">Join APIC</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Welcome{user.email ? ` (${user.email})` : ''}. Set a password to finish
-				joining the community.
+				APIC — Associazione Proprietari Castelfalfi. Welcome
+				{user.email ? ` (${user.email})` : ''}. Set your shown name and password
+				to finish joining.
 			</p>
 
 			{params.error ? (
@@ -79,6 +91,21 @@ export default async function AcceptInvitePage({
 			) : null}
 
 			<form action={acceptAction} className="mt-8 space-y-4">
+				<div className="space-y-2">
+					<Label htmlFor="full_name">Shown name</Label>
+					<Input
+						id="full_name"
+						name="full_name"
+						type="text"
+						autoComplete="name"
+						maxLength={200}
+						required
+						defaultValue={defaultName}
+					/>
+					<p className="text-xs text-[#666]">
+						This is the name other members will see.
+					</p>
+				</div>
 				<div className="space-y-2">
 					<Label htmlFor="password">Password</Label>
 					<Input
@@ -108,16 +135,6 @@ export default async function AcceptInvitePage({
 					Continue
 				</Button>
 			</form>
-
-			<p className="mt-6 text-center text-sm text-[#666]">
-				Already set a password?{' '}
-				<Link
-					href="/accept-invite?step=privacy"
-					className="text-[#805b32] underline"
-				>
-					Continue to privacy preferences
-				</Link>
-			</p>
 		</main>
 	);
 }

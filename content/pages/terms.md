@@ -15,7 +15,7 @@ blocks:
 
       By creating an account and accepting an invitation — including by ticking
       the required Terms checkbox — you agree to these Terms. Optional usage
-      analytics and session recording are governed by the Privacy Policy and your
+      analytics and product insights are governed by the Privacy Policy and your
       Account → Privacy settings; they are **not** part of accepting these Terms.
 
 
@@ -72,12 +72,30 @@ blocks:
       member data for membership administration, communication, and operation of
       this members-only area. Data is only disclosed where required by law or
       necessary for association operations. The site uses technically necessary
-      cookies for login and core functionality; optional analytics and session
-      recording (PostHog, Cloud EU) require your separate choice during invite
-      acceptance or later in Account → Privacy. Essential technical error
-      monitoring (Sentry) may run to keep the service reliable and does not depend
-      on optional analytics consent. Accepting these Terms does not by itself turn
-      on optional analytics or session recording.
+      cookies for login and core functionality.
+
+
+      Separately from accepting these Terms, you may choose two optional product
+      improvement settings (PostHog, Cloud EU) during invite acceptance or later
+      under Account → Privacy. Both default to off.
+
+
+      **Usage analytics** helps us understand which pages and features are most
+      useful — for example page views and feature use among signed-in members.
+      Analytics profiles use your account identifier only, not your email or name.
+
+
+      **Product insights** provides optional insights into how you use the site so
+      we can improve it — for example where members encounter friction or confusing
+      flows while signed in. Sensitive fields such as passwords are masked, and
+      authentication pages (sign-in, accept invite, forgot/reset password) are
+      excluded. You can turn either setting off at any time; turning them off stops
+      further capture for that preference.
+
+
+      Essential technical error monitoring (Sentry) may run to keep the service
+      reliable and does not depend on these optional choices. Accepting these Terms
+      does not by itself turn on usage analytics or product insights.
 
 
       **Liability.** The service is provided for the benefit of the owners’
