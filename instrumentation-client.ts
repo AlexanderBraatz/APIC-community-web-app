@@ -24,7 +24,9 @@ Sentry.init({
 					Sentry.feedbackIntegration({
 						autoInject: true,
 						colorScheme: 'light',
-						themeLight: feedbackTheme
+						themeLight: feedbackTheme,
+						triggerLabel: '',
+						triggerAriaLabel: 'Report a Bug'
 					})
 				]
 			: []),

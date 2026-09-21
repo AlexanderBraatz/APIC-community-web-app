@@ -144,6 +144,8 @@
   --accent-foreground: #ffffff;
   --button-primary-background: #805b32;
   --button-primary-hover-background: #1f2d22;
+  /* Raised slightly so the icon clears page chrome / footers */
+  --page-margin: 16px 16px 64px 16px;
   /* Default widget uses 14px; iOS Safari zooms focused fields below 16px */
   --font-size: 16px;
   --input-font-size: 16px;
