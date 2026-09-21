@@ -39,6 +39,7 @@
 	--dp-scheduler-event-border-color: var(--scheme-event-border);
 	--dp-scheduler-event-color: var(--scheme-event-color);
 	--dp-scheduler-event-box-shadow: 0 1px 5px color-mix(in srgb, var(--scheme-event-bar) 28%, transparent);
+	background: var(--scheme-cell-business);
 }
 
 [data-scheduler-scheme] .save-overlay-spinner {

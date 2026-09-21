@@ -7,6 +7,20 @@
 	position: relative;
 }
 
+/* Prevent touch rubber-band from revealing the taupe chrome well */
+.scheduler-frame,
+.brown_theme_main,
+.brown_theme_main .brown_theme_scroll,
+.brown_theme_main .brown_theme_rowheader_scroll,
+.brown_theme_main .brown_theme_timeheader_scroll {
+	overscroll-behavior: none;
+}
+
+/* Match residual overscroll fill to cream grid cells */
+.brown_theme_main {
+	background: var(--dp-scheduler-cell-business-bg-color, #f2ede5);
+}
+
 .scheduler-frame[data-font-size='small']
 	:is(.brown_theme_main, .brown_theme_main:not(.default)) {
 	--dp-scheduler-font-size: 10px;
