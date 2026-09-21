@@ -107,7 +107,7 @@ export default function OpeningHoursEditor({
 		<div className="space-y-3">
 			<p className="text-xs text-[#888]">
 				Choose Open without lunch break for one continuous period, or Open with
-				lunch break when the place closes midday and reopens.
+				lunch break when the business closes midday and reopens.
 			</p>
 			<div className="overflow-x-auto border border-[#b8a99a]/40">
 				<table className="w-full min-w-[36rem] border-collapse text-sm">

@@ -15,7 +15,7 @@ export default function GoogleStep({
 	return (
 		<section className="space-y-4">
 			<p className="text-xs text-[#888]">
-				Search for the place to autofill name, address, map pin, and
+				Search for the business to autofill name, address, map pin, and
 				contacts.
 			</p>
 			<PlacesLookup

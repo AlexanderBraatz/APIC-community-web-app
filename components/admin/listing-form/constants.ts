@@ -2,7 +2,7 @@ import { CATEGORY_SLUGS, type CategorySlug } from '@/lib/listings-search';
 
 export const LISTING_FORM_STEPS = [
 	{ id: 'category', label: 'Category' },
-	{ id: 'google', label: 'Find place' },
+	{ id: 'google', label: 'Find business' },
 	{ id: 'type-name', label: 'Type & Name' },
 	{ id: 'location', label: 'Location' },
 	{ id: 'contact', label: 'Contact info' },

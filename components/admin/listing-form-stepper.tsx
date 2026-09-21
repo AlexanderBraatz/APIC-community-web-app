@@ -179,8 +179,8 @@ export default function ListingFormStepper({
 		setCurrentStep(STEP_TYPE_NAME);
 		setMessage(
 			place.lat !== null && place.lng !== null
-				? 'Place applied — review the autofilled fields and confirm the map pin.'
-				: 'Place applied — review fields and set a map pin if needed.'
+				? 'Business applied — review the autofilled fields and confirm the map pin.'
+				: 'Business applied — review fields and set a map pin if needed.'
 		);
 		setError(null);
 	}
@@ -340,7 +340,7 @@ export default function ListingFormStepper({
 								setCurrentStep(STEP_TYPE_NAME);
 								setError(null);
 								setMessage(
-									'Skipped Places lookup — enter listing details manually.'
+									'Skipped business lookup — enter listing details manually.'
 								);
 							}}
 						/>

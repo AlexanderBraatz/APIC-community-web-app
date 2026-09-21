@@ -145,7 +145,7 @@ export default function PlacesLookup({
 			<div className="space-y-1">
 				<h3 className="text-sm font-medium text-[#444]">
 					{mode === 'business'
-						? 'Search by name'
+						? 'Search by business name'
 						: 'Search by address'}
 				</h3>
 			</div>
@@ -169,7 +169,7 @@ export default function PlacesLookup({
 
 			<div className="space-y-2">
 				<Label htmlFor="places-lookup-query">
-					{mode === 'business' ? 'Place name' : 'Address'}
+					{mode === 'business' ? 'Business name' : 'Address'}
 				</Label>
 				<Input
 					id="places-lookup-query"
@@ -223,7 +223,7 @@ export default function PlacesLookup({
 
 			{(pending || selecting) && query.trim().length >= 2 ? (
 				<p className="text-xs text-[#888]">
-					{selecting ? 'Loading place details…' : 'Searching…'}
+					{selecting ? 'Loading business details…' : 'Searching…'}
 				</p>
 			) : null}
 
@@ -236,7 +236,7 @@ export default function PlacesLookup({
 				>
 					{mode === 'business'
 						? 'Search by address instead'
-						: 'Search by name instead'}
+						: 'Search by business name instead'}
 				</button>
 				<Button
 					type="button"

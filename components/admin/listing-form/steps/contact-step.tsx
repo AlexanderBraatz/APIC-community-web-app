@@ -73,7 +73,7 @@ export default function ContactStep({
 				</div>
 				{contacts.length === 0 ? (
 					<p className="text-xs text-[#999]">
-						No contact info yet — add one, or fill via Places lookup.
+						No contact info yet — add one, or fill via business lookup.
 					</p>
 				) : (
 					<ul className="space-y-5 sm:space-y-2">
@@ -168,7 +168,7 @@ export default function ContactStep({
 						<p className="text-xs text-[#888]">
 							{showHours
 								? 'Optional weekly schedule for this listing.'
-								: 'Optional — expand to edit, or leave blank until autofilled from Places.'}
+								: 'Optional — expand to edit, or leave blank until autofilled from business lookup.'}
 						</p>
 					</div>
 					<Button

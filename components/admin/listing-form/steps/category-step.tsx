@@ -19,7 +19,7 @@ export default function CategoryStep({ category, onChange }: CategoryStepProps) 
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Select category</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					Choose where this listing will appear before looking up a place.
+					Choose where this listing will appear before looking up a business.
 				</p>
 			</div>
 			<div className="space-y-2">

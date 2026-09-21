@@ -31,7 +31,7 @@ export default function TypeNameStep({
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Type & name</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					Confirm the category and set how this place is labeled for members.
+					Confirm the category and set how this business is labeled for members.
 				</p>
 			</div>
 			<div className="grid gap-4 sm:grid-cols-2">
@@ -58,7 +58,7 @@ export default function TypeNameStep({
 					</select>
 				</div>
 				<div className="space-y-2">
-					<Label htmlFor="step-type">Place type (what it is)</Label>
+					<Label htmlFor="step-type">Business type (what it is)</Label>
 					<Input
 						id="step-type"
 						value={type}
