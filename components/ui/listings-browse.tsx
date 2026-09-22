@@ -123,6 +123,11 @@ export default function ListingsBrowse(props: {
 	const mapHeightInitializedRef = useRef(false);
 	const mapDragStartYRef = useRef(0);
 	const mapDragStartHeightRef = useRef(0);
+	/** Skip focus-driven place clear after Enter/click select (router may refocus). */
+	const ignoreFocusClearRef = useRef(false);
+	const ignoreFocusClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+		null
+	);
 	const inputId = useId();
 
 	useLayoutEffect(() => {
@@ -342,6 +347,7 @@ export default function ListingsBrowse(props: {
 	const showSuggestionPanel = panelOpen && query.trim().length > 0;
 
 	const topKeyword = suggestions.tags[0] ?? null;
+	const topPlace = suggestions.places[0] ?? null;
 
 	const isFiltered = activeTags.length > 0 || Boolean(selectedPlaceName);
 
@@ -416,6 +422,17 @@ export default function ListingsBrowse(props: {
 	}
 
 	function selectPlace(listing: Listing) {
+		// Enter keeps focus in the input; router.replace can also remount/refocus.
+		// Ignore onFocus clear briefly so the new ?place= is not immediately wiped.
+		ignoreFocusClearRef.current = true;
+		if (ignoreFocusClearTimerRef.current) {
+			clearTimeout(ignoreFocusClearTimerRef.current);
+		}
+		ignoreFocusClearTimerRef.current = setTimeout(() => {
+			ignoreFocusClearRef.current = false;
+			ignoreFocusClearTimerRef.current = null;
+		}, 400);
+
 		setSelectedPlaceName(listing.name);
 		setQuery(listing.name);
 		replaceBrowseState({ place: listing.name });
@@ -426,6 +443,11 @@ export default function ListingsBrowse(props: {
 		track(AnalyticsEvents.DIRECTORY_SEARCHED, {
 			query_length: listing.name.length
 		});
+
+		requestAnimationFrame(() => {
+			const input = document.getElementById(inputId) as HTMLInputElement | null;
+			input?.blur();
+		});
 	}
 
 	function clearAll() {
@@ -435,9 +457,14 @@ export default function ListingsBrowse(props: {
 		setPanelOpen(false);
 	}
 
-	function confirmTopKeyword() {
-		if (!topKeyword) return;
-		addTag(topKeyword);
+	function confirmTopSuggestion() {
+		if (topKeyword) {
+			addTag(topKeyword);
+			return;
+		}
+		if (topPlace) {
+			selectPlace(topPlace);
+		}
 	}
 
 	if (authStatus === 'loading') {
@@ -522,7 +549,7 @@ export default function ListingsBrowse(props: {
 					<div className="relative w-full min-w-0">
 						{activeTags.length > 0 ? (
 							<div className="mb-3">
-								<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
+								<p className="font-heading mb-2 text-xs tracking-wide text-[#333333] uppercase">
 									Filtering by keywords:
 								</p>
 								<div className="flex flex-wrap gap-2">
@@ -545,13 +572,15 @@ export default function ListingsBrowse(props: {
 							</div>
 						) : null}
 
-						<label
-							htmlFor={inputId}
-							className="font-heading mb-2 block text-base text-[#333333]"
-						>
-							Filter recommendations using keywords or search for a business by
-							name
-						</label>
+						{activeTags.length === 0 ? (
+							<label
+								htmlFor={inputId}
+								className="font-heading mb-2 block text-base text-[#333333]"
+							>
+								Filter recommendations using keywords or search for a business
+								by name
+							</label>
+						) : null}
 						<div className="relative">
 							<Search
 								className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
@@ -562,6 +591,7 @@ export default function ListingsBrowse(props: {
 								type="search"
 								value={query}
 								autoComplete="off"
+								aria-label="Filter recommendations using keywords or search for a business by name"
 								placeholder={
 									(category && CATEGORY_SEARCH_PLACEHOLDERS[category]) ||
 									'e.g. keyword, Business Name'
@@ -572,19 +602,20 @@ export default function ListingsBrowse(props: {
 									setPanelOpen(true);
 								}}
 								onFocus={() => {
+									if (ignoreFocusClearRef.current) return;
 									clearPlaceSelection();
 									setPanelOpen(true);
 								}}
 								onKeyDown={event => {
 									if (event.key === 'Enter') {
 										event.preventDefault();
-										confirmTopKeyword();
+										confirmTopSuggestion();
 									}
 									if (event.key === 'Escape') {
 										setPanelOpen(false);
 									}
 								}}
-								className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
+								className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32] [&::-webkit-search-cancel-button]:hidden"
 							/>
 							{(query || activeTags.length > 0) && (
 								<button
@@ -633,24 +664,33 @@ export default function ListingsBrowse(props: {
 													Places
 												</p>
 												<ul>
-													{suggestions.places.map(place => (
-														<li key={`${place.category}-${place.name}`}>
-															<button
-																type="button"
-																onClick={() => selectPlace(place)}
-																className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
-															>
-																<span className="text-base text-[#333333]">
-																	{place.name}
-																</span>
-																<span className="text-sm text-[#666666]">
-																	{[place.type, CATEGORY_LABELS[place.category]]
-																		.filter(Boolean)
-																		.join(' · ')}
-																</span>
-															</button>
-														</li>
-													))}
+													{suggestions.places.map((place, index) => {
+														const isEnterTarget =
+															!topKeyword && index === 0;
+														return (
+															<li key={`${place.category}-${place.name}`}>
+																<button
+																	type="button"
+																	onClick={() => selectPlace(place)}
+																	className={cn(
+																		'font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors',
+																		isEnterTarget
+																			? 'bg-[#f7f3ec]'
+																			: 'hover:bg-[#f7f3ec]'
+																	)}
+																>
+																	<span className="text-base text-[#333333]">
+																		{place.name}
+																	</span>
+																	<span className="text-sm text-[#666666]">
+																		{[place.type, CATEGORY_LABELS[place.category]]
+																			.filter(Boolean)
+																			.join(' · ')}
+																	</span>
+																</button>
+															</li>
+														);
+													})}
 												</ul>
 											</div>
 										) : null}

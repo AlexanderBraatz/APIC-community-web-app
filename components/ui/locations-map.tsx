@@ -369,13 +369,7 @@ function MapPins({
 			highlightedName || selectedName || hoveredName || defaultName;
 		if (!nameToShow) return null;
 		return pins.find(pin => pin.name === nameToShow) ?? null;
-	}, [
-		pins,
-		highlightedName,
-		selectedName,
-		hoveredName,
-		showTooltipsByDefault
-	]);
+	}, [pins, highlightedName, selectedName, hoveredName, showTooltipsByDefault]);
 
 	const activeKey = activePin ? pinKey(activePin) : null;
 	// Selection keeps the closable info window; list/map hover uses a lean tooltip.
@@ -510,7 +504,7 @@ export default function LocationsMap({
 				<button
 					type="button"
 					onClick={() => onClearFocus?.()}
-					className="font-heading absolute right-3 bottom-3 z-10 rounded-[2px] border border-[#b8a99a] bg-white/95 px-3 py-2 text-sm text-[#333333] shadow-sm transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec]"
+					className="font-heading absolute right-3 bottom-4 z-10 rounded-[2px] border border-[#b8a99a] bg-white/95 px-3 py-2 text-sm text-[#333333] shadow-sm transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec] lg:right-15 lg:bottom-6"
 					aria-label="Show all places on map"
 				>
 					Show all
