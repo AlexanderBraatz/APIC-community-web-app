@@ -163,7 +163,7 @@ export default function DevButtonsPage() {
 
 			<StyleSection
 				title="Wide CTA + arrow"
-				usedIn="cta-section, button-list, admin listings — size=lg + w-full sm:w-72"
+				usedIn="cta-section, button-list, admin recommendations — size=lg + w-full sm:w-72"
 			>
 				<Button
 					type="button"

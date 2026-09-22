@@ -323,8 +323,9 @@ export default function ListingTagsEditor({
 					aria-live="polite"
 				>
 					<p className="text-xs text-[#666]">
-						Matching this listing against known keywords and Places data, then
-						asking AI for the best existing keywords — or new ones when needed…
+						Matching this recommendation against known keywords and Places
+						data, then asking AI for the best existing keywords — or new ones
+						when needed…
 					</p>
 					<div className="flex flex-wrap gap-2">
 						{[0, 1, 2].map(i => (
@@ -454,8 +455,8 @@ export default function ListingTagsEditor({
 					<DialogHeader>
 						<DialogTitle>Remove keyword?</DialogTitle>
 						<DialogDescription>
-							Remove “{removeCandidate}” from this listing? You can add it again
-							later.
+							Remove “{removeCandidate}” from this recommendation? You can add
+							it again later.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>

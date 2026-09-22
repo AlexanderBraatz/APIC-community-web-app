@@ -22,7 +22,7 @@ export default function InspectStep({ preview }: InspectStepProps) {
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Inspect & accept</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					Preview how members will see this listing, then create or save.
+					Preview how members will see this recommendation, then create or save.
 				</p>
 			</div>
 

@@ -91,7 +91,7 @@ export default async function MembersAdminDashboardPage() {
 			value: counts.blogPosts
 		},
 		{
-			label: 'Listings',
+			label: 'Recommendations',
 			value: counts.listings
 		},
 		{

@@ -183,7 +183,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 					setListings([]);
 					setAliasMap(new Map());
 					setLoadError(
-						error instanceof Error ? error.message : 'Could not load listings.'
+						error instanceof Error
+							? error.message
+							: 'Could not load recommendations.'
 					);
 				}
 			}
@@ -349,8 +351,9 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 							Members places map
 						</h2>
 						<p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[#57422a]">
-							Local listings and map pins are available after you sign in. Ask
-							an admin for an invitation if you do not have an account yet.
+							Local recommendations and map pins are available after you sign
+							in. Ask an admin for an invitation if you do not have an account
+							yet.
 						</p>
 						<Link
 							href={`/sign-in?next=${encodeURIComponent(next)}`}

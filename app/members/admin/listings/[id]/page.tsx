@@ -26,7 +26,9 @@ export default async function EditListingPage({
 		<div className="space-y-6">
 			<div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 				<div>
-					<h2 className="text-xl font-medium text-[#444]">Edit listing</h2>
+					<h2 className="text-xl font-medium text-[#444]">
+						Edit recommendation
+					</h2>
 					<p className="mt-1 text-sm text-[#666]">{listing.name}</p>
 				</div>
 				<DeleteListingButton id={listing.id} name={listing.name} />

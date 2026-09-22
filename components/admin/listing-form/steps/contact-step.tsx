@@ -163,7 +163,7 @@ export default function ContactStep({
 						<h3 className="text-sm font-medium text-[#444]">Opening hours</h3>
 						<p className="text-xs text-[#888]">
 							{showHours
-								? 'Optional weekly schedule for this listing.'
+								? 'Optional weekly schedule for this recommendation.'
 								: 'Optional — expand to edit, or leave blank until autofilled from business lookup.'}
 						</p>
 					</div>

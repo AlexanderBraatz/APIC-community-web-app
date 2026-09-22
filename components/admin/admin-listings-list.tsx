@@ -45,7 +45,7 @@ export default function AdminListingsList({
 	return (
 		<div className="space-y-4">
 			<div className="w-full space-y-2 sm:max-w-xs">
-				<Label htmlFor="q">Search existing Listings</Label>
+				<Label htmlFor="q">Search existing Recommendations</Label>
 				<Input
 					id="q"
 					value={query}
@@ -56,7 +56,7 @@ export default function AdminListingsList({
 			</div>
 
 			{filtered.length === 0 ? (
-				<p className="text-sm text-[#888]">No listings match.</p>
+				<p className="text-sm text-[#888]">No recommendations match.</p>
 			) : (
 				<ul className="divide-y divide-[#e5e5e5] border-t border-[#e5e5e5]">
 					{filtered.map(listing => (

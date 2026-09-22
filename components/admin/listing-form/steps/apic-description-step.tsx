@@ -17,7 +17,7 @@ export default function ApicDescriptionStep({
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">APIC description</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					This text is shown to members on the listing card.
+					This text is shown to members on the recommendation card.
 				</p>
 			</div>
 			<div className="space-y-2">

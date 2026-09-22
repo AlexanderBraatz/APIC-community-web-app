@@ -42,9 +42,9 @@ export default async function AdminListingsPage({
 	return (
 		<div className="space-y-8">
 			<section>
-				<h2 className="text-xl font-medium text-[#444]">Listings</h2>
+				<h2 className="text-xl font-medium text-[#444]">Recommendations</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Listings are the places, services, and local recommendations members
+					Recommendations are the places, services, and local spots members
 					browse on the community site — restaurants, shops, wellness, and more
 					around Castelfalfi and Tuscany.
 				</p>
@@ -73,7 +73,9 @@ export default async function AdminListingsPage({
 			/>
 
 			<div className="space-y-2">
-				<h3 className="text-sm font-medium text-[#444]">Add new Listing</h3>
+				<h3 className="text-sm font-medium text-[#444]">
+					Add new Recommendation
+				</h3>
 				<Link
 					href="/members/admin/listings/new"
 					className={cn(
@@ -81,7 +83,7 @@ export default async function AdminListingsPage({
 						'group w-full justify-between sm:w-72'
 					)}
 				>
-					<span>New listing</span>
+					<span>New recommendation</span>
 					<ArrowRight
 						className="size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
 						strokeWidth={1.75}

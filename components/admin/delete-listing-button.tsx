@@ -53,7 +53,7 @@ export default function DeleteListingButton({
 			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogContent className="sm:max-w-md" showCloseButton={false}>
 					<DialogHeader>
-						<DialogTitle>Delete listing?</DialogTitle>
+						<DialogTitle>Delete recommendation?</DialogTitle>
 						<DialogDescription>
 							This permanently removes “{name}” and its keyword assignments. This
 							cannot be undone.
@@ -86,7 +86,7 @@ export default function DeleteListingButton({
 			</Dialog>
 			<RedirectSuccessDialog
 				open={successOpen}
-				title="Listing deleted"
+				title="Recommendation deleted"
 			/>
 		</>
 	);

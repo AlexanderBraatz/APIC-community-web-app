@@ -27,7 +27,7 @@ blocks:
 
       Members of APIC benefit from access to a curated range of services,
       activities, and information, which are presented across the individual
-      sections and listings of the members' area.
+      sections and recommendations of the members' area.
 
 
       Together we create not just a place to gather, but a community to belong

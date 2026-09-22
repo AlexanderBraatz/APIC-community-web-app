@@ -7,7 +7,7 @@ export default async function NewListingPage() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-medium text-[#444]">New listing</h2>
+				<h2 className="text-xl font-medium text-[#444]">New recommendation</h2>
 			</div>
 			<ListingFormStepper mode="create" knownTags={knownTags} />
 		</div>

@@ -45,8 +45,8 @@ export default async function AdminAuditLogPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Audit log</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Read-only history of invitation, role, listing, and related admin
-					actions. Showing the 50 newest matches.
+					Read-only history of invitation, role, recommendation, and related
+					admin actions. Showing the 50 newest matches.
 				</p>
 			</section>
 
@@ -57,7 +57,7 @@ export default async function AdminAuditLogPage({
 						id="q"
 						name="q"
 						defaultValue={params.q ?? ''}
-						placeholder="e.g. Invited, listing name"
+						placeholder="e.g. Invited, recommendation name"
 					/>
 				</div>
 				<div className="w-full space-y-2 sm:max-w-xs">

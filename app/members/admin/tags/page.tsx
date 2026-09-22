@@ -10,7 +10,7 @@ export default async function AdminTagsPage() {
 				<h2 className="text-xl font-medium text-[#444]">Manage keywords</h2>
 				<p className="mt-1 text-sm text-[#666]">
 					Edit canonical names and hidden aliases. Deleting a keyword removes it
-					from all listings.
+					from all recommendations.
 				</p>
 			</section>
 			<TagsTable initialTags={tags} />

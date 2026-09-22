@@ -42,7 +42,7 @@ export default function StepperNav({
 
 	return (
 		<nav
-			aria-label="Listing form steps"
+			aria-label="Recommendation form steps"
 			className="w-full lg:w-56 lg:shrink-0"
 		>
 			<ol

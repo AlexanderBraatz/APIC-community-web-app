@@ -18,7 +18,7 @@ export default function RedirectSuccessDialog({
 	open,
 	title,
 	href = LISTINGS_PATH,
-	description = 'You are being redirected back to the listings page…'
+	description = 'You are being redirected back to the recommendations page…'
 }: {
 	open: boolean;
 	title: string;

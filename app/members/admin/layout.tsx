@@ -31,7 +31,7 @@ export default async function MembersAdminLayout({
 						href="/members/admin/listings"
 						className="text-[#805b32] underline"
 					>
-						Listings
+						Recommendations
 					</Link>
 					<Link
 						href="/members/admin/users"

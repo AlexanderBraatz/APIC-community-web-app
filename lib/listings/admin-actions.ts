@@ -265,7 +265,7 @@ async function syncListingTags(
 		await writeAudit(supabase, {
 			action: 'tag.create',
 			targetId: 'batch',
-			summary: `Created ${toInsert.length} listing keyword(s)`,
+			summary: `Created ${toInsert.length} recommendation keyword(s)`,
 			newValues: { tags: toInsert.map(t => t.name) }
 		});
 	}
@@ -464,7 +464,7 @@ export async function createListing(
 		await writeAudit(supabase, {
 			action: 'listing.create',
 			targetId: data.id,
-			summary: `Created listing “${parsed.name}”`,
+			summary: `Created recommendation “${parsed.name}”`,
 			newValues: { ...parsed }
 		});
 		revalidateListingPaths(parsed.category);
@@ -484,7 +484,7 @@ export async function updateListing(
 	try {
 		const { supabase, user } = await requireAdmin();
 		const existing = await getAdminListing(id);
-		if (!existing) return { ok: false, error: 'Listing not found.' };
+		if (!existing) return { ok: false, error: 'Recommendation not found.' };
 
 		const parsed = parseListingForm(formData);
 		if ('error' in parsed) return { ok: false, error: parsed.error };
@@ -505,7 +505,7 @@ export async function updateListing(
 		await writeAudit(supabase, {
 			action: 'listing.update',
 			targetId: id,
-			summary: `Updated listing “${parsed.name}”`,
+			summary: `Updated recommendation “${parsed.name}”`,
 			oldValues: { ...existing },
 			newValues: { ...parsed }
 		});
@@ -525,7 +525,7 @@ export async function deleteListing(
 	try {
 		const { supabase } = await requireAdmin();
 		const existing = await getAdminListing(id);
-		if (!existing) return { ok: false, error: 'Listing not found.' };
+		if (!existing) return { ok: false, error: 'Recommendation not found.' };
 
 		const { error } = await supabase.from('listings').delete().eq('id', id);
 		if (error) return { ok: false, error: error.message };
@@ -533,7 +533,7 @@ export async function deleteListing(
 		await writeAudit(supabase, {
 			action: 'listing.delete',
 			targetId: id,
-			summary: `Deleted listing “${existing.name}”`,
+			summary: `Deleted recommendation “${existing.name}”`,
 			oldValues: { ...existing }
 		});
 		revalidateListingPaths(existing.category);

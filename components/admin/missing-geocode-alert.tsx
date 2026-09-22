@@ -23,11 +23,11 @@ export default function MissingGeocodeAlert({
 		>
 			<div>
 				<h3 className="text-sm font-medium text-amber-950">
-					Listings missing a map location
+					Recommendations missing a map location
 				</h3>
 				<p className="mt-1 text-sm text-amber-900">
-					Please add a location to these listings so members can find them on
-					the map.
+					Please add a location to these recommendations so members can find
+					them on the map.
 				</p>
 			</div>
 

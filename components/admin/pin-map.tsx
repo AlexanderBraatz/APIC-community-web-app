@@ -127,7 +127,7 @@ export default function AdminPinMap({
 						<div className="max-w-sm space-y-2 border border-[#b8a99a]/60 bg-white/90 px-4 py-3 text-center text-sm text-[#444] shadow-sm">
 							<p>
 								No location selected yet. Use this map or the fields above to
-								set a specific location for this listing.
+								set a specific location for this recommendation.
 							</p>
 							<p className="font-bold">
 								Click the map to place a pin, or drag the marker.

@@ -262,14 +262,14 @@ export default defineConfig({
 							},
 							{
 								name: 'locationsMap',
-								label: 'Listings map & search',
+								label: 'Recommendations map & search',
 								fields: [
 									{
 										name: 'caption',
 										label: 'Caption',
 										type: 'string',
 										description:
-											'Optional. Google Map with listing pins requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY and lat/lng on listings.'
+											'Optional. Google Map with recommendation pins requires NEXT_PUBLIC_GOOGLE_MAPS_API_KEY and lat/lng on recommendations.'
 									}
 								]
 							}

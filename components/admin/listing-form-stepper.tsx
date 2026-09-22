@@ -274,7 +274,7 @@ export default function ListingFormStepper({
 					`/${categorySlug}?place=${encodeURIComponent(placeName)}#${BROWSE_SEARCH_HASH}`
 				);
 				setSuccessDescription('Opening it on the map…');
-				setSuccessTitle('Listing created');
+				setSuccessTitle('Recommendation created');
 				return;
 			}
 
@@ -286,7 +286,7 @@ export default function ListingFormStepper({
 			}
 			setSuccessHref(undefined);
 			setSuccessDescription(undefined);
-			setSuccessTitle('Listing saved');
+			setSuccessTitle('Recommendation saved');
 		});
 	}
 
@@ -353,7 +353,7 @@ export default function ListingFormStepper({
 								setCurrentStep(STEP_TYPE_NAME);
 								setError(null);
 								setMessage(
-									'Skipped business lookup — enter listing details manually.'
+									'Skipped business lookup — enter recommendation details manually.'
 								);
 							}}
 						/>
@@ -456,7 +456,7 @@ export default function ListingFormStepper({
 								: 'Next'
 							: isLastStep
 								? mode === 'create'
-									? 'Create listing'
+									? 'Create recommendation'
 									: 'Save changes'
 								: 'Next'}
 					</Button>

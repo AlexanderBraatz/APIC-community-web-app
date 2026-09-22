@@ -242,8 +242,8 @@ export default function TagsTable({ initialTags }: { initialTags: AdminTagRow[] 
 					<DialogHeader>
 						<DialogTitle>Delete keyword?</DialogTitle>
 						<DialogDescription>
-							This permanently removes “{deleteName}” and cascades all listing
-							assignments. This cannot be undone.
+							This permanently removes “{deleteName}” and cascades all
+							recommendation assignments. This cannot be undone.
 						</DialogDescription>
 					</DialogHeader>
 					<DialogFooter>
