@@ -23,6 +23,9 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { Search, X } from 'lucide-react';
 import {
+	type CSSProperties,
+	type KeyboardEvent as ReactKeyboardEvent,
+	type PointerEvent as ReactPointerEvent,
 	useEffect,
 	useId,
 	useLayoutEffect,
@@ -47,11 +50,35 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_SEARCH_PLACEHOLDERS: Record<string, string> = {
-	'food-dining': 'e.g. vegan, La Terrazza',
-	'services-maintenance': 'e.g. plumber, Rossi Idraulica',
-	'health-wellness': 'e.g. massage, Centro Benessere',
-	'shop-market': 'e.g. bakery, Mercato Fresco'
+	'food-dining': 'e.g. vegan, Casa Masi',
+	'services-maintenance': 'e.g. gardening, TERMAK',
+	'health-wellness': 'e.g. Dentist, Farmacia Priamo',
+	'shop-market': 'e.g. coffee, Chelotti Roasting'
 };
+
+const MAP_HEIGHT_MIN_VH = 0.12;
+const MAP_HEIGHT_MAX_VH = 0.55;
+/** Matches former `aspect-[1.618/1]` — width / height. */
+const MAP_ASPECT_RATIO = 1.618;
+/** Mobile sticky map shell uses `px-4` (32px total). */
+const MAP_SHELL_PADDING_X = 32;
+
+function clampMapHeightPx(px: number, viewportHeight: number) {
+	const min = viewportHeight * MAP_HEIGHT_MIN_VH;
+	const max = viewportHeight * MAP_HEIGHT_MAX_VH;
+	return Math.round(Math.min(max, Math.max(min, px)));
+}
+
+function mapHeightFromWidth(widthPx: number, viewportHeight: number) {
+	return clampMapHeightPx(widthPx / MAP_ASPECT_RATIO, viewportHeight);
+}
+
+function defaultMapHeightPx(viewportWidth = 390, viewportHeight = 800) {
+	return mapHeightFromWidth(
+		Math.max(0, viewportWidth - MAP_SHELL_PADDING_X),
+		viewportHeight
+	);
+}
 
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 
@@ -87,7 +114,82 @@ export default function ListingsBrowse(props: {
 	const scrollAnchorRef = useRef<HTMLDivElement>(null);
 	const pendingScrollToSearchRef = useRef(false);
 	const [searchBarHeight, setSearchBarHeight] = useState(0);
+	const [mapHeightPx, setMapHeightPx] = useState(() =>
+		typeof window === 'undefined'
+			? defaultMapHeightPx()
+			: defaultMapHeightPx(window.innerWidth, window.innerHeight)
+	);
+	const mapShellRef = useRef<HTMLDivElement>(null);
+	const mapHeightInitializedRef = useRef(false);
+	const mapDragStartYRef = useRef(0);
+	const mapDragStartHeightRef = useRef(0);
 	const inputId = useId();
+
+	useLayoutEffect(() => {
+		if (mapHeightInitializedRef.current) return;
+		const el = mapShellRef.current;
+		if (!el) return;
+		const styles = getComputedStyle(el);
+		const padX =
+			parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+		const width = el.clientWidth - padX;
+		if (width <= 0) return;
+		mapHeightInitializedRef.current = true;
+		setMapHeightPx(mapHeightFromWidth(width, window.innerHeight));
+	}, []);
+
+	useEffect(() => {
+		function onViewportResize() {
+			setMapHeightPx(prev => clampMapHeightPx(prev, window.innerHeight));
+		}
+		window.addEventListener('resize', onViewportResize);
+		return () => window.removeEventListener('resize', onViewportResize);
+	}, []);
+
+	function onMapResizePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+		event.preventDefault();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		mapDragStartYRef.current = event.clientY;
+		mapDragStartHeightRef.current = mapHeightPx;
+	}
+
+	function onMapResizePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+		if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+		const deltaY = event.clientY - mapDragStartYRef.current;
+		setMapHeightPx(
+			clampMapHeightPx(
+				mapDragStartHeightRef.current + deltaY,
+				window.innerHeight
+			)
+		);
+	}
+
+	function onMapResizePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+		if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+			event.currentTarget.releasePointerCapture(event.pointerId);
+		}
+	}
+
+	function onMapResizeKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+		const step = 24;
+		if (event.key === 'ArrowUp') {
+			event.preventDefault();
+			setMapHeightPx(prev =>
+				clampMapHeightPx(prev - step, window.innerHeight)
+			);
+		} else if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			setMapHeightPx(prev =>
+				clampMapHeightPx(prev + step, window.innerHeight)
+			);
+		}
+	}
+
+	const mapHeightVhNow = Math.round(
+		(mapHeightPx /
+			(typeof window !== 'undefined' ? window.innerHeight : 800)) *
+			100
+	);
 
 	function requestScrollToSearch() {
 		pendingScrollToSearchRef.current = true;
@@ -571,7 +673,8 @@ export default function ListingsBrowse(props: {
 			<div className="flex flex-col gap-6 lg:mx-auto lg:max-w-[1400px] lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 lg:px-8">
 				{/* Map — sticky under search; full-width cover on mobile */}
 				<div
-					className="order-1 sticky z-30 h-fit w-full bg-[#eeeae4] px-4 pb-5 pt-0 rounded-b-4xl sm:px-6 lg:order-2 lg:self-start lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-5"
+					ref={mapShellRef}
+					className="order-1 sticky z-30 h-fit w-full bg-[#eeeae4] px-4 pb-2 pt-0 rounded-b-4xl sm:px-6 md:pb-5 lg:order-2 lg:self-start lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-5"
 					style={{ top: searchBarHeight }}
 				>
 					<LocationsMap
@@ -582,8 +685,34 @@ export default function ListingsBrowse(props: {
 						onClearSelect={clearPlaceSelection}
 						showClearFocus={Boolean(selectedPlaceName)}
 						onClearFocus={clearPlaceSelection}
-						className="aspect-[1.618/1] md:aspect-auto md:h-[33vh] lg:h-[calc(100vh-186px)]"
+						layoutKey={mapHeightPx}
+						style={
+							{
+								['--browse-map-h']: `${mapHeightPx}px`
+							} as CSSProperties
+						}
+						className="aspect-auto h-(--browse-map-h) md:h-[33vh] lg:h-[calc(100vh-186px)]"
 					/>
+					<div
+						role="separator"
+						aria-orientation="horizontal"
+						aria-label="Resize map"
+						aria-valuemin={Math.round(MAP_HEIGHT_MIN_VH * 100)}
+						aria-valuemax={Math.round(MAP_HEIGHT_MAX_VH * 100)}
+						aria-valuenow={mapHeightVhNow}
+						tabIndex={0}
+						className="flex h-5 cursor-ns-resize touch-none items-center justify-center md:hidden"
+						onPointerDown={onMapResizePointerDown}
+						onPointerMove={onMapResizePointerMove}
+						onPointerUp={onMapResizePointerUp}
+						onPointerCancel={onMapResizePointerUp}
+						onKeyDown={onMapResizeKeyDown}
+					>
+						<span
+							aria-hidden="true"
+							className="h-1 w-10 rounded-full bg-[#b8a99a]"
+						/>
+					</div>
 				</div>
 
 				{/* List — scrolls under sticky search + map on mobile; left column on desktop */}

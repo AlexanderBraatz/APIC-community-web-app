@@ -13,7 +13,13 @@ import {
 	useMap
 } from '@vis.gl/react-google-maps';
 import { cn } from '@/lib/utils';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+	type CSSProperties,
+	useEffect,
+	useMemo,
+	useRef,
+	useState
+} from 'react';
 
 /** Castelfalfi — default map center and fixed landmark pin. */
 const CASTELFALFI = { lat: 43.548442, lng: 10.856672 };
@@ -159,6 +165,9 @@ type LocationsMapProps = {
 	showClearFocus?: boolean;
 	onClearFocus?: () => void;
 	className?: string;
+	style?: CSSProperties;
+	/** When this value changes, trigger a Google Maps container resize. */
+	layoutKey?: string | number;
 };
 
 function pinKey(listing: ListingWithCoords) {
@@ -295,6 +304,18 @@ function FitBoundsToPins({ pins }: { pins: ListingWithCoords[] }) {
 	return null;
 }
 
+/** Nudges Google Maps after the container size changes (e.g. mobile drag-resize). */
+function MapResizeOnLayoutKey({ layoutKey }: { layoutKey?: string | number }) {
+	const map = useMap();
+
+	useEffect(() => {
+		if (!map || layoutKey == null) return;
+		google.maps.event.trigger(map, 'resize');
+	}, [map, layoutKey]);
+
+	return null;
+}
+
 function CastelfalfiPin() {
 	const [hovered, setHovered] = useState(false);
 
@@ -414,7 +435,9 @@ export default function LocationsMap({
 	onClearSelect,
 	showClearFocus = false,
 	onClearFocus,
-	className
+	className,
+	style,
+	layoutKey
 }: LocationsMapProps) {
 	const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 	const pins = useMemo(() => locations.filter(listingHasCoords), [locations]);
@@ -435,6 +458,7 @@ export default function LocationsMap({
 				className={`flex w-full items-center justify-center border border-[#b8a99a]/40 bg-[#e8e4dc] px-6 text-center ${
 					className ?? 'aspect-[2/1]'
 				}`}
+				style={style}
 				role="status"
 			>
 				<p className="font-heading max-w-md text-sm leading-relaxed text-[#666666]">
@@ -454,6 +478,7 @@ export default function LocationsMap({
 				'relative aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc] lg:aspect-auto lg:h-[calc(100vh-186px)]',
 				className
 			)}
+			style={style}
 		>
 			<APIProvider apiKey={apiKey}>
 				<Map
@@ -469,6 +494,7 @@ export default function LocationsMap({
 					styles={MAP_STYLES}
 					reuseMaps
 				>
+					<MapResizeOnLayoutKey layoutKey={layoutKey} />
 					<FitBoundsToPins pins={pins} />
 					<MapPins
 						pins={pins}
