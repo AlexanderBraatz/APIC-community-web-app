@@ -46,9 +46,19 @@ const CATEGORY_LABELS: Record<string, string> = {
 	'shop-market': 'Shop & Market'
 };
 
+const CATEGORY_SEARCH_PLACEHOLDERS: Record<string, string> = {
+	'food-dining': 'e.g. vegan, La Terrazza',
+	'services-maintenance': 'e.g. plumber, Rossi Idraulica',
+	'health-wellness': 'e.g. massage, Centro Benessere',
+	'shop-market': 'e.g. bakery, Mercato Fresco'
+};
+
 type AuthStatus = 'loading' | 'signed_out' | 'signed_in';
 
-export default function ListingsBrowse(_props: { caption?: string | null }) {
+export default function ListingsBrowse(props: {
+	caption?: string | null;
+	heading?: string | null;
+}) {
 	const pathname = usePathname();
 	const router = useRouter();
 	const searchParams = useSearchParams();
@@ -227,13 +237,11 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 		query.trim().length > 0 &&
 		(suggestions.tags.length > 0 || suggestions.places.length > 0);
 
-	const showSuggestionPanel =
-		panelOpen && query.trim().length > 0;
+	const showSuggestionPanel = panelOpen && query.trim().length > 0;
 
 	const topKeyword = suggestions.tags[0] ?? null;
 
-	const isFiltered =
-		activeTags.length > 0 || Boolean(selectedPlaceName);
+	const isFiltered = activeTags.length > 0 || Boolean(selectedPlaceName);
 
 	useEffect(() => {
 		const onPointerDown = (event: MouseEvent) => {
@@ -400,147 +408,159 @@ export default function ListingsBrowse(_props: { caption?: string | null }) {
 			/>
 			<div
 				ref={rootRef}
-				className="sticky top-0 z-40 w-full bg-[#eeeae4] py-5 px-4 sm:px-6 sm:py-8 lg:px-8"
+				className="sticky top-0 z-40 w-full bg-[#eeeae4] py-5 sm:py-8"
 			>
-				<div className="relative mx-auto w-full max-w-none lg:max-w-[33vw]">
-					{activeTags.length > 0 ? (
-						<div className="mb-3">
-							<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
-								Filtering by keywords:
-							</p>
-							<div className="flex flex-wrap gap-2">
-								{activeTags.map(tag => (
-									<button
-										key={tag}
-										type="button"
-										onClick={() => removeTag(tag)}
-										className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
-										aria-label={`Remove keyword ${tag}`}
-									>
-										{tag}
-										<X
-											className="size-3.5"
-											aria-hidden="true"
-										/>
-									</button>
-								))}
-							</div>
-						</div>
+				<div className="mx-auto flex w-full max-w-[1400px] flex-col gap-3 px-4 sm:px-6 lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-center lg:gap-8 lg:px-8">
+					{props.heading ? (
+						<h2 className="font-heading w-full text-2xl font-normal text-[#333333] sm:text-3xl lg:pl-3 lg:text-4xl xl:text-5xl">
+							{props.heading}
+						</h2>
 					) : null}
 
-					<label
-						htmlFor={inputId}
-						className="sr-only"
-					>
-						Search places and keywords
-					</label>
-					<div className="relative">
-						<Search
-							className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
-							aria-hidden="true"
-						/>
-						<input
-							id={inputId}
-							type="search"
-							value={query}
-							autoComplete="off"
-							placeholder="Search by keyword or place name"
-							onChange={event => {
-								setQuery(event.target.value);
-								clearPlaceSelection();
-								setPanelOpen(true);
-							}}
-							onFocus={() => {
-								clearPlaceSelection();
-								setPanelOpen(true);
-							}}
-							onKeyDown={event => {
-								if (event.key === 'Enter') {
-									event.preventDefault();
-									confirmTopKeyword();
-								}
-								if (event.key === 'Escape') {
-									setPanelOpen(false);
-								}
-							}}
-							className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
-						/>
-						{(query || activeTags.length > 0) && (
-							<button
-								type="button"
-								onClick={clearAll}
-								className="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm p-1.5 text-[#7A5A32] transition-colors hover:bg-[#f3eee6]"
-								aria-label="Clear search"
-							>
-								<X className="size-4" />
-							</button>
-						)}
-					</div>
-
-					{showSuggestionPanel ? (
-						<div className="absolute z-50 mt-1 w-full border border-[#b8a99a] bg-white shadow-sm">
-							{showSuggestions ? (
-								<>
-									{suggestions.tags.length > 0 ? (
-										<div className="border-b border-[#e8e4dc] px-4 py-3">
-											<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
-												Keywords
-											</p>
-											<div className="flex flex-wrap gap-2">
-												{suggestions.tags.map((tag, index) => (
-													<button
-														key={tag}
-														type="button"
-														onClick={() => addTag(tag)}
-														className={cn(
-															'font-heading border px-3 py-1.5 text-sm text-[#333333] transition-colors',
-															index === 0
-																? 'border-[#7A5A32] bg-[#f7f3ec]'
-																: 'border-[#b8a99a] hover:border-[#7A5A32] hover:bg-[#f7f3ec]'
-														)}
-													>
-														{tag}
-													</button>
-												))}
-											</div>
-										</div>
-									) : null}
-
-									{suggestions.places.length > 0 ? (
-										<div className="px-2 py-2">
-											<p className="font-heading px-2 py-1 text-xs tracking-wide text-[#7A5A32] uppercase">
-												Places
-											</p>
-											<ul>
-												{suggestions.places.map(place => (
-													<li key={`${place.category}-${place.name}`}>
-														<button
-															type="button"
-															onClick={() => selectPlace(place)}
-															className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
-														>
-															<span className="text-base text-[#333333]">
-																{place.name}
-															</span>
-															<span className="text-sm text-[#666666]">
-																{[place.type, CATEGORY_LABELS[place.category]]
-																	.filter(Boolean)
-																	.join(' · ')}
-															</span>
-														</button>
-													</li>
-												))}
-											</ul>
-										</div>
-									) : null}
-								</>
-							) : (
-								<p className="font-heading px-4 py-3 text-sm text-[#666666]">
-									No places or keywords match your search.
+					<div className="relative w-full min-w-0">
+						{activeTags.length > 0 ? (
+							<div className="mb-3">
+								<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
+									Filtering by keywords:
 								</p>
+								<div className="flex flex-wrap gap-2">
+									{activeTags.map(tag => (
+										<button
+											key={tag}
+											type="button"
+											onClick={() => removeTag(tag)}
+											className="font-heading inline-flex items-center gap-1.5 bg-[#805b32] px-3 py-1.5 text-sm text-white transition-colors hover:bg-[#6a4b29]"
+											aria-label={`Remove keyword ${tag}`}
+										>
+											{tag}
+											<X
+												className="size-3.5"
+												aria-hidden="true"
+											/>
+										</button>
+									))}
+								</div>
+							</div>
+						) : null}
+
+						<label
+							htmlFor={inputId}
+							className="font-heading mb-2 block text-base text-[#333333]"
+						>
+							Filter recommendations using keywords or search for a business by
+							name
+						</label>
+						<div className="relative">
+							<Search
+								className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
+								aria-hidden="true"
+							/>
+							<input
+								id={inputId}
+								type="search"
+								value={query}
+								autoComplete="off"
+								placeholder={
+									(category && CATEGORY_SEARCH_PLACEHOLDERS[category]) ||
+									'e.g. keyword, Business Name'
+								}
+								onChange={event => {
+									setQuery(event.target.value);
+									clearPlaceSelection();
+									setPanelOpen(true);
+								}}
+								onFocus={() => {
+									clearPlaceSelection();
+									setPanelOpen(true);
+								}}
+								onKeyDown={event => {
+									if (event.key === 'Enter') {
+										event.preventDefault();
+										confirmTopKeyword();
+									}
+									if (event.key === 'Escape') {
+										setPanelOpen(false);
+									}
+								}}
+								className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32]"
+							/>
+							{(query || activeTags.length > 0) && (
+								<button
+									type="button"
+									onClick={clearAll}
+									className="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm p-1.5 text-[#7A5A32] transition-colors hover:bg-[#f3eee6]"
+									aria-label="Clear search"
+								>
+									<X className="size-4" />
+								</button>
 							)}
 						</div>
-					) : null}
+
+						{showSuggestionPanel ? (
+							<div className="absolute z-50 mt-1 w-full border border-[#b8a99a] bg-white shadow-sm">
+								{showSuggestions ? (
+									<>
+										{suggestions.tags.length > 0 ? (
+											<div className="border-b border-[#e8e4dc] px-4 py-3">
+												<p className="font-heading mb-2 text-xs tracking-wide text-[#7A5A32] uppercase">
+													Keywords
+												</p>
+												<div className="flex flex-wrap gap-2">
+													{suggestions.tags.map((tag, index) => (
+														<button
+															key={tag}
+															type="button"
+															onClick={() => addTag(tag)}
+															className={cn(
+																'font-heading border px-3 py-1.5 text-sm text-[#333333] transition-colors',
+																index === 0
+																	? 'border-[#7A5A32] bg-[#f7f3ec]'
+																	: 'border-[#b8a99a] hover:border-[#7A5A32] hover:bg-[#f7f3ec]'
+															)}
+														>
+															{tag}
+														</button>
+													))}
+												</div>
+											</div>
+										) : null}
+
+										{suggestions.places.length > 0 ? (
+											<div className="px-2 py-2">
+												<p className="font-heading px-2 py-1 text-xs tracking-wide text-[#7A5A32] uppercase">
+													Places
+												</p>
+												<ul>
+													{suggestions.places.map(place => (
+														<li key={`${place.category}-${place.name}`}>
+															<button
+																type="button"
+																onClick={() => selectPlace(place)}
+																className="font-heading flex w-full flex-col items-start px-2 py-2.5 text-left transition-colors hover:bg-[#f7f3ec]"
+															>
+																<span className="text-base text-[#333333]">
+																	{place.name}
+																</span>
+																<span className="text-sm text-[#666666]">
+																	{[place.type, CATEGORY_LABELS[place.category]]
+																		.filter(Boolean)
+																		.join(' · ')}
+																</span>
+															</button>
+														</li>
+													))}
+												</ul>
+											</div>
+										) : null}
+									</>
+								) : (
+									<p className="font-heading px-4 py-3 text-sm text-[#666666]">
+										No places or keywords match your search.
+									</p>
+								)}
+							</div>
+						) : null}
+					</div>
 				</div>
 			</div>
 

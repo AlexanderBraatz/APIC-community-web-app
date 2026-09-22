@@ -5,7 +5,7 @@ blocks:
     subtitle: Trusted Professionals & Repairs
     backgroundImage: /images/apic-craft-hero.webp
     _template: heroBanner
-  - sectionTitle: Services & Maintenance
-    _template: sectionHeading
-  - _template: locationsMap
+  - heading: Services & Maintenance
+    subtitle: Trusted Professionals & Repairs
+    _template: locationsMap
 ---

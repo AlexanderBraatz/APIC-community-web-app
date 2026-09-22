@@ -265,6 +265,19 @@ export default defineConfig({
 								label: 'Recommendations map & search',
 								fields: [
 									{
+										name: 'heading',
+										label: 'Heading',
+										type: 'string',
+										required: true
+									},
+									{
+										name: 'subtitle',
+										label: 'Subtitle',
+										type: 'string',
+										description:
+											'Shown after “browse our recommendations for” on the right of the search row.'
+									},
+									{
 										name: 'caption',
 										label: 'Caption',
 										type: 'string',

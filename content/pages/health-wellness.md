@@ -5,7 +5,7 @@ blocks:
     subtitle: Medical & Wellness
     backgroundImage: /images/apic-health-hero.webp
     _template: heroBanner
-  - sectionTitle: Health & Wellness
-    _template: sectionHeading
-  - _template: locationsMap
+  - heading: Health & Wellness
+    subtitle: Medical & Wellness
+    _template: locationsMap
 ---

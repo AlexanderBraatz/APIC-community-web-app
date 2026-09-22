@@ -5,7 +5,7 @@ blocks:
     subtitle: Boutique, Fish Market, Café
     backgroundImage: /images/apic-shop-hero.webp
     _template: heroBanner
-  - sectionTitle: Shops & Market
-    _template: sectionHeading
-  - _template: locationsMap
+  - heading: Shops & Market
+    subtitle: Boutique, Fish Market, Café
+    _template: locationsMap
 ---
