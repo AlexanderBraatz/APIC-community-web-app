@@ -44,7 +44,7 @@ export default function DeleteListingButton({
 			<Button
 				type="button"
 				size="icon"
-				variant="secondary"
+				variant="destructive"
 				aria-label={`Delete ${name}`}
 				onClick={() => setOpen(true)}
 			>
