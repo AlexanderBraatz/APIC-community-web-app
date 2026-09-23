@@ -207,7 +207,7 @@ Anything prefixed `NEXT_PUBLIC_` is visible in the browser bundle. Treat service
 8. **Env:** fill `.env.local` from `.env.example`; mirror values on Vercel for Production (and Preview as needed).
 9. **Domain:** point DNS at Vercel; confirm Auth redirect URLs and `NEXT_PUBLIC_SITE_URL`.
 10. **Deploy:** `npm run build` locally to verify, then deploy via Vercel.
-11. **Smoke-test:** invite/accept invite; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; Sentry test error if DSN set; PostHog only when consent on.
+11. **Smoke-test:** invite/accept invite; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
 
 Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough for typical maintenance.
 

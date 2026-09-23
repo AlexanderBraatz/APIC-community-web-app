@@ -51,12 +51,6 @@ export default async function MembersAdminLayout({
 					>
 						Keywords
 					</Link>
-					<Link
-						href="/members/admin/audit-log"
-						className="text-[#805b32] underline"
-					>
-						Audit log
-					</Link>
 					<a
 						href="/admin#/collections/blog/~"
 						className="text-[#805b32] underline"

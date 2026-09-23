@@ -8,7 +8,7 @@ function parseBool(value: FormDataEntryValue | null): boolean {
 	return value === 'true' || value === 'on' || value === '1';
 }
 
-async function requireUser() {
+async function requireUser(signInNext?: string) {
 	const supabase = await createClient();
 	const {
 		data: { user },
@@ -16,7 +16,7 @@ async function requireUser() {
 	} = await supabase.auth.getUser();
 
 	if (error || !user) {
-		redirect('/sign-in');
+		redirect(signInNext ? `/sign-in?next=${signInNext}` : '/sign-in');
 	}
 
 	return { supabase, user };
@@ -85,7 +85,7 @@ export async function updatePrivacyPreferences(formData: FormData) {
 	const analyticsEnabled = parseBool(formData.get('analytics_enabled'));
 	const sessionReplayEnabled = parseBool(formData.get('session_replay_enabled'));
 
-	const { supabase, user } = await requireUser();
+	const { supabase, user } = await requireUser('/account/privacy');
 	const now = new Date().toISOString();
 
 	const { data: existing } = await supabase
@@ -113,11 +113,12 @@ export async function updatePrivacyPreferences(formData: FormData) {
 
 	if (error) {
 		redirect(
-			`/account?error=${encodeURIComponent(error.message)}`
+			`/account/privacy?error=${encodeURIComponent(error.message)}`
 		);
 	}
 
 	revalidatePath('/account');
+	revalidatePath('/account/privacy');
 	revalidatePath('/', 'layout');
 	redirect(
 		`/account?message=${encodeURIComponent('Privacy preferences saved.')}`

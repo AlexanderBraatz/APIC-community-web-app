@@ -1,10 +1,29 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 import { getAdminDashboardCounts } from '@/lib/admin/audit-actions';
 import { getAuthEmailPreviews } from '@/lib/emails/auth-email-previews';
+import { buttonVariants } from '@/components/ui/button-variants';
+import { cn } from '@/lib/utils';
 
 /** Set these when walkthrough videos are published on Vimeo. */
 const MEMBER_WALKTHROUGH_VIMEO_ID = '';
 const ADMIN_WALKTHROUGH_VIMEO_ID = '';
+
+const quickActions = [
+	{
+		label: 'Add Member',
+		href: '/members/admin/invitations'
+	},
+	{
+		label: 'Add Recommendation',
+		href: '/members/admin/listings/new'
+	},
+	{
+		label: 'Add Blog article',
+		href: '/admin#/collections/blog/new'
+	}
+] as const;
 
 function VimeoEmbed({
 	id,
@@ -102,6 +121,32 @@ export default async function MembersAdminDashboardPage() {
 
 	return (
 		<div className="space-y-10">
+			<section>
+				<h2 className="text-xl font-medium text-[#444]">Quick actions</h2>
+				<p className="mt-1 text-sm text-[#666]">
+					Jump straight into the most common admin tasks.
+				</p>
+				<div className="mt-6 flex flex-col gap-4 sm:flex-row">
+					{quickActions.map(action => (
+						<Link
+							key={action.href}
+							href={action.href}
+							className={cn(
+								buttonVariants({ variant: 'default', size: 'lg' }),
+								'group h-11 w-full shrink-0 justify-between sm:flex-1'
+							)}
+						>
+							<span>{action.label}</span>
+							<ArrowRight
+								className="size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+								strokeWidth={1.75}
+								aria-hidden
+							/>
+						</Link>
+					))}
+				</div>
+			</section>
+
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Dashboard</h2>
 				<p className="mt-1 text-sm text-[#666]">

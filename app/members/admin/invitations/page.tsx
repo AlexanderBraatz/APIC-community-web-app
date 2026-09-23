@@ -19,7 +19,9 @@ async function inviteAction(formData: FormData) {
 		);
 	}
 	redirect(
-		`/members/admin/invitations?message=${encodeURIComponent('Invitation sent.')}`
+		`/members/admin/invitations?message=${encodeURIComponent(
+			'Invitation sent.'
+		)}`
 	);
 }
 
@@ -38,8 +40,7 @@ export default async function AdminInvitationsPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Invite a member</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Sends a Supabase invitation email. The invitee sets a password on
-					/accept-invite.
+					Sends an invitation email to add a new Member.
 				</p>
 
 				{params.error ? (
@@ -117,7 +118,10 @@ export default async function AdminInvitationsPage({
 				) : (
 					<ul className="mt-4 divide-y divide-[#e5e5e5] border-t border-[#e5e5e5]">
 						{history.map(item => (
-							<li key={item.id} className="py-3 text-sm">
+							<li
+								key={item.id}
+								className="py-3 text-sm"
+							>
 								<p className="font-medium text-[#444]">
 									{item.email}{' '}
 									<span className="font-normal text-[#888]">

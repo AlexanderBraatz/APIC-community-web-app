@@ -45,7 +45,6 @@ Use **separate** Sentry projects and PostHog projects (keys) for local vs produc
 - No default PII; events scrubbed in `lib/sentry/scrub.ts`
 - Critical server actions call `captureServerActionException` (`lib/sentry/capture.ts`) with tags `area:server_action` + action name
 - Tunnel: `/sentry-tunnel` (also excluded from auth proxy)
-- Client test control: Account page → “Sentry (development only)” button
 - **User Feedback** floating widget (client-only in `instrumentation-client.ts`, styled to match brown CTAs in `globals.css`) — icon-only trigger with `triggerAriaLabel`, raised via `--page-margin` bottom 64px; independent of PostHog consent; only when DSN is set
 
 **Session Replay (Sentry)** — production + error-only only:
@@ -71,7 +70,7 @@ Opt-in product analytics:
 - Session recording: masked inputs; **stopped** on `/sign-in`, `/accept-invite`, `/forgot-password`, `/reset-password`
 - Sign-out resets PostHog identity
 
-Members change toggles under **Account → Privacy & analytics**. Invite flow can set them at join time.
+Members change toggles under **Account → Privacy & analytics** (`/account/privacy`). Invite flow can set them at join time.
 
 ## Where to look in code
 
@@ -89,7 +88,7 @@ Members change toggles under **Account → Privacy & analytics**. Invite flow ca
 
 ## 5-minute health check
 
-1. **Sentry local:** set dev DSN → Account Sentry test button → issue in **dev** project, **no** Replay.
+1. **Sentry local:** set dev DSN → trigger any client error (e.g. temporary throw in a page) → issue in **dev** project, **no** Replay.
 2. **Sentry prod:** after deploy, one controlled client error → issue in **prod** project **with** Replay; idle browsing should not create Replays.
 3. **PostHog:** enable analytics in Account → trigger a page view / action → event in PostHog EU project. Decline → no events; Sentry still works.
 4. **Alerts:** prod Slack/`#apic-errors` rules live only on the prod Sentry project ([sentry-alerts.md](./sentry-alerts.md)).

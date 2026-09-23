@@ -13,31 +13,34 @@ function accountRedirect(opts: { error?: string; message?: string }): never {
 	redirect(qs ? `/account?${qs}` : '/account');
 }
 
-async function requireUser() {
-	const supabase = await createClient();
-	const {
-		data: { user },
-		error
-	} = await supabase.auth.getUser();
-
-	if (error || !user) {
-		redirect('/sign-in?next=/account');
-	}
-
-	return { supabase, user };
+function changeNameRedirect(opts: { error?: string }): never {
+	const params = new URLSearchParams();
+	if (opts.error) params.set('error', opts.error);
+	const qs = params.toString();
+	redirect(qs ? `/account/change-name?${qs}` : '/account/change-name');
 }
 
 export async function updateFullName(formData: FormData) {
 	const fullName = String(formData.get('full_name') ?? '').trim();
 
 	if (!fullName) {
-		accountRedirect({ error: 'Name is required.' });
+		changeNameRedirect({ error: 'Name is required.' });
 	}
 	if (fullName.length > 200) {
-		accountRedirect({ error: 'Name must be 200 characters or fewer.' });
+		changeNameRedirect({
+			error: 'Name must be 200 characters or fewer.'
+		});
 	}
 
-	const { supabase, user } = await requireUser();
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/sign-in?next=/account/change-name');
+	}
 
 	const { error } = await supabase
 		.from('profiles')
@@ -45,33 +48,61 @@ export async function updateFullName(formData: FormData) {
 		.eq('id', user.id);
 
 	if (error) {
-		accountRedirect({ error: error.message });
+		changeNameRedirect({ error: error.message });
 	}
 
 	revalidatePath('/account');
+	revalidatePath('/account/change-name');
 	revalidatePath('/community-calendar');
 	accountRedirect({ message: 'Name saved.' });
 }
 
-export async function updateProfileColor(
-	color: string
-): Promise<{ error?: string }> {
+function changeColourRedirect(opts: { error?: string }): never {
+	const params = new URLSearchParams();
+	if (opts.error) params.set('error', opts.error);
+	const qs = params.toString();
+	redirect(qs ? `/account/change-colour?${qs}` : '/account/change-colour');
+}
+
+export async function updateProfileColor(formData: FormData) {
+	const color = String(formData.get('color') ?? '');
+
 	if (!(EVENT_BAR_PALETTE as readonly string[]).includes(color)) {
-		return { error: 'Choose a colour from the palette.' };
+		changeColourRedirect({ error: 'Choose a colour from the palette.' });
 	}
-	const { supabase, user } = await requireUser();
+
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/sign-in?next=/account/change-colour');
+	}
+
 	const { error: profileError } = await supabase
 		.from('profiles')
 		.update({ event_bar_color: color })
 		.eq('id', user.id);
 
 	if (profileError) {
-		return { error: profileError.message };
+		changeColourRedirect({ error: profileError.message });
 	}
 
 	revalidatePath('/account');
+	revalidatePath('/account/change-colour');
 	revalidatePath('/community-calendar');
-	return {};
+	accountRedirect({ message: 'Profile colour updated.' });
+}
+
+function changePasswordRedirect(opts: {
+	error?: string;
+}): never {
+	const params = new URLSearchParams();
+	if (opts.error) params.set('error', opts.error);
+	const qs = params.toString();
+	redirect(qs ? `/account/change-password?${qs}` : '/account/change-password');
 }
 
 export async function changePassword(formData: FormData) {
@@ -79,17 +110,28 @@ export async function changePassword(formData: FormData) {
 	const confirm = String(formData.get('confirm') ?? '');
 
 	if (!password || password.length < 8) {
-		accountRedirect({ error: 'Password must be at least 8 characters.' });
+		changePasswordRedirect({
+			error: 'Password must be at least 8 characters.'
+		});
 	}
 	if (password !== confirm) {
-		accountRedirect({ error: 'Passwords do not match.' });
+		changePasswordRedirect({ error: 'Passwords do not match.' });
 	}
 
-	const { supabase } = await requireUser();
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/sign-in?next=/account/change-password');
+	}
+
 	const { error } = await supabase.auth.updateUser({ password });
 
 	if (error) {
-		accountRedirect({ error: error.message });
+		changePasswordRedirect({ error: error.message });
 	}
 
 	accountRedirect({ message: 'Password updated.' });
