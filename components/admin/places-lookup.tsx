@@ -1,13 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState, useTransition } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-	placeDetails,
-	placesAutocomplete
-} from '@/lib/listings/places';
+import { placeDetails, placesAutocomplete } from '@/lib/listings/places';
 import type {
 	PlaceAutofill,
 	PlacesAutocompleteMode,
@@ -69,11 +67,7 @@ export default function PlacesLookup({
 				});
 				if (requestId !== requestIdRef.current) return;
 
-				if (
-					result.ok &&
-					result.suggestions.length === 0 &&
-					!usedExpanded
-				) {
+				if (result.ok && result.suggestions.length === 0 && !usedExpanded) {
 					result = await placesAutocomplete({
 						input: trimmed,
 						mode,
@@ -150,6 +144,37 @@ export default function PlacesLookup({
 				</h3>
 			</div>
 
+			{mode === 'address' ? (
+				<div className="space-y-2">
+					<p
+						className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+						role="status"
+					>
+						Address search usually finds a pin on the map only. Phone, website,
+						and opening hours are filled in automatically only when you pick the
+						business under its Google Maps name. We recommend finding the
+						correct name on Google Maps first, then coming back here to search
+						by that name so the other details autofill. You can change the
+						displayed name in the next step. Use address search only if you
+						cannot find that business by name.
+					</p>
+					<Button
+						type="button"
+						variant="outline"
+						size="sm"
+						className="gap-1.5"
+						onClick={toggleMode}
+						disabled={selecting}
+					>
+						<ArrowRight
+							className="size-3.5"
+							aria-hidden
+						/>
+						Back to search by name
+					</Button>
+				</div>
+			) : null}
+
 			{error ? (
 				<p
 					className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
@@ -178,7 +203,7 @@ export default function PlacesLookup({
 					placeholder={
 						mode === 'business'
 							? 'e.g. Locanda, Osteria…'
-							: 'e.g. Piazza…, Via…'
+							: 'e.g. Via Roma, 41/43, 50050 Montaione FI, Italy'
 					}
 					autoComplete="off"
 					disabled={selecting}
@@ -207,9 +232,7 @@ export default function PlacesLookup({
 								className="flex w-full flex-col items-start px-3 py-2 text-left text-sm hover:bg-[#f7f2ec] disabled:opacity-60"
 								onClick={() => selectSuggestion(suggestion)}
 							>
-								<span className="text-[#444]">
-									{suggestion.primaryText}
-								</span>
+								<span className="text-[#444]">{suggestion.primaryText}</span>
 								{suggestion.secondaryText ? (
 									<span className="text-xs text-[#888]">
 										{suggestion.secondaryText}

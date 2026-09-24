@@ -2,6 +2,9 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import AdminListingsList from '@/components/admin/admin-listings-list';
+import MissingDetailsAlert, {
+	listingMissingDetails
+} from '@/components/admin/missing-details-alert';
 import MissingGeocodeAlert from '@/components/admin/missing-geocode-alert';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
@@ -35,6 +38,7 @@ export default async function AdminListingsPage({
 }) {
 	const params = await searchParams;
 	const listings = await listAdminListings();
+	const missingDetails = listings.filter(listingMissingDetails);
 	const missingCoords = listings.filter(
 		row => row.lat === null || row.lng === null
 	);
@@ -66,6 +70,8 @@ export default async function AdminListingsPage({
 					{params.message}
 				</p>
 			) : null}
+
+			<MissingDetailsAlert listings={missingDetails} />
 
 			<MissingGeocodeAlert
 				listings={missingCoords}
