@@ -121,7 +121,7 @@ export default function MapLocationModal({
 	function applyPlaceAutofill(place: PlaceAutofill) {
 		if (place.address) setAddress(place.address);
 		if (place.sourceUrl) {
-			setSourceUrl(prev => (prev.trim() ? prev : place.sourceUrl!));
+			setSourceUrl(place.sourceUrl);
 		}
 		if (place.lat !== null && place.lng !== null) {
 			setPin(place.lat, place.lng);

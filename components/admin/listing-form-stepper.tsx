@@ -170,7 +170,7 @@ export default function ListingFormStepper({
 			});
 		}
 		if (place.sourceUrl) {
-			setSourceUrl(prev => (prev.trim() ? prev : place.sourceUrl!));
+			setSourceUrl(place.sourceUrl);
 		}
 		if (place.openingHours) {
 			setHours(openingHoursToFormState(place.openingHours));
