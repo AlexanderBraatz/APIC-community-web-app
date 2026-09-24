@@ -319,6 +319,7 @@ type GoogleOpeningPeriod = {
 
 /**
  * Map Places API (New) `regularOpeningHours.periods` into our OpeningHours shape.
+ * Google only includes periods for open days — days without a period are closed.
  * Returns null if periods are missing or cannot be mapped cleanly.
  */
 export function googleRegularHoursToOpeningHours(
@@ -354,8 +355,11 @@ export function googleRegularHoursToOpeningHours(
 		const dayPeriods = byDay[key];
 		if (dayPeriods?.length) {
 			days[key] = { status: 'open', periods: dayPeriods };
+		} else {
+			// Absence from Google's periods list means the place is closed that day.
+			days[key] = { status: 'closed' };
 		}
 	}
 
-	return Object.keys(days).length ? { days } : null;
+	return { days };
 }

@@ -29,7 +29,7 @@ function formatGoogleTime(hour, minute) {
 
 /**
  * @param {{ periods?: Array<{ open?: { day?: number; hour?: number; minute?: number }; close?: { day?: number; hour?: number; minute?: number } }> } | null | undefined} regularOpeningHours
- * @returns {{ days: Record<string, { status: 'open'; periods: { open: string; close: string }[] }> } | null}
+ * @returns {{ days: Record<string, { status: 'open'; periods: { open: string; close: string }[] } | { status: 'closed' }> } | null}
  */
 export function googleRegularHoursToOpeningHours(regularOpeningHours) {
 	const periods = regularOpeningHours?.periods;
@@ -58,16 +58,19 @@ export function googleRegularHoursToOpeningHours(regularOpeningHours) {
 
 	if (Object.keys(byDay).length === 0) return null;
 
-	/** @type {Record<string, { status: 'open'; periods: { open: string; close: string }[] }>} */
+	/** @type {Record<string, { status: 'open'; periods: { open: string; close: string }[] } | { status: 'closed' }>} */
 	const days = {};
 	for (const key of DAY_KEYS) {
 		const dayPeriods = byDay[key];
 		if (dayPeriods?.length) {
 			days[key] = { status: 'open', periods: dayPeriods };
+		} else {
+			// Absence from Google's periods list means the place is closed that day.
+			days[key] = { status: 'closed' };
 		}
 	}
 
-	return Object.keys(days).length ? { days } : null;
+	return { days };
 }
 
 /**
