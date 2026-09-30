@@ -179,20 +179,15 @@ export default function ListingsBrowse(props: {
 		const step = 24;
 		if (event.key === 'ArrowUp') {
 			event.preventDefault();
-			setMapHeightPx(prev =>
-				clampMapHeightPx(prev - step, window.innerHeight)
-			);
+			setMapHeightPx(prev => clampMapHeightPx(prev - step, window.innerHeight));
 		} else if (event.key === 'ArrowDown') {
 			event.preventDefault();
-			setMapHeightPx(prev =>
-				clampMapHeightPx(prev + step, window.innerHeight)
-			);
+			setMapHeightPx(prev => clampMapHeightPx(prev + step, window.innerHeight));
 		}
 	}
 
 	const mapHeightVhNow = Math.round(
-		(mapHeightPx /
-			(typeof window !== 'undefined' ? window.innerHeight : 800)) *
+		(mapHeightPx / (typeof window !== 'undefined' ? window.innerHeight : 800)) *
 			100
 	);
 
@@ -575,7 +570,7 @@ export default function ListingsBrowse(props: {
 						{activeTags.length === 0 ? (
 							<label
 								htmlFor={inputId}
-								className="font-heading mb-2 block text-base text-[#333333]"
+								className="font-heading mb-2 hidden text-base text-[#333333] sm:block"
 							>
 								Filter recommendations using keywords or search for a business
 								by name
@@ -665,8 +660,7 @@ export default function ListingsBrowse(props: {
 												</p>
 												<ul>
 													{suggestions.places.map((place, index) => {
-														const isEnterTarget =
-															!topKeyword && index === 0;
+														const isEnterTarget = !topKeyword && index === 0;
 														return (
 															<li key={`${place.category}-${place.name}`}>
 																<button
@@ -683,7 +677,10 @@ export default function ListingsBrowse(props: {
 																		{place.name}
 																	</span>
 																	<span className="text-sm text-[#666666]">
-																		{[place.type, CATEGORY_LABELS[place.category]]
+																		{[
+																			place.type,
+																			CATEGORY_LABELS[place.category]
+																		]
 																			.filter(Boolean)
 																			.join(' · ')}
 																	</span>
@@ -710,7 +707,7 @@ export default function ListingsBrowse(props: {
 			    CSS grid rows would clip sticky to the map’s own row.
 			    Map sticky wrapper is full-bleed (outside max-width padding) on mobile
 			    so cards cannot show through at the sides. */}
-			<div className="flex flex-col gap-6 lg:mx-auto lg:max-w-[1400px] lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 lg:px-8">
+			<div className="flex flex-col gap-0 lg:mx-auto lg:max-w-[1400px] lg:grid lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:gap-8 lg:px-8">
 				{/* Map — sticky under search; full-width cover on mobile */}
 				<div
 					ref={mapShellRef}
@@ -756,7 +753,7 @@ export default function ListingsBrowse(props: {
 				</div>
 
 				{/* List — scrolls under sticky search + map on mobile; left column on desktop */}
-				<div className="relative order-2 [overflow-anchor:none] px-4 pt-5 sm:px-6 lg:order-1 lg:px-0">
+				<div className="relative order-2 [overflow-anchor:none] px-4  pt-0 sm:pt-5 sm:px-6 lg:order-1 lg:px-0">
 					{isFiltered && results.length === 0 ? (
 						<p className="font-heading text-base text-[#666666]">
 							No places match your search.
@@ -764,8 +761,8 @@ export default function ListingsBrowse(props: {
 					) : null}
 
 					{results.length > 0 ? (
-						<div>
-							<p className="font-heading mb-6 text-sm text-[#666666]">
+						<div className="pb-100 sm:pb-0">
+							<p className="font-heading mb-6 hidden text-sm text-[#666666] sm:block">
 								{results.length} {results.length === 1 ? 'place' : 'places'}
 								{category ? ` in ${CATEGORY_LABELS[category] ?? category}` : ''}
 							</p>
@@ -774,10 +771,10 @@ export default function ListingsBrowse(props: {
 									<div
 										role="button"
 										tabIndex={0}
-										className={`-mx-3 cursor-pointer rounded-3xl px-3 py-8 transition-colors duration-200 ease-in-out ${
+										className={`-mx-3 cursor-pointer rounded-3xl px-3  py-8 transition-colors duration-200 ease-in-out ${
 											highlightedPlaceName === listing.name ||
 											selectedPlaceName === listing.name
-												? 'bg-[#f7f3ec]'
+												? 'sm:bg-[#f7f3ec]'
 												: 'bg-transparent'
 										}`}
 										onMouseEnter={() => setHighlightedPlaceName(listing.name)}
