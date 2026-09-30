@@ -201,6 +201,21 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_tag_assignments_backup_20260930: {
+        Row: {
+          listing_id: string | null
+          tag_id: string | null
+        }
+        Insert: {
+          listing_id?: string | null
+          tag_id?: string | null
+        }
+        Update: {
+          listing_id?: string | null
+          tag_id?: string | null
+        }
+        Relationships: []
+      }
       listing_tags: {
         Row: {
           aliases: string[]
@@ -247,6 +262,30 @@ export type Database = {
           name?: string | null
         }
         Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
+      listing_tags_backup_20260930: {
+        Row: {
+          aliases: string[] | null
+          created_at: string | null
+          created_by: string | null
+          id: string | null
+          name: string | null
+        }
+        Insert: {
+          aliases?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          name?: string | null
+        }
+        Update: {
+          aliases?: string[] | null
           created_at?: string | null
           created_by?: string | null
           id?: string | null
@@ -386,6 +425,81 @@ export type Database = {
           type?: string | null
           updated_at?: string | null
           updated_by?: string | null
+        }
+        Relationships: []
+      }
+      listings_backup_20260930: {
+        Row: {
+          address: string | null
+          category: Database["public"]["Enums"]["listing_category"] | null
+          contacts: Json | null
+          created_at: string | null
+          created_by: string | null
+          id: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string | null
+          notes: string | null
+          opening_hours: Json | null
+          places_enrichment_notes: string | null
+          places_enrichment_status:
+            | Database["public"]["Enums"]["places_enrichment_status"]
+            | null
+          places_primary_type: string | null
+          places_types: string[] | null
+          source_url: string | null
+          type: string | null
+          updated_at: string | null
+          updated_by: string | null
+          verified_for_release: boolean | null
+        }
+        Insert: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["listing_category"] | null
+          contacts?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          notes?: string | null
+          opening_hours?: Json | null
+          places_enrichment_notes?: string | null
+          places_enrichment_status?:
+            | Database["public"]["Enums"]["places_enrichment_status"]
+            | null
+          places_primary_type?: string | null
+          places_types?: string[] | null
+          source_url?: string | null
+          type?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          verified_for_release?: boolean | null
+        }
+        Update: {
+          address?: string | null
+          category?: Database["public"]["Enums"]["listing_category"] | null
+          contacts?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string | null
+          notes?: string | null
+          opening_hours?: Json | null
+          places_enrichment_notes?: string | null
+          places_enrichment_status?:
+            | Database["public"]["Enums"]["places_enrichment_status"]
+            | null
+          places_primary_type?: string | null
+          places_types?: string[] | null
+          source_url?: string | null
+          type?: string | null
+          updated_at?: string | null
+          updated_by?: string | null
+          verified_for_release?: boolean | null
         }
         Relationships: []
       }
