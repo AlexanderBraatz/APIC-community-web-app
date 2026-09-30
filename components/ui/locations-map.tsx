@@ -161,9 +161,6 @@ type LocationsMapProps = {
 	showTooltipsByDefault?: boolean;
 	onSelect?: (listing: ListingWithCoords) => void;
 	onClearSelect?: () => void;
-	/** When true, show the bottom-right control to clear map focus. */
-	showClearFocus?: boolean;
-	onClearFocus?: () => void;
 	className?: string;
 	style?: CSSProperties;
 	/** When this value changes, trigger a Google Maps container resize. */
@@ -427,8 +424,6 @@ export default function LocationsMap({
 	showTooltipsByDefault = false,
 	onSelect,
 	onClearSelect,
-	showClearFocus = false,
-	onClearFocus,
 	className,
 	style,
 	layoutKey
@@ -500,16 +495,6 @@ export default function LocationsMap({
 					/>
 				</Map>
 			</APIProvider>
-			{showClearFocus ? (
-				<button
-					type="button"
-					onClick={() => onClearFocus?.()}
-					className="font-heading absolute right-3 bottom-4 z-10 rounded-[2px] border border-[#b8a99a] bg-white/95 px-3 py-2 text-sm text-[#333333] shadow-sm transition-colors hover:border-[#7A5A32] hover:bg-[#f7f3ec] lg:right-15 lg:bottom-6"
-					aria-label="Show all places on map"
-				>
-					Show all
-				</button>
-			) : null}
 		</div>
 	);
 }

@@ -21,7 +21,7 @@ import {
 	fetchTagAliasMap
 } from '@/lib/listings/fetch-client';
 import { createClient } from '@/lib/supabase/client';
-import { Search, X } from 'lucide-react';
+import { Search, Undo2, X } from 'lucide-react';
 import {
 	type CSSProperties,
 	type KeyboardEvent as ReactKeyboardEvent,
@@ -35,7 +35,7 @@ import {
 } from 'react';
 import ListingResultCard from './listing-result-card';
 import LocationsMap from './locations-map';
-import { buttonVariants } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import {
 	AnalyticsEvents,
@@ -576,52 +576,65 @@ export default function ListingsBrowse(props: {
 								by name
 							</label>
 						) : null}
-						<div className="relative">
-							<Search
-								className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
-								aria-hidden="true"
-							/>
-							<input
-								id={inputId}
-								type="search"
-								value={query}
-								autoComplete="off"
-								aria-label="Filter recommendations using keywords or search for a business by name"
-								placeholder={
-									(category && CATEGORY_SEARCH_PLACEHOLDERS[category]) ||
-									'e.g. keyword, Business Name'
-								}
-								onChange={event => {
-									setQuery(event.target.value);
-									clearPlaceSelection();
-									setPanelOpen(true);
-								}}
-								onFocus={() => {
-									if (ignoreFocusClearRef.current) return;
-									clearPlaceSelection();
-									setPanelOpen(true);
-								}}
-								onKeyDown={event => {
-									if (event.key === 'Enter') {
-										event.preventDefault();
-										confirmTopSuggestion();
+						<div className="flex items-stretch gap-2">
+							<div className="relative min-w-0 flex-1">
+								<Search
+									className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-[#7A5A32]"
+									aria-hidden="true"
+								/>
+								<input
+									id={inputId}
+									type="search"
+									value={query}
+									autoComplete="off"
+									aria-label="Filter recommendations using keywords or search for a business by name"
+									placeholder={
+										(category && CATEGORY_SEARCH_PLACEHOLDERS[category]) ||
+										'e.g. keyword, Business Name'
 									}
-									if (event.key === 'Escape') {
-										setPanelOpen(false);
-									}
-								}}
-								className="font-heading w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32] [&::-webkit-search-cancel-button]:hidden"
-							/>
-							{(query || activeTags.length > 0) && (
-								<button
+									onChange={event => {
+										setQuery(event.target.value);
+										clearPlaceSelection();
+										setPanelOpen(true);
+									}}
+									onFocus={() => {
+										if (ignoreFocusClearRef.current) return;
+										clearPlaceSelection();
+										setPanelOpen(true);
+									}}
+									onKeyDown={event => {
+										if (event.key === 'Enter') {
+											event.preventDefault();
+											confirmTopSuggestion();
+										}
+										if (event.key === 'Escape') {
+											setPanelOpen(false);
+										}
+									}}
+									className="font-heading h-full w-full border border-[#b8a99a] bg-white py-3.5 pr-12 pl-12 text-base text-[#333333] outline-none placeholder:text-[#999999] focus:border-[#7A5A32] [&::-webkit-search-cancel-button]:hidden"
+								/>
+								{(query || activeTags.length > 0) && (
+									<button
+										type="button"
+										onClick={clearAll}
+										className="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm p-1.5 text-[#7A5A32] transition-colors hover:bg-[#f3eee6]"
+										aria-label="Clear search"
+									>
+										<X className="size-4" />
+									</button>
+								)}
+							</div>
+							{isFiltered ? (
+								<Button
 									type="button"
+									variant="secondary"
 									onClick={clearAll}
-									className="absolute top-1/2 right-3 -translate-y-1/2 rounded-sm p-1.5 text-[#7A5A32] transition-colors hover:bg-[#f3eee6]"
-									aria-label="Clear search"
+									className="h-auto shrink-0 gap-1.5 self-stretch px-3 sm:px-4"
 								>
-									<X className="size-4" />
-								</button>
-							)}
+									<Undo2 className="size-4" aria-hidden />
+									Back to overview
+								</Button>
+							) : null}
 						</div>
 
 						{showSuggestionPanel ? (
@@ -720,8 +733,6 @@ export default function ListingsBrowse(props: {
 						highlightedName={highlightedPlaceName}
 						onSelect={listing => selectPlace(listing)}
 						onClearSelect={clearPlaceSelection}
-						showClearFocus={Boolean(selectedPlaceName)}
-						onClearFocus={clearPlaceSelection}
 						layoutKey={mapHeightPx}
 						style={
 							{
@@ -761,7 +772,7 @@ export default function ListingsBrowse(props: {
 					) : null}
 
 					{results.length > 0 ? (
-						<div className="pb-100 sm:pb-0">
+						<div className="pb-100 sm:pb-50">
 							<p className="font-heading mb-6 hidden text-sm text-[#666666] sm:block">
 								{results.length} {results.length === 1 ? 'place' : 'places'}
 								{category ? ` in ${CATEGORY_LABELS[category] ?? category}` : ''}
