@@ -275,6 +275,7 @@ export type Database = {
           type: string | null
           updated_at: string
           updated_by: string | null
+          verified_for_release: boolean
         }
         Insert: {
           address?: string | null
@@ -296,6 +297,7 @@ export type Database = {
           type?: string | null
           updated_at?: string
           updated_by?: string | null
+          verified_for_release?: boolean
         }
         Update: {
           address?: string | null
@@ -317,6 +319,7 @@ export type Database = {
           type?: string | null
           updated_at?: string
           updated_by?: string | null
+          verified_for_release?: boolean
         }
         Relationships: [
           {
