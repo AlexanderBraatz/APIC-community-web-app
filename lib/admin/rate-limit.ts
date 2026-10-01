@@ -37,9 +37,24 @@ export function checkRateLimit(
 	return { ok: true };
 }
 
-/** Invite / resend: 20 per admin per hour. */
+/** Invite / resend: 50 per admin per hour (supports launch-scale invites). */
 export function limitInvite(adminUserId: string): RateLimitResult {
-	return checkRateLimit(`invite:${adminUserId}`, 20, 60 * 60 * 1000);
+	return checkRateLimit(`invite:${adminUserId}`, 50, 60 * 60 * 1000);
+}
+
+/** Bulk invite submit: 5 per admin per hour. */
+export function limitInviteBulk(adminUserId: string): RateLimitResult {
+	return checkRateLimit(`invite-bulk:${adminUserId}`, 5, 60 * 60 * 1000);
+}
+
+/** Public “request invite OTP”: 5 per email per hour. */
+export function limitInviteOtpRequest(email: string): RateLimitResult {
+	return checkRateLimit(`invite-otp:${email}`, 5, 60 * 60 * 1000);
+}
+
+/** Public “request invite OTP” by client key (IP): 20 per hour. */
+export function limitInviteOtpByClient(clientKey: string): RateLimitResult {
+	return checkRateLimit(`invite-otp-client:${clientKey}`, 20, 60 * 60 * 1000);
 }
 
 /** Single geocode call: 30 per admin per minute. */

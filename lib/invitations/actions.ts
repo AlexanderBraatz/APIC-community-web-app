@@ -1,10 +1,16 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
-import { limitInvite } from '@/lib/admin/rate-limit';
+import {
+	limitInvite,
+	limitInviteBulk,
+	limitInviteOtpByClient,
+	limitInviteOtpRequest
+} from '@/lib/admin/rate-limit';
 import { captureServerActionException } from '@/lib/sentry/capture';
-import { getSiteOrigin } from '@/lib/site-url';
+import { getRequestOrigin } from '@/lib/site-url';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import type { Json } from '@/lib/supabase/database.types';
 import { createClient } from '@/lib/supabase/server';
@@ -26,8 +32,15 @@ function normalizeEmail(email: string) {
 	return email.trim().toLowerCase();
 }
 
-function inviteRedirectTo() {
-	return `${getSiteOrigin()}/auth/confirm?next=${encodeURIComponent('/accept-invite')}`;
+async function inviteRedirectTo(email: string) {
+	const origin = await getRequestOrigin();
+	return `${origin}/accept-invite?email=${encodeURIComponent(email)}`;
+}
+
+function revalidateInvitationPaths() {
+	revalidatePath('/members/admin');
+	revalidatePath('/members/admin/invitations');
+	revalidatePath('/members/admin/audit-log');
 }
 
 async function writeAudit(
@@ -52,6 +65,46 @@ async function writeAudit(
 	if (error) {
 		throw new Error(error.message);
 	}
+}
+
+/**
+ * Send (or resend) an invite OTP email. Deletes a prior unconfirmed auth user
+ * when needed so inviteUserByEmail can issue a fresh code.
+ */
+async function sendInviteOtpEmail(
+	email: string,
+	existingAuthUserId: string | null
+): Promise<{ ok: true; authUserId: string | null } | { ok: false; error: string }> {
+	const admin = createServiceRoleClient();
+
+	if (existingAuthUserId) {
+		const { data: authUser } = await admin.auth.admin.getUserById(
+			existingAuthUserId
+		);
+		if (
+			authUser.user &&
+			!authUser.user.last_sign_in_at &&
+			!authUser.user.email_confirmed_at
+		) {
+			await admin.auth.admin.deleteUser(existingAuthUserId);
+		} else if (authUser.user?.email_confirmed_at || authUser.user?.last_sign_in_at) {
+			return {
+				ok: false,
+				error: 'That email already belongs to a registered user.'
+			};
+		}
+	}
+
+	const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
+		email,
+		{ redirectTo: await inviteRedirectTo(email) }
+	);
+
+	if (inviteError) {
+		return { ok: false, error: inviteError.message };
+	}
+
+	return { ok: true, authUserId: invited.user?.id ?? null };
 }
 
 export async function listInvitations(): Promise<InvitationListItem[]> {
@@ -88,106 +141,174 @@ export async function listInvitations(): Promise<InvitationListItem[]> {
 	}));
 }
 
-export async function inviteUser(formData: FormData): Promise<{ ok: true } | { ok: false; error: string }> {
+async function inviteOneEmail(
+	supabase: Awaited<ReturnType<typeof createClient>>,
+	adminUserId: string,
+	emailRaw: string
+): Promise<{ ok: true; email: string } | { ok: false; email: string; error: string }> {
+	const email = normalizeEmail(emailRaw);
+
+	if (!email || !email.includes('@')) {
+		return { ok: false, email: emailRaw, error: 'Enter a valid email address.' };
+	}
+
+	const admin = createServiceRoleClient();
+
+	const { data: existingUsers, error: listError } = await admin.auth.admin.listUsers({
+		page: 1,
+		perPage: 1000
+	});
+	if (listError) {
+		captureServerActionException(listError, 'invite_user', {
+			step: 'list_users'
+		});
+		return { ok: false, email, error: listError.message };
+	}
+
+	const existing = existingUsers.users.find(u => u.email?.toLowerCase() === email);
+	if (existing?.email_confirmed_at || existing?.last_sign_in_at) {
+		return {
+			ok: false,
+			email,
+			error: 'That email already belongs to a registered user.'
+		};
+	}
+
+	const { data: pendingInvite } = await supabase
+		.from('user_invitations')
+		.select('id')
+		.eq('status', 'pending')
+		.ilike('email', email)
+		.maybeSingle();
+
+	if (pendingInvite) {
+		return {
+			ok: false,
+			email,
+			error: 'A pending invitation already exists for that email.'
+		};
+	}
+
+	const sent = await sendInviteOtpEmail(email, existing?.id ?? null);
+	if (!sent.ok) {
+		captureServerActionException(new Error(sent.error), 'invite_user', {
+			step: 'invite_email'
+		});
+		return { ok: false, email, error: sent.error };
+	}
+
+	const { data: invitation, error: insertError } = await supabase
+		.from('user_invitations')
+		.insert({
+			email,
+			invited_by: adminUserId,
+			status: 'pending',
+			expires_at: null,
+			last_sent_at: new Date().toISOString(),
+			auth_user_id: sent.authUserId
+		})
+		.select('id')
+		.single();
+
+	if (insertError) {
+		captureServerActionException(insertError, 'invite_user', {
+			step: 'insert_invitation'
+		});
+		return { ok: false, email, error: insertError.message };
+	}
+
+	await writeAudit(supabase, {
+		action: 'user.invited',
+		targetType: 'user_invitation',
+		targetId: invitation.id,
+		summary: `Invited ${email}`,
+		newValues: { email, auth_user_id: sent.authUserId }
+	});
+
+	return { ok: true, email };
+}
+
+export async function inviteUser(
+	formData: FormData
+): Promise<{ ok: true } | { ok: false; error: string }> {
 	try {
 		const { supabase, user } = await requireAdmin();
 		const rate = limitInvite(user.id);
 		if (!rate.ok) {
 			return { ok: false, error: rate.error };
 		}
-		const email = normalizeEmail(String(formData.get('email') ?? ''));
 
-		if (!email || !email.includes('@')) {
-			return { ok: false, error: 'Enter a valid email address.' };
-		}
-
-		const admin = createServiceRoleClient();
-
-		const { data: existingUsers, error: listError } = await admin.auth.admin.listUsers({
-			page: 1,
-			perPage: 1000
-		});
-		if (listError) {
-			captureServerActionException(listError, 'invite_user', {
-				step: 'list_users'
-			});
-			return { ok: false, error: listError.message };
-		}
-
-		const existing = existingUsers.users.find(
-			u => u.email?.toLowerCase() === email
+		const result = await inviteOneEmail(
+			supabase,
+			user.id,
+			String(formData.get('email') ?? '')
 		);
-		if (existing?.email_confirmed_at || existing?.last_sign_in_at) {
-			return { ok: false, error: 'That email already belongs to a registered user.' };
+		if (!result.ok) {
+			return { ok: false, error: result.error };
 		}
 
-		const { data: pendingInvite } = await supabase
-			.from('user_invitations')
-			.select('id')
-			.eq('status', 'pending')
-			.ilike('email', email)
-			.maybeSingle();
-
-		if (pendingInvite) {
-			return { ok: false, error: 'A pending invitation already exists for that email.' };
-		}
-
-		if (existing?.id) {
-			await admin.auth.admin.deleteUser(existing.id);
-		}
-
-		const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-			email,
-			{ redirectTo: inviteRedirectTo() }
-		);
-
-		if (inviteError) {
-			captureServerActionException(inviteError, 'invite_user', {
-				step: 'invite_email'
-			});
-			return { ok: false, error: inviteError.message };
-		}
-
-		const expiresAt = new Date();
-		expiresAt.setDate(expiresAt.getDate() + 7);
-
-		const { data: invitation, error: insertError } = await supabase
-			.from('user_invitations')
-			.insert({
-				email,
-				invited_by: user.id,
-				status: 'pending',
-				expires_at: expiresAt.toISOString(),
-				last_sent_at: new Date().toISOString(),
-				auth_user_id: invited.user?.id ?? null
-			})
-			.select('id')
-			.single();
-
-		if (insertError) {
-			captureServerActionException(insertError, 'invite_user', {
-				step: 'insert_invitation'
-			});
-			return { ok: false, error: insertError.message };
-		}
-
-		await writeAudit(supabase, {
-			action: 'user.invited',
-			targetType: 'user_invitation',
-			targetId: invitation.id,
-			summary: `Invited ${email}`,
-			newValues: { email, auth_user_id: invited.user?.id ?? null }
-		});
-
-		revalidatePath('/members/admin');
-		revalidatePath('/members/admin/invitations');
-		revalidatePath('/members/admin/audit-log');
+		revalidateInvitationPaths();
 		return { ok: true };
 	} catch (error) {
 		captureServerActionException(error, 'invite_user');
 		return {
 			ok: false,
 			error: error instanceof Error ? error.message : 'Invite failed.'
+		};
+	}
+}
+
+export async function inviteUsersBulk(
+	formData: FormData
+): Promise<
+	| { ok: true; invited: number; skipped: number; errors: string[] }
+	| { ok: false; error: string }
+> {
+	try {
+		const { supabase, user } = await requireAdmin();
+		const rate = limitInviteBulk(user.id);
+		if (!rate.ok) {
+			return { ok: false, error: rate.error };
+		}
+
+		const raw = String(formData.get('emails') ?? '');
+		const emails = [
+			...new Set(
+				raw
+					.split(/[\n,;]+/)
+					.map(part => normalizeEmail(part))
+					.filter(Boolean)
+			)
+		];
+
+		if (emails.length === 0) {
+			return { ok: false, error: 'Enter at least one email address.' };
+		}
+		if (emails.length > 50) {
+			return { ok: false, error: 'Invite at most 50 emails at a time.' };
+		}
+
+		let invited = 0;
+		let skipped = 0;
+		const errors: string[] = [];
+
+		for (const email of emails) {
+			const result = await inviteOneEmail(supabase, user.id, email);
+			if (result.ok) {
+				invited += 1;
+			} else {
+				skipped += 1;
+				errors.push(`${result.email}: ${result.error}`);
+			}
+		}
+
+		revalidateInvitationPaths();
+		return { ok: true, invited, skipped, errors };
+	} catch (error) {
+		captureServerActionException(error, 'invite_users_bulk');
+		return {
+			ok: false,
+			error: error instanceof Error ? error.message : 'Bulk invite failed.'
 		};
 	}
 }
@@ -214,34 +335,23 @@ export async function resendInvitation(
 			return { ok: false, error: 'Only pending invitations can be resent.' };
 		}
 
-		const admin = createServiceRoleClient();
-
-		if (invitation.auth_user_id) {
-			const { data: authUser } = await admin.auth.admin.getUserById(
-				invitation.auth_user_id
-			);
-			if (authUser.user && !authUser.user.last_sign_in_at) {
-				await admin.auth.admin.deleteUser(invitation.auth_user_id);
-			}
-		}
-
-		const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
+		const sent = await sendInviteOtpEmail(
 			invitation.email,
-			{ redirectTo: inviteRedirectTo() }
+			invitation.auth_user_id
 		);
-
-		if (inviteError) {
-			captureServerActionException(inviteError, 'resend_invitation', {
+		if (!sent.ok) {
+			captureServerActionException(new Error(sent.error), 'resend_invitation', {
 				step: 'invite_email'
 			});
-			return { ok: false, error: inviteError.message };
+			return { ok: false, error: sent.error };
 		}
 
 		const { error: updateError } = await supabase
 			.from('user_invitations')
 			.update({
 				last_sent_at: new Date().toISOString(),
-				auth_user_id: invited.user?.id ?? invitation.auth_user_id
+				auth_user_id: sent.authUserId ?? invitation.auth_user_id,
+				expires_at: null
 			})
 			.eq('id', invitation.id);
 
@@ -256,9 +366,7 @@ export async function resendInvitation(
 			summary: `Resent invitation to ${invitation.email}`
 		});
 
-		revalidatePath('/members/admin');
-		revalidatePath('/members/admin/invitations');
-		revalidatePath('/members/admin/audit-log');
+		revalidateInvitationPaths();
 		return { ok: true };
 	} catch (error) {
 		captureServerActionException(error, 'resend_invitation');
@@ -319,15 +427,96 @@ export async function cancelInvitation(
 			newValues: { status: 'cancelled' }
 		});
 
-		revalidatePath('/members/admin');
-		revalidatePath('/members/admin/invitations');
-		revalidatePath('/members/admin/audit-log');
+		revalidateInvitationPaths();
 		return { ok: true };
 	} catch (error) {
 		captureServerActionException(error, 'cancel_invitation');
 		return {
 			ok: false,
 			error: error instanceof Error ? error.message : 'Cancel failed.'
+		};
+	}
+}
+
+/**
+ * Public: allowlisted invitee requests a fresh OTP (pending invitation required).
+ */
+export async function requestInviteOtp(
+	formData: FormData
+): Promise<{ ok: true } | { ok: false; error: string }> {
+	try {
+		const email = normalizeEmail(String(formData.get('email') ?? ''));
+		if (!email || !email.includes('@')) {
+			return { ok: false, error: 'Enter a valid email address.' };
+		}
+
+		const emailRate = limitInviteOtpRequest(email);
+		if (!emailRate.ok) {
+			return { ok: false, error: emailRate.error };
+		}
+
+		const headerStore = await headers();
+		const clientKey =
+			headerStore.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+			headerStore.get('x-real-ip') ||
+			'unknown';
+		const clientRate = limitInviteOtpByClient(clientKey);
+		if (!clientRate.ok) {
+			return { ok: false, error: clientRate.error };
+		}
+
+		const admin = createServiceRoleClient();
+		const { data: invitation, error } = await admin
+			.from('user_invitations')
+			.select('id, email, status, auth_user_id')
+			.eq('status', 'pending')
+			.ilike('email', email)
+			.maybeSingle();
+
+		if (error) {
+			captureServerActionException(error, 'request_invite_otp', {
+				step: 'lookup_invitation'
+			});
+			return { ok: false, error: 'Could not request a new code. Try again.' };
+		}
+
+		if (!invitation) {
+			return {
+				ok: false,
+				error: 'That email is not on the approved invitation list.'
+			};
+		}
+
+		const sent = await sendInviteOtpEmail(invitation.email, invitation.auth_user_id);
+		if (!sent.ok) {
+			captureServerActionException(new Error(sent.error), 'request_invite_otp', {
+				step: 'invite_email'
+			});
+			return { ok: false, error: sent.error };
+		}
+
+		const { error: updateError } = await admin
+			.from('user_invitations')
+			.update({
+				last_sent_at: new Date().toISOString(),
+				auth_user_id: sent.authUserId ?? invitation.auth_user_id,
+				expires_at: null
+			})
+			.eq('id', invitation.id);
+
+		if (updateError) {
+			captureServerActionException(updateError, 'request_invite_otp', {
+				step: 'update_invitation'
+			});
+			return { ok: false, error: 'Could not request a new code. Try again.' };
+		}
+
+		return { ok: true };
+	} catch (error) {
+		captureServerActionException(error, 'request_invite_otp');
+		return {
+			ok: false,
+			error: error instanceof Error ? error.message : 'Could not request a new code.'
 		};
 	}
 }
@@ -358,7 +547,7 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 		} = await supabase.auth.getUser();
 
 		if (userError || !user?.email) {
-			throw new Error('Open the invitation link from your email first.');
+			throw new Error('Enter your invitation code first.');
 		}
 
 		const { error: passwordError } = await supabase.auth.updateUser({
@@ -399,7 +588,7 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 	} catch (error) {
 		const message = error instanceof Error ? error.message : '';
 		const isUserFacing =
-			message === 'Open the invitation link from your email first.' ||
+			message === 'Enter your invitation code first.' ||
 			message === 'Name is required.' ||
 			message === 'Name must be 200 characters or fewer.' ||
 			message === 'Password must be at least 8 characters.' ||

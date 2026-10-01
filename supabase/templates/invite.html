@@ -87,7 +87,23 @@
 										font-family: Arial, Helvetica, sans-serif;
 									"
 								>
-									Open the link below to set your password and finish joining.
+									Enter this one-time code on the join page. The code expires in
+									24 hours — if it expires, open the page below and request a new
+									one.
+								</p>
+								<p
+									style="
+										margin: 24px 0 0;
+										font-size: 32px;
+										line-height: 1.2;
+										letter-spacing: 0.2em;
+										font-weight: bold;
+										font-family: Arial, Helvetica, sans-serif;
+										color: #805b32;
+										text-align: center;
+									"
+								>
+									{{ .Token }}
 								</p>
 							</td>
 						</tr>
@@ -105,7 +121,7 @@
 											style="background-color: #805b32"
 										>
 											<a
-												href="{{ .ConfirmationURL }}"
+												href="{{ .RedirectTo }}"
 												style="
 													display: inline-block;
 													padding: 12px 28px;
@@ -116,7 +132,7 @@
 													text-decoration: none;
 												"
 											>
-												Accept invitation
+												Enter your code
 											</a>
 										</td>
 									</tr>
@@ -133,9 +149,9 @@
 									If the button does not work, copy and paste this link into your
 									browser:<br />
 									<a
-										href="{{ .ConfirmationURL }}"
+										href="{{ .RedirectTo }}"
 										style="color: #805b32; word-break: break-all"
-										>{{ .ConfirmationURL }}</a
+										>{{ .RedirectTo }}</a
 									>
 								</p>
 							</td>

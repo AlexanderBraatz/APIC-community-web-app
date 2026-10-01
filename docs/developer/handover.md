@@ -26,7 +26,7 @@ It is **not** a property booking or rental-availability product. Domain language
 
 ### Members can
 
-- Sign in after invitation (no public self-registration)
+- Sign in after invitation (no public self-registration); join via email one-time code on `/accept-invite`
 - View and manage attendance on the community calendar
 - Browse local listings (places), search/filter, view on Google Maps
 - Manage their own profile and password
@@ -200,14 +200,14 @@ Anything prefixed `NEXT_PUBLIC_` is visible in the browser bundle. Treat service
 1. **Gain access** to the git repo and request account access for the systems in §4–§5.
 2. **Clone** the repository; run `npm install`.
 3. **Supabase:** create a new project **or** take ownership of the existing one. Link with `npx supabase link` / `npm run supabase:link`. Apply migrations with `npm run supabase:db:push`. Regenerate types with `npm run supabase:types` if the schema changed.
-4. **Auth settings (Supabase dashboard):** public sign-ups disabled (invitation-only); Site URL + Redirect URLs match the app origin (include `/auth/confirm`); set `NEXT_PUBLIC_SITE_URL` accordingly.
+4. **Auth settings (Supabase dashboard):** public sign-ups disabled (invitation-only); Site URL + Redirect URLs match the app origin (include `/auth/confirm` for password reset); Email OTP expiry **86400**; sync the hosted **Invite** email template from `supabase/templates/invite.html` (OTP + `/accept-invite`, no `ConfirmationURL`); set `NEXT_PUBLIC_SITE_URL` accordingly.
 5. **TinaCloud:** connect the repo; set `NEXT_PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN`.
 6. **Google Cloud:** enable Maps JavaScript API, Places, Geocoding; create restricted keys as in `.env.example` / `docs/developer/supabase.md`.
 7. **Optional:** create PostHog EU and Sentry EU projects (dev + prod). Wire Slack alerts per `docs/developer/sentry-alerts.md` if desired.
 8. **Env:** fill `.env.local` from `.env.example`; mirror values on Vercel for Production (and Preview as needed).
 9. **Domain:** point DNS at Vercel; confirm Auth redirect URLs and `NEXT_PUBLIC_SITE_URL`.
 10. **Deploy:** `npm run build` locally to verify, then deploy via Vercel.
-11. **Smoke-test:** invite/accept invite; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
+11. **Smoke-test:** invite → email OTP → `/accept-invite` verify → set password; request new code for pending email; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
 
 Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough for typical maintenance.
 
@@ -221,7 +221,7 @@ Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough fo
 | --- | --- |
 | `/members/admin` | Dashboard (counts, walkthroughs, handover PDF, developer contact) |
 | `/members/admin/users` | Roles, promote/demote, delete |
-| `/members/admin/invitations` | Invite / resend / cancel |
+| `/members/admin/invitations` | Allowlist invite / bulk invite / resend OTP / cancel |
 | `/members/admin/listings` | CRUD listings |
 | `/members/admin/tags` | Keyword management + AI helpers |
 | `/members/admin/audit-log` | Read-only audit of sensitive admin actions |

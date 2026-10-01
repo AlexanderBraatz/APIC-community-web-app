@@ -17,7 +17,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
 			<h1 className="font-heading text-3xl text-[#805b32]">Sign in</h1>
 			<p className="mt-2 text-sm text-[#666]">
 				Members only. There is no public registration — ask an admin for an
-				invitation.
+				invitation, then enter your one-time code to join.
 			</p>
 
 			{params.error ? (
@@ -57,6 +57,11 @@ export default async function SignInPage({ searchParams }: PageProps) {
 			</form>
 
 			<p className="mt-6 text-sm">
+				<Link href="/accept-invite" className="text-[#805b32] underline">
+					Have an invitation? Enter your code
+				</Link>
+			</p>
+			<p className="mt-3 text-sm">
 				<Link href="/forgot-password" className="text-[#805b32] underline">
 					Forgot password?
 				</Link>

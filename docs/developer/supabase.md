@@ -91,7 +91,11 @@ Already expected for this app:
 - Add matching Redirect URLs for local and production, including `/auth/confirm` (and `/accept-invite` if listed).
 - Set `NEXT_PUBLIC_SITE_URL` to that origin (`.env.local` locally; Vercel env in production) so invite and password-reset emails build the correct `redirectTo`.
 - [ ] **Leaked password protection** — Authentication → Attack Protection (HaveIBeenPwned); enable when ready for production.
-- [x] **Invite / recovery email templates** — APIC-branded HTML in [`supabase/templates/`](../../supabase/templates/) (`invite.html`, `recovery.html`); wired for local Auth in `supabase/config.toml`. Hosted project is updated via Management API (or paste into Authentication → Email Templates). Admin previews: `/members/admin` disclosures. CTAs use `{{ .ConfirmationURL }}` (app `redirectTo` still targets `/auth/confirm` → accept-invite / reset-password).
+- [x] **Invite / recovery email templates** — APIC-branded HTML in [`supabase/templates/`](../../supabase/templates/) (`invite.html`, `recovery.html`); wired for local Auth in `supabase/config.toml`. Hosted project is updated via Management API (or paste into Authentication → Email Templates). Admin previews: `/members/admin` disclosures.
+  - **Invite emails use a one-time code** (`{{ .Token }}`) plus a button to `{{ .RedirectTo }}` (the app’s `/accept-invite?email=…` URL from `inviteUserByEmail`) — **do not** put `{{ .ConfirmationURL }}` in the invite template (email scanners can burn one-click links). Prefer `{{ .RedirectTo }}` over `{{ .SiteURL }}` so invites sent from localhost point at localhost, not the dashboard Site URL.
+  - **Recovery** emails still use `{{ .ConfirmationURL }}` → `/auth/confirm` → `/reset-password`.
+  - Local OTP lifetime: `otp_expiry = 86400` (24h) in `config.toml`. On hosted Auth set **Authentication → Providers → Email → Email OTP Expiration** to **86400** (max) so invite codes match.
+  - After changing `invite.html`, sync the hosted Invite template (Dashboard or Management API) so production matches git/admin preview.
 
 TinaCMS `/admin` is unrelated to Supabase Auth.
 
@@ -187,10 +191,12 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 ## Smoke checks (PR-02)
 
 - [ ] Migration `create_invitations_and_audit` applied.
-- [ ] Admin opens `/members/admin/invitations`, invites a new email, row is `pending`.
-- [ ] Invite email arrives; link lands on `/accept-invite` after `/auth/confirm`.
-- [ ] Invitee sets password → profile exists (`role = user`) → invitation `accepted`.
-- [ ] Resend / cancel work; audit rows appear in `admin_audit_log`.
+- [ ] Admin opens `/members/admin/invitations`, invites a new email, row is `pending` (allowlist).
+- [ ] Invite email arrives with a **one-time code** (not a one-click auth URL) and a link to `/accept-invite`.
+- [ ] Invitee enters email + code on `/accept-invite` → sets password → profile exists (`role = user`) → invitation `accepted`.
+- [ ] Expired/wrong code: **Request a new code** works only for pending allowlisted emails.
+- [ ] Bulk invite accepts multiple emails; duplicates / existing users are skipped with errors.
+- [ ] Admin resend / cancel work; audit rows appear in `admin_audit_log`.
 - [ ] Non-admin visiting `/members/admin/invitations` redirects to `/place`.
 
 ## Smoke checks (PR-04)
@@ -253,7 +259,7 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 - [x] Invite / recovery email templates branded in git + hosted Auth (see Auth email templates above).
 - [ ] Dashboard / Cloud Console: Maps JS key referrer-restricted; Geocoding/Places server keys IP-locked for production (PR-10 — Things left to do). Local may stay unrestricted for now.
 
-### Auth redirects for invites
+### Auth redirects (invite OTP + password recovery)
 
 Dashboard → **Authentication → URL configuration**
 
@@ -262,4 +268,6 @@ Dashboard → **Authentication → URL configuration**
   - `http://localhost:3000/**`
   - `https://YOUR-PROJECT.vercel.app/**`
 
-If `/auth/confirm` is not allowed, Supabase falls back to Site URL (`/`) with tokens in the **URL hash**. `HashSessionRecovery` in the root layout recovers those sessions and routes invite → `/accept-invite`, recovery → `/reset-password`. Prefer fixing Redirect URLs so links land on `/auth/confirm` directly.
+**Invite flow:** members open the static `/accept-invite` page and verify with `{{ .Token }}` (no email confirmation URL). Pending `user_invitations` rows are the allowlist; OTP expiry does not remove allowlist membership.
+
+**Password recovery** still uses `/auth/confirm`. If that URL is not allowed, Supabase falls back to Site URL (`/`) with tokens in the **URL hash**. `HashSessionRecovery` in the root layout recovers those sessions and routes recovery → `/reset-password` (and legacy invite links → `/accept-invite`). Prefer fixing Redirect URLs so recovery links land on `/auth/confirm` directly.

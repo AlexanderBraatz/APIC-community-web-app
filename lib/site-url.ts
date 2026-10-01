@@ -23,3 +23,35 @@ export function getSiteOrigin(): string {
 
 	return 'http://localhost:3000';
 }
+
+/**
+ * Origin of the current HTTP request when available (e.g. localhost while
+ * developing, production host on Vercel). Falls back to {@link getSiteOrigin}.
+ * Prefer this for invite email links so local admin invites do not point at
+ * production when NEXT_PUBLIC_SITE_URL is set to the live site.
+ */
+export async function getRequestOrigin(): Promise<string> {
+	try {
+		const { headers } = await import('next/headers');
+		const headerStore = await headers();
+		const host =
+			headerStore.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+			headerStore.get('host')?.trim();
+		if (host) {
+			const forwardedProto = headerStore
+				.get('x-forwarded-proto')
+				?.split(',')[0]
+				?.trim();
+			const proto =
+				forwardedProto ||
+				(host.includes('localhost') || host.startsWith('127.')
+					? 'http'
+					: 'https');
+			return `${proto}://${host}`.replace(/\/$/, '');
+		}
+	} catch {
+		// Outside a request (build / scripts) — use env fallback.
+	}
+
+	return getSiteOrigin();
+}

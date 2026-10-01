@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
 import { completeInviteAcceptance } from '@/lib/invitations/actions';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InvitePrivacyStep } from '@/components/privacy/invite-privacy-step';
+import { AcceptInviteOtpForm } from '@/components/auth/accept-invite-otp-form';
 
 async function acceptAction(formData: FormData) {
 	'use server';
@@ -22,7 +22,7 @@ async function acceptAction(formData: FormData) {
 export default async function AcceptInvitePage({
 	searchParams
 }: {
-	searchParams: Promise<{ error?: string; step?: string }>;
+	searchParams: Promise<{ error?: string; step?: string; email?: string }>;
 }) {
 	const params = await searchParams;
 	const supabase = await createClient();
@@ -31,19 +31,13 @@ export default async function AcceptInvitePage({
 	} = await supabase.auth.getUser();
 
 	if (!user) {
+		const initialEmail =
+			typeof params.email === 'string' ? params.email.trim().toLowerCase() : '';
 		return (
-			<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
-				<h1 className="font-heading text-3xl text-[#805b32]">Accept invitation</h1>
-				<p className="mt-3 text-sm text-[#666]">
-					Open the invitation link from your email to continue. If the link is
-					expired, ask an admin to resend it.
-				</p>
-				<p className="mt-6 text-sm">
-					<Link href="/sign-in" className="text-[#805b32] underline">
-						Already set a password? Sign in
-					</Link>
-				</p>
-			</main>
+			<AcceptInviteOtpForm
+				initialError={params.error}
+				initialEmail={initialEmail.includes('@') ? initialEmail : ''}
+			/>
 		);
 	}
 

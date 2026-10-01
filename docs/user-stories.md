@@ -27,7 +27,7 @@ As a **visitor**, I want to browse the marketing site (home, about, events, cate
 As a **member or admin**, I want to sign in with email and password so that I can access the private members area.
 
 ### US-03 — Accept an invitation
-As an **invited owner**, I want to open my invite link, set a password, and create my account so that I can join the community without public registration.
+As an **invited owner**, I want to enter the one-time code from my invitation email on the join page, set a password, and create my account so that I can join without public registration (and request a new code if the old one expired).
 
 ### US-04 — Reset a forgotten password
 As a **member or admin**, I want to request a password reset by email and set a new password so that I can regain access if I forget my credentials.

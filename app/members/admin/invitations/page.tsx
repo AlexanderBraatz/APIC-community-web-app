@@ -1,6 +1,10 @@
 import { redirect } from 'next/navigation';
 import InvitationActions from '@/components/admin/invitation-actions';
-import { inviteUser, listInvitations } from '@/lib/invitations/actions';
+import {
+	inviteUser,
+	inviteUsersBulk,
+	listInvitations
+} from '@/lib/invitations/actions';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,8 +24,37 @@ async function inviteAction(formData: FormData) {
 	}
 	redirect(
 		`/members/admin/invitations?message=${encodeURIComponent(
-			'Invitation sent.'
+			'Invitation sent with a one-time code.'
 		)}`
+	);
+}
+
+async function bulkInviteAction(formData: FormData) {
+	'use server';
+	const result = await inviteUsersBulk(formData);
+	if (!result.ok) {
+		redirect(
+			`/members/admin/invitations?error=${encodeURIComponent(result.error)}`
+		);
+	}
+
+	const parts = [`Invited ${result.invited}.`];
+	if (result.skipped > 0) {
+		parts.push(`Skipped ${result.skipped}.`);
+	}
+	if (result.errors.length > 0) {
+		const detail = result.errors.slice(0, 5).join(' ');
+		const more =
+			result.errors.length > 5
+				? ` (+${result.errors.length - 5} more)`
+				: '';
+		redirect(
+			`/members/admin/invitations?message=${encodeURIComponent(parts.join(' '))}&error=${encodeURIComponent(detail + more)}`
+		);
+	}
+
+	redirect(
+		`/members/admin/invitations?message=${encodeURIComponent(parts.join(' '))}`
 	);
 }
 
@@ -40,7 +73,9 @@ export default async function AdminInvitationsPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Invite a member</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Sends an invitation email to add a new Member.
+					Adds the email to the allowlist and sends a one-time code (valid up to
+					24 hours). Pending invites stay valid — members can request a fresh
+					code from the join page later.
 				</p>
 
 				{params.error ? (
@@ -81,7 +116,35 @@ export default async function AdminInvitationsPage({
 			</section>
 
 			<section>
-				<h2 className="text-xl font-medium text-[#444]">Pending invitations</h2>
+				<h2 className="text-xl font-medium text-[#444]">Bulk invite</h2>
+				<p className="mt-1 text-sm text-[#666]">
+					Paste up to 50 emails (one per line, or comma-separated) for launch
+					onboarding.
+				</p>
+				<form action={bulkInviteAction} className="mt-4 space-y-3">
+					<div className="space-y-2">
+						<Label htmlFor="emails">Emails</Label>
+						<textarea
+							id="emails"
+							name="emails"
+							required
+							rows={8}
+							className="flex w-full rounded-[2px] border border-[#d4c4b0] bg-white px-3 py-2 text-sm text-[#444] outline-none focus-visible:border-[#805b32] focus-visible:ring-2 focus-visible:ring-[#805b32]/30"
+							placeholder={'member1@example.com\nmember2@example.com'}
+						/>
+					</div>
+					<SubmitButton className="w-full sm:w-auto">
+						Send bulk invitations
+					</SubmitButton>
+				</form>
+			</section>
+
+			<section>
+				<h2 className="text-xl font-medium text-[#444]">Pending allowlist</h2>
+				<p className="mt-1 text-sm text-[#666]">
+					These emails can request a new one-time code until they join or you
+					cancel them.
+				</p>
 				{pending.length === 0 ? (
 					<p className="mt-3 text-sm text-[#888]">No pending invitations.</p>
 				) : (
@@ -98,7 +161,7 @@ export default async function AdminInvitationsPage({
 										{formatWhen(item.invited_at)}
 									</p>
 									<p className="text-[#888]">
-										Last sent {formatWhen(item.last_sent_at)}
+										Last code sent {formatWhen(item.last_sent_at)}
 									</p>
 								</div>
 								<InvitationActions

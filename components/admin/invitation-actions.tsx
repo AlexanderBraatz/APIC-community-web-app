@@ -72,12 +72,12 @@ export default function InvitationActions({
 				<DialogContent className="sm:max-w-md" showCloseButton={false}>
 					<DialogHeader>
 						<DialogTitle>
-							{kind === 'resend' ? 'Resend invitation?' : 'Cancel invitation?'}
+							{kind === 'resend' ? 'Resend one-time code?' : 'Cancel invitation?'}
 						</DialogTitle>
 						<DialogDescription>
 							{kind === 'resend'
-								? `Send another invitation email to “${email}”.`
-								: `Cancel the pending invitation for “${email}”. They will no longer be able to accept it.`}
+								? `Send a new one-time code to “${email}”.`
+								: `Remove “${email}” from the allowlist. They will no longer be able to request a code or join.`}
 						</DialogDescription>
 					</DialogHeader>
 					{error ? (
@@ -100,7 +100,7 @@ export default function InvitationActions({
 							loading={pending}
 							onClick={runConfirm}
 						>
-							{kind === 'resend' ? 'Resend' : 'Cancel invitation'}
+							{kind === 'resend' ? 'Resend code' : 'Cancel invitation'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
