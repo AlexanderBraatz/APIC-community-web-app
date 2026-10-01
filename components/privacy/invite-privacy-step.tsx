@@ -137,7 +137,7 @@ export function InvitePrivacyStep({ error }: Props) {
 							setAnalyticsEnabled(false);
 							setSessionReplayEnabled(false);
 						}}
-						className="w-full sm:w-auto"
+						className="w-full"
 					>
 						Continue without optional analytics
 					</SubmitButton>
@@ -149,7 +149,7 @@ export function InvitePrivacyStep({ error }: Props) {
 							setAnalyticsEnabled(true);
 							setSessionReplayEnabled(true);
 						}}
-						className="w-full sm:w-auto"
+						className="w-full"
 					>
 						Accept all and continue
 					</SubmitButton>

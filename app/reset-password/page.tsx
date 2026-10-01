@@ -15,7 +15,7 @@ export default async function ResetPasswordPage({ searchParams }: PageProps) {
 		<main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16">
 			<h1 className="font-heading text-3xl text-[#805b32]">Choose a new password</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Use the form below after opening the reset link from your email.
+				Use the form below after verifying the one-time code from your email.
 			</p>
 
 			{params.error ? (
@@ -50,7 +50,7 @@ export default async function ResetPasswordPage({ searchParams }: PageProps) {
 						required
 					/>
 				</div>
-				<SubmitButton className="w-full sm:w-auto">
+				<SubmitButton className="w-full">
 					Save password
 				</SubmitButton>
 			</form>

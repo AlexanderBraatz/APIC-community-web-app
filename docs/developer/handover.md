@@ -26,7 +26,7 @@ It is **not** a property booking or rental-availability product. Domain language
 
 ### Members can
 
-- Sign in after invitation (no public self-registration); join via email one-time code on `/accept-invite`
+- Join via email one-time code: request on `/accept-invite`, verify on `/accept-invite/verify`, then set password on `/accept-invite`
 - View and manage attendance on the community calendar
 - Browse local listings (places), search/filter, view on Google Maps
 - Manage their own profile and password
@@ -50,28 +50,28 @@ It is **not** a property booking or rental-availability product. Domain language
 
 **Data ownership**
 
-| Data | System of record |
-| --- | --- |
-| Live member data (profiles, invites, attendance, listings, audit log) | Supabase |
-| Marketing pages / blog content | TinaCMS content in git (`content/`) + TinaCloud |
+| Data                                                                  | System of record                                |
+| --------------------------------------------------------------------- | ----------------------------------------------- |
+| Live member data (profiles, invites, attendance, listings, audit log) | Supabase                                        |
+| Marketing pages / blog content                                        | TinaCMS content in git (`content/`) + TinaCloud |
 
 ---
 
 ## 3. Tech stack (what runs where)
 
-| Layer | Technology |
-| --- | --- |
-| App framework | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS |
-| Hosting / deploys | Vercel (`tinacms build && next build`) |
+| Layer                 | Technology                                                   |
+| --------------------- | ------------------------------------------------------------ |
+| App framework         | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS    |
+| Hosting / deploys     | Vercel (`tinacms build && next build`)                       |
 | Auth + database + RLS | Supabase (hosted Postgres, Auth, service role for admin ops) |
-| CMS | TinaCMS / TinaCloud — marketing pages & blog; UI at `/admin` |
-| Attendance UI | DayPilot Lite scheduler (`app/components/scheduler.tsx`) |
-| Maps / places | Google Maps JavaScript API, Places API, Geocoding |
-| AI helpers | OpenAI — admin keyword suggest / alias backfill |
-| Error monitoring | Sentry EU (`de.sentry.io`) — always on when DSN is set |
-| Product analytics | PostHog EU (`eu.i.posthog.com`) — consent-gated |
-| Auth email redirects | Supabase Auth + `NEXT_PUBLIC_SITE_URL` |
-| One-off data scripts | `scripts/` (seed listings, attendance, enrich places, etc.) |
+| CMS                   | TinaCMS / TinaCloud — marketing pages & blog; UI at `/admin` |
+| Attendance UI         | DayPilot Lite scheduler (`app/components/scheduler.tsx`)     |
+| Maps / places         | Google Maps JavaScript API, Places API, Geocoding            |
+| AI helpers            | OpenAI — admin keyword suggest / alias backfill              |
+| Error monitoring      | Sentry EU (`de.sentry.io`) — always on when DSN is set       |
+| Product analytics     | PostHog EU (`eu.i.posthog.com`) — consent-gated              |
+| Auth email redirects  | Supabase Auth + `NEXT_PUBLIC_SITE_URL`                       |
+| One-off data scripts  | `scripts/` (seed listings, attendance, enrich places, etc.)  |
 
 ---
 
@@ -79,33 +79,33 @@ It is **not** a property booking or rental-availability product. Domain language
 
 Request ownership transfer or admin invite for each console. Secrets stay in Vercel / `.env.local` only.
 
-| Account | Why the app needs it | Required for relaunch? | Notes |
-| --- | --- | --- | --- |
-| **Git host** (e.g. GitHub) | Source repo, PRs, optional CI | **Yes** | Clone and history |
-| **Vercel** | Production + preview deploys; production env vars | **Yes** | Domain + build settings |
-| **Supabase** | Auth, Postgres, RLS, invites, service role | **Yes** | Project ref / API URL in dashboard |
-| **TinaCloud** | CMS auth (`NEXT_PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`) | **Yes** for content editing & Tina build step | Also used at build time |
-| **Google Cloud** | Maps JS, Places, Geocoding API keys | **Yes** for map / place features | Restrict Maps key by HTTP referrer; server keys by IP in prod |
-| **OpenAI** | Admin keyword suggest / alias backfill | Optional for core app; **required** for those AI admin features | Server-only `OPENAI_API_KEY` |
-| **PostHog** (EU) | Product analytics + session replay | Optional — omit key to disable | Prefer separate projects for local vs production |
-| **Sentry** (EU `de.sentry.io`) | Errors, source maps, optional Slack alerts | Strongly recommended | Separate projects for local vs production |
-| **Domain / DNS** | Production hostname → Vercel | **Yes** for public relaunch | Must match `NEXT_PUBLIC_SITE_URL` / Auth redirect URLs |
-| **Slack** | Optional Sentry alert destination | Optional | Configured in Sentry UI, not app env |
-| **Vimeo** | Admin dashboard walkthrough embeds only | Not required to run the app | Optional |
+| Account                        | Why the app needs it                                  | Required for relaunch?                                          | Notes                                                         |
+| ------------------------------ | ----------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------- |
+| **Git host** (e.g. GitHub)     | Source repo, PRs, optional CI                         | **Yes**                                                         | Clone and history                                             |
+| **Vercel**                     | Production + preview deploys; production env vars     | **Yes**                                                         | Domain + build settings                                       |
+| **Supabase**                   | Auth, Postgres, RLS, invites, service role            | **Yes**                                                         | Project ref / API URL in dashboard                            |
+| **TinaCloud**                  | CMS auth (`NEXT_PUBLIC_TINA_CLIENT_ID`, `TINA_TOKEN`) | **Yes** for content editing & Tina build step                   | Also used at build time                                       |
+| **Google Cloud**               | Maps JS, Places, Geocoding API keys                   | **Yes** for map / place features                                | Restrict Maps key by HTTP referrer; server keys by IP in prod |
+| **OpenAI**                     | Admin keyword suggest / alias backfill                | Optional for core app; **required** for those AI admin features | Server-only `OPENAI_API_KEY`                                  |
+| **PostHog** (EU)               | Product analytics + session replay                    | Optional — omit key to disable                                  | Prefer separate projects for local vs production              |
+| **Sentry** (EU `de.sentry.io`) | Errors, source maps, optional Slack alerts            | Strongly recommended                                            | Separate projects for local vs production                     |
+| **Domain / DNS**               | Production hostname → Vercel                          | **Yes** for public relaunch                                     | Must match `NEXT_PUBLIC_SITE_URL` / Auth redirect URLs        |
+| **Slack**                      | Optional Sentry alert destination                     | Optional                                                        | Configured in Sentry UI, not app env                          |
+| **Vimeo**                      | Admin dashboard walkthrough embeds only               | Not required to run the app                                     | Optional                                                      |
 
 ---
 
 ## 5. Data ownership and how to request access
 
-| System | What you get access to | How to request |
-| --- | --- | --- |
-| **Supabase** | Member profiles, invitations, attendance, listings, audit log, Auth users | Client invites new maintainer as project owner/admin, or transfers project |
-| **TinaCloud + git `content/`** | Marketing pages, blog Markdown | TinaCloud project invite + git repo access |
-| **PostHog** | Analytics events, session recordings | Project/org invite (EU cloud) |
-| **Sentry** | Error history, releases, alerts | Org/project invite (EU `de.sentry.io`) |
-| **Vercel** | Deploy history, env vars, domains | Team/project invite |
-| **Google Cloud** | API keys, quotas, billing | GCP project IAM |
-| **OpenAI** | API usage for keyword/AI features | Org invite or new key under client billing |
+| System                         | What you get access to                                                    | How to request                                                             |
+| ------------------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **Supabase**                   | Member profiles, invitations, attendance, listings, audit log, Auth users | Client invites new maintainer as project owner/admin, or transfers project |
+| **TinaCloud + git `content/`** | Marketing pages, blog Markdown                                            | TinaCloud project invite + git repo access                                 |
+| **PostHog**                    | Analytics events, session recordings                                      | Project/org invite (EU cloud)                                              |
+| **Sentry**                     | Error history, releases, alerts                                           | Org/project invite (EU `de.sentry.io`)                                     |
+| **Vercel**                     | Deploy history, env vars, domains                                         | Team/project invite                                                        |
+| **Google Cloud**               | API keys, quotas, billing                                                 | GCP project IAM                                                            |
+| **OpenAI**                     | API usage for keyword/AI features                                         | Org invite or new key under client billing                                 |
 
 Access requests go through the **client**. The original developer (§11) can help with handoff when available.
 
@@ -115,17 +115,17 @@ If migrating an existing production community: prefer **transferring** the Supab
 
 ## 6. Repository map
 
-| Path | Role |
-| --- | --- |
-| `app/` | Next.js routes — public site, `/place`, `/community-calendar`, `/members/admin/*`, auth flows |
-| `components/` | UI — admin, maps, analytics, blog blocks |
-| `lib/` | Server actions & clients — Supabase, admin, audit, invitations, listings |
-| `supabase/migrations/` | **Source of truth** for schema, RLS, DB functions |
-| `content/` | Tina pages, blog posts, static CMS content |
-| `docs/developer/` | Architecture, Supabase, monitoring, Sentry alerts, this handover |
-| `public/` | Static assets; downloadable PDF at `public/docs/apic-community-handover.pdf` |
-| `scripts/` | Seed / enrich / migrate helpers (listings, attendance, places) |
-| `.env.example` | Canonical list of env var names (no secrets) |
+| Path                   | Role                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| `app/`                 | Next.js routes — public site, `/place`, `/community-calendar`, `/members/admin/*`, auth flows |
+| `components/`          | UI — admin, maps, analytics, blog blocks                                                      |
+| `lib/`                 | Server actions & clients — Supabase, admin, audit, invitations, listings                      |
+| `supabase/migrations/` | **Source of truth** for schema, RLS, DB functions                                             |
+| `content/`             | Tina pages, blog posts, static CMS content                                                    |
+| `docs/developer/`      | Architecture, Supabase, monitoring, Sentry alerts, this handover                              |
+| `public/`              | Static assets; downloadable PDF at `public/docs/apic-community-handover.pdf`                  |
+| `scripts/`             | Seed / enrich / migrate helpers (listings, attendance, places)                                |
+| `.env.example`         | Canonical list of env var names (no secrets)                                                  |
 
 Useful npm scripts:
 
@@ -144,52 +144,52 @@ Copy `.env.example` → `.env.local` for local work. Set the same keys on the **
 
 ### Google
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Public | Maps JavaScript API (referrer-restricted) |
-| `GOOGLE_PLACES_API_KEY` | Server | Places API (New) — autocomplete / place details |
-| `GOOGLE_GEOCODING_API_KEY` | Server | Geocoding (falls back chain documented in `.env.example`) |
+| Variable                          | Scope  | Purpose                                                   |
+| --------------------------------- | ------ | --------------------------------------------------------- |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Public | Maps JavaScript API (referrer-restricted)                 |
+| `GOOGLE_PLACES_API_KEY`           | Server | Places API (New) — autocomplete / place details           |
+| `GOOGLE_GEOCODING_API_KEY`        | Server | Geocoding (falls back chain documented in `.env.example`) |
 
 ### Supabase
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Project API URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | RLS-bound anon/publishable key |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public | Optional alias; code can fall back to anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Server only** | Invites, admin deletes, privileged ops — never `NEXT_PUBLIC_` |
-| `NEXT_PUBLIC_SITE_URL` | Public | Site origin for auth email redirects (e.g. `https://your-domain.com`) |
+| Variable                               | Scope           | Purpose                                                               |
+| -------------------------------------- | --------------- | --------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`             | Public          | Project API URL                                                       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY`        | Public          | RLS-bound anon/publishable key                                        |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Public          | Optional alias; code can fall back to anon key                        |
+| `SUPABASE_SERVICE_ROLE_KEY`            | **Server only** | Invites, admin deletes, privileged ops — never `NEXT_PUBLIC_`         |
+| `NEXT_PUBLIC_SITE_URL`                 | Public          | Site origin for auth email redirects (e.g. `https://your-domain.com`) |
 
 ### OpenAI
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
+| Variable         | Scope           | Purpose                                |
+| ---------------- | --------------- | -------------------------------------- |
 | `OPENAI_API_KEY` | **Server only** | Admin keyword suggest / alias backfill |
 
 ### TinaCMS / TinaCloud
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_TINA_CLIENT_ID` | Public | TinaCloud client id |
-| `TINA_TOKEN` | **Server only** | TinaCloud token (also on Vercel for builds) |
+| Variable                     | Scope           | Purpose                                     |
+| ---------------------------- | --------------- | ------------------------------------------- |
+| `NEXT_PUBLIC_TINA_CLIENT_ID` | Public          | TinaCloud client id                         |
+| `TINA_TOKEN`                 | **Server only** | TinaCloud token (also on Vercel for builds) |
 
 ### PostHog (EU)
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_POSTHOG_KEY` | Public | Omit locally to disable (no-op provider) |
-| `NEXT_PUBLIC_POSTHOG_HOST` | Public | Default `https://eu.i.posthog.com` |
+| Variable                   | Scope  | Purpose                                  |
+| -------------------------- | ------ | ---------------------------------------- |
+| `NEXT_PUBLIC_POSTHOG_KEY`  | Public | Omit locally to disable (no-op provider) |
+| `NEXT_PUBLIC_POSTHOG_HOST` | Public | Default `https://eu.i.posthog.com`       |
 
 ### Sentry (EU)
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SENTRY_DSN` | Public | Client/server DSN (`ingest.de.sentry.io`); omit locally to disable |
-| `SENTRY_DSN` | Server | Optional server-only alias |
-| `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | Public | Optional override: `development` \| `preview` \| `production` |
-| `SENTRY_ORG` | CI / Vercel | Org slug for source map upload |
-| `SENTRY_PROJECT` | CI / Vercel | Project slug |
-| `SENTRY_AUTH_TOKEN` | CI / Vercel | Auth token — never commit |
+| Variable                         | Scope       | Purpose                                                            |
+| -------------------------------- | ----------- | ------------------------------------------------------------------ |
+| `NEXT_PUBLIC_SENTRY_DSN`         | Public      | Client/server DSN (`ingest.de.sentry.io`); omit locally to disable |
+| `SENTRY_DSN`                     | Server      | Optional server-only alias                                         |
+| `NEXT_PUBLIC_SENTRY_ENVIRONMENT` | Public      | Optional override: `development` \| `preview` \| `production`      |
+| `SENTRY_ORG`                     | CI / Vercel | Org slug for source map upload                                     |
+| `SENTRY_PROJECT`                 | CI / Vercel | Project slug                                                       |
+| `SENTRY_AUTH_TOKEN`              | CI / Vercel | Auth token — never commit                                          |
 
 Anything prefixed `NEXT_PUBLIC_` is visible in the browser bundle. Treat service role, Tina token, OpenAI, and Sentry auth token as highly sensitive.
 
@@ -200,14 +200,14 @@ Anything prefixed `NEXT_PUBLIC_` is visible in the browser bundle. Treat service
 1. **Gain access** to the git repo and request account access for the systems in §4–§5.
 2. **Clone** the repository; run `npm install`.
 3. **Supabase:** create a new project **or** take ownership of the existing one. Link with `npx supabase link` / `npm run supabase:link`. Apply migrations with `npm run supabase:db:push`. Regenerate types with `npm run supabase:types` if the schema changed.
-4. **Auth settings (Supabase dashboard):** public sign-ups disabled (invitation-only); Site URL + Redirect URLs match the app origin (include `/auth/confirm` for password reset); Email OTP expiry **86400**; sync the hosted **Invite** email template from `supabase/templates/invite.html` (OTP + `/accept-invite`, no `ConfirmationURL`); set `NEXT_PUBLIC_SITE_URL` accordingly.
+4. **Auth settings (Supabase dashboard):** public sign-ups disabled (invitation-only); Site URL + Redirect URLs match the app origin (include `/accept-invite`, `/accept-invite/verify`, `/forgot-password`, and `/forgot-password/verify`); Email OTP expiry **86400**; sync hosted **Invite** and **Reset password** email templates from `supabase/templates/invite.html` and `recovery.html` (OTP + `{{ .RedirectTo }}`, no `ConfirmationURL`); set `NEXT_PUBLIC_SITE_URL` accordingly.
 5. **TinaCloud:** connect the repo; set `NEXT_PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN`.
 6. **Google Cloud:** enable Maps JavaScript API, Places, Geocoding; create restricted keys as in `.env.example` / `docs/developer/supabase.md`.
 7. **Optional:** create PostHog EU and Sentry EU projects (dev + prod). Wire Slack alerts per `docs/developer/sentry-alerts.md` if desired.
 8. **Env:** fill `.env.local` from `.env.example`; mirror values on Vercel for Production (and Preview as needed).
 9. **Domain:** point DNS at Vercel; confirm Auth redirect URLs and `NEXT_PUBLIC_SITE_URL`.
 10. **Deploy:** `npm run build` locally to verify, then deploy via Vercel.
-11. **Smoke-test:** invite → email OTP → `/accept-invite` verify → set password; request new code for pending email; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
+11. **Smoke-test:** invite → email OTP → `/accept-invite` request code → `/accept-invite/verify` → set password; request new code for pending email; password reset → `/forgot-password` request code → `/forgot-password/verify` → `/reset-password`; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
 
 Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough for typical maintenance.
 
@@ -217,14 +217,14 @@ Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough fo
 
 ### App admin (`/members/admin`)
 
-| Route | Purpose |
-| --- | --- |
-| `/members/admin` | Dashboard (counts, walkthroughs, handover PDF, developer contact) |
-| `/members/admin/users` | Roles, promote/demote, delete |
-| `/members/admin/invitations` | Allowlist invite / bulk invite / resend OTP / cancel |
-| `/members/admin/listings` | CRUD listings |
-| `/members/admin/tags` | Keyword management + AI helpers |
-| `/members/admin/audit-log` | Read-only audit of sensitive admin actions |
+| Route                        | Purpose                                                           |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `/members/admin`             | Dashboard (counts, walkthroughs, handover PDF, developer contact) |
+| `/members/admin/users`       | Roles, promote/demote, delete                                     |
+| `/members/admin/invitations` | Allowlist invite / bulk invite / resend OTP / cancel              |
+| `/members/admin/listings`    | CRUD listings                                                     |
+| `/members/admin/tags`        | Keyword management + AI helpers                                   |
+| `/members/admin/audit-log`   | Read-only audit of sensitive admin actions                        |
 
 Non-admins hitting `/members/admin/*` are redirected (typically to `/place`).
 
@@ -240,14 +240,14 @@ Sensitive admin actions write to `admin_audit_log` (invites, role changes, user 
 
 ## 10. Deeper references
 
-| Doc | Covers |
-| --- | --- |
-| [architecture-spec.md](./architecture-spec.md) | Product/system architecture, data model, permissions |
-| [supabase.md](./supabase.md) | Project link, migrations, Auth, Maps keys, checklists |
-| [monitoring.md](./monitoring.md) | Sentry + PostHog mental model and env vars |
-| [sentry-alerts.md](./sentry-alerts.md) | EU Sentry projects, Slack alerts, verification |
-| [../user-stories.md](../user-stories.md) | Product user stories |
-| [README.md](./README.md) | Index of developer docs |
+| Doc                                            | Covers                                                |
+| ---------------------------------------------- | ----------------------------------------------------- |
+| [architecture-spec.md](./architecture-spec.md) | Product/system architecture, data model, permissions  |
+| [supabase.md](./supabase.md)                   | Project link, migrations, Auth, Maps keys, checklists |
+| [monitoring.md](./monitoring.md)               | Sentry + PostHog mental model and env vars            |
+| [sentry-alerts.md](./sentry-alerts.md)         | EU Sentry projects, Slack alerts, verification        |
+| [../user-stories.md](../user-stories.md)       | Product user stories                                  |
+| [README.md](./README.md)                       | Index of developer docs                               |
 
 ---
 

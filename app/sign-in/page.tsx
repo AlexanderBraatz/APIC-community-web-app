@@ -51,7 +51,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
 						required
 					/>
 				</div>
-				<SubmitButton className="w-full sm:w-auto">
+				<SubmitButton className="w-full">
 					Sign in
 				</SubmitButton>
 			</form>

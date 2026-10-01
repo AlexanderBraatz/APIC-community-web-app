@@ -19,7 +19,6 @@ const PRIVACY_ONBOARDING_ALLOWLIST = [
 	'/terms',
 	'/privacy',
 	'/legal',
-	'/auth',
 	'/reset-password',
 	'/sign-out'
 ] as const;

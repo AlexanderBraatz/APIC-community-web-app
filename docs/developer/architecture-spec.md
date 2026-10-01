@@ -531,9 +531,11 @@ Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Ser
 | Route                                     | Purpose                             |
 | ----------------------------------------- | ----------------------------------- |
 | `/sign-in`                                | Email + password (no register link) |
-| `/accept-invite`                          | Set password from invite            |
-| `/forgot-password`                        | Request reset                       |
-| `/reset-password`                         | Complete reset                      |
+| `/accept-invite`                          | Request invite OTP / set password   |
+| `/accept-invite/verify`                   | Enter invite OTP                    |
+| `/forgot-password`                        | Request recovery OTP                |
+| `/forgot-password/verify`                 | Enter recovery OTP                  |
+| `/reset-password`                         | Set new password after OTP          |
 | `/`, `/about`, `/events`, category routes | Existing Tina pages                 |
 
 ### Members (authenticated)

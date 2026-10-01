@@ -26,8 +26,15 @@ const SAMPLE_EMAIL = 'member@example.com';
  * Substitute Go-template placeholders with safe sample values for admin preview.
  * Live Auth emails still use real SiteURL / Email / Token / RedirectTo from Supabase.
  */
-function renderPreviewHtml(raw: string, siteUrl: string): string {
-	const sampleRedirect = `${siteUrl}/accept-invite?email=${encodeURIComponent(SAMPLE_EMAIL)}`;
+function renderPreviewHtml(
+	raw: string,
+	siteUrl: string,
+	kind: AuthEmailPreviewKind
+): string {
+	const sampleRedirect =
+		kind === 'recovery'
+			? `${siteUrl}/forgot-password/verify?email=${encodeURIComponent(SAMPLE_EMAIL)}`
+			: `${siteUrl}/accept-invite/verify?email=${encodeURIComponent(SAMPLE_EMAIL)}`;
 	const withVars = raw
 		.replaceAll('{{ .SiteURL }}', siteUrl)
 		.replaceAll('{{ .RedirectTo }}', sampleRedirect)
@@ -57,7 +64,7 @@ export function getAuthEmailPreview(kind: AuthEmailPreviewKind): AuthEmailPrevie
 	return {
 		kind,
 		subject: SUBJECTS[kind],
-		html: renderPreviewHtml(raw, siteUrl)
+		html: renderPreviewHtml(raw, siteUrl, kind)
 	};
 }
 

@@ -5,7 +5,7 @@ import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InvitePrivacyStep } from '@/components/privacy/invite-privacy-step';
-import { AcceptInviteOtpForm } from '@/components/auth/accept-invite-otp-form';
+import { AcceptInviteRequestForm } from '@/components/auth/accept-invite-request-form';
 
 async function acceptAction(formData: FormData) {
 	'use server';
@@ -34,7 +34,7 @@ export default async function AcceptInvitePage({
 		const initialEmail =
 			typeof params.email === 'string' ? params.email.trim().toLowerCase() : '';
 		return (
-			<AcceptInviteOtpForm
+			<AcceptInviteRequestForm
 				initialError={params.error}
 				initialEmail={initialEmail.includes('@') ? initialEmail : ''}
 			/>
@@ -122,7 +122,7 @@ export default async function AcceptInvitePage({
 						required
 					/>
 				</div>
-				<SubmitButton className="w-full sm:w-auto">
+				<SubmitButton className="w-full">
 					Continue
 				</SubmitButton>
 			</form>

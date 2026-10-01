@@ -34,7 +34,7 @@ function normalizeEmail(email: string) {
 
 async function inviteRedirectTo(email: string) {
 	const origin = await getRequestOrigin();
-	return `${origin}/accept-invite?email=${encodeURIComponent(email)}`;
+	return `${origin}/accept-invite/verify?email=${encodeURIComponent(email)}`;
 }
 
 function revalidateInvitationPaths() {

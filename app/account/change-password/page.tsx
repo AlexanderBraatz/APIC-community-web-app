@@ -54,15 +54,15 @@ export default async function ChangePasswordPage({ searchParams }: PageProps) {
 						required
 					/>
 				</div>
-				<div className="flex flex-wrap gap-3">
-					<SubmitButton className="w-full sm:w-auto">
+				<div className="flex flex-col gap-3">
+					<SubmitButton className="w-full">
 						Confirm change password
 					</SubmitButton>
 					<Link
 						href="/account"
 						className={cn(
 							buttonVariants({ variant: 'outline' }),
-							'w-full sm:w-auto'
+							'w-full'
 						)}
 					>
 						Cancel

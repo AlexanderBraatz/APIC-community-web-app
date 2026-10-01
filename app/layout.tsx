@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import { Inter, Playfair_Display } from 'next/font/google';
 import { AnalyticsRoot } from '@/components/analytics/analytics-root';
 import { PostHogSignOutReset } from '@/components/analytics/posthog-sign-out-reset';
-import HashSessionRecovery from '@/components/auth/hash-session-recovery';
 import SiteFooter from '@/components/layout/site-footer';
 import SiteHeader from '@/components/layout/site-header';
 import './globals.css';
@@ -48,7 +47,6 @@ export default function RootLayout({
 						<Suspense fallback={null}>
 							<PostHogSignOutReset />
 						</Suspense>
-						<HashSessionRecovery />
 						<SiteHeader />
 						<div className="flex-1">{children}</div>
 						<SiteFooter />

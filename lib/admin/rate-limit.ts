@@ -57,6 +57,16 @@ export function limitInviteOtpByClient(clientKey: string): RateLimitResult {
 	return checkRateLimit(`invite-otp-client:${clientKey}`, 20, 60 * 60 * 1000);
 }
 
+/** Public “request password-reset OTP”: 5 per email per hour. */
+export function limitResetOtpRequest(email: string): RateLimitResult {
+	return checkRateLimit(`reset-otp:${email}`, 5, 60 * 60 * 1000);
+}
+
+/** Public “request password-reset OTP” by client key (IP): 20 per hour. */
+export function limitResetOtpByClient(clientKey: string): RateLimitResult {
+	return checkRateLimit(`reset-otp-client:${clientKey}`, 20, 60 * 60 * 1000);
+}
+
 /** Single geocode call: 30 per admin per minute. */
 export function limitGeocode(adminUserId: string): RateLimitResult {
 	return checkRateLimit(`geocode:${adminUserId}`, 30, 60 * 1000);
