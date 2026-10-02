@@ -45,11 +45,11 @@ async function bulkInviteAction(formData: FormData) {
 	if (result.errors.length > 0) {
 		const detail = result.errors.slice(0, 5).join(' ');
 		const more =
-			result.errors.length > 5
-				? ` (+${result.errors.length - 5} more)`
-				: '';
+			result.errors.length > 5 ? ` (+${result.errors.length - 5} more)` : '';
 		redirect(
-			`/members/admin/invitations?message=${encodeURIComponent(parts.join(' '))}&error=${encodeURIComponent(detail + more)}`
+			`/members/admin/invitations?message=${encodeURIComponent(
+				parts.join(' ')
+			)}&error=${encodeURIComponent(detail + more)}`
 		);
 	}
 
@@ -121,7 +121,10 @@ export default async function AdminInvitationsPage({
 					Paste up to 50 emails (one per line, or comma-separated) for launch
 					onboarding.
 				</p>
-				<form action={bulkInviteAction} className="mt-4 space-y-3">
+				<form
+					action={bulkInviteAction}
+					className="mt-4 space-y-3"
+				>
 					<div className="space-y-2">
 						<Label htmlFor="emails">Emails</Label>
 						<textarea
@@ -140,7 +143,7 @@ export default async function AdminInvitationsPage({
 			</section>
 
 			<section>
-				<h2 className="text-xl font-medium text-[#444]">Pending allowlist</h2>
+				<h2 className="text-xl font-medium text-[#444]">Pending invitations</h2>
 				<p className="mt-1 text-sm text-[#666]">
 					These emails can request a new one-time code until they join or you
 					cancel them.
