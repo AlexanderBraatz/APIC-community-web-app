@@ -7,11 +7,13 @@ import { resolveInviteFlowStep } from '@/lib/invitations/onboarding';
 import { createClient } from '@/lib/supabase/server';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { InvitePrivacyStep } from '@/components/privacy/invite-privacy-step';
 import { AcceptInviteRequestForm } from '@/components/auth/accept-invite-request-form';
 import { InviteColourStep } from '@/components/auth/invite-colour-step';
 import { InviteFavoritesStep } from '@/components/auth/invite-favorites-step';
+import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
 
 async function passwordAction(formData: FormData) {
 	'use server';
@@ -105,6 +107,7 @@ export default async function AcceptInvitePage({
 					</div>
 					<SubmitButton className="w-full">Continue</SubmitButton>
 				</form>
+				<InviteOnboardingProgress step="name" />
 			</main>
 		);
 	}
@@ -165,10 +168,9 @@ export default async function AcceptInvitePage({
 			>
 				<div className="space-y-2">
 					<Label htmlFor="password">Password</Label>
-					<Input
+					<PasswordInput
 						id="password"
 						name="password"
-						type="password"
 						autoComplete="new-password"
 						minLength={8}
 						required
@@ -176,10 +178,9 @@ export default async function AcceptInvitePage({
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="confirm">Confirm password</Label>
-					<Input
+					<PasswordInput
 						id="confirm"
 						name="confirm"
-						type="password"
 						autoComplete="new-password"
 						minLength={8}
 						required
@@ -187,6 +188,7 @@ export default async function AcceptInvitePage({
 				</div>
 				<SubmitButton className="w-full">Continue</SubmitButton>
 			</form>
+			<InviteOnboardingProgress step="password" />
 		</main>
 	);
 }

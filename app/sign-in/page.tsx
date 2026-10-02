@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { signInWithPassword } from '@/app/auth/actions';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 
 type PageProps = {
@@ -43,10 +44,9 @@ export default async function SignInPage({ searchParams }: PageProps) {
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="password">Password</Label>
-					<Input
+					<PasswordInput
 						id="password"
 						name="password"
-						type="password"
 						autoComplete="current-password"
 						required
 					/>

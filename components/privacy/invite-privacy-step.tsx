@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { saveInvitePrivacyChoices } from '@/lib/privacy/actions';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Label } from '@/components/ui/label';
+import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
 
 type Props = {
 	error?: string;
@@ -141,6 +142,7 @@ export function InvitePrivacyStep({ error }: Props) {
 					Continue
 				</SubmitButton>
 			</form>
+			<InviteOnboardingProgress step="privacy" />
 		</main>
 	);
 }

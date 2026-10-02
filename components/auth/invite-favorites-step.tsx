@@ -8,6 +8,7 @@ import {
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
 
 export type InviteFavoriteMember = {
 	id: string;
@@ -158,6 +159,7 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 					Save favorites and continue
 				</SubmitButton>
 			</form>
+			<InviteOnboardingProgress step="favorites" />
 		</main>
 	);
 }

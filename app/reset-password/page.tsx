@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { updatePassword } from '@/app/auth/actions';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 
 type PageProps = {
@@ -30,10 +30,9 @@ export default async function ResetPasswordPage({ searchParams }: PageProps) {
 			<form action={updatePassword} className="mt-8 space-y-4">
 				<div className="space-y-2">
 					<Label htmlFor="password">New password</Label>
-					<Input
+					<PasswordInput
 						id="password"
 						name="password"
-						type="password"
 						autoComplete="new-password"
 						minLength={8}
 						required
@@ -41,10 +40,9 @@ export default async function ResetPasswordPage({ searchParams }: PageProps) {
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="confirm">Confirm password</Label>
-					<Input
+					<PasswordInput
 						id="confirm"
 						name="confirm"
-						type="password"
 						autoComplete="new-password"
 						minLength={8}
 						required

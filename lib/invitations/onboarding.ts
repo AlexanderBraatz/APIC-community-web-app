@@ -7,7 +7,9 @@ import {
 
 export type { InviteFlowStep, InviteOnboardingStep } from './onboarding-steps';
 export {
+	INVITE_FLOW_STEPS,
 	INVITE_ONBOARDING_STEPS,
+	inviteFlowStepIndex,
 	isIncompleteInviteOnboardingStep,
 	isInviteOnboardingStep
 } from './onboarding-steps';

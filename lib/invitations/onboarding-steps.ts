@@ -14,6 +14,19 @@ export type InviteFlowStep =
 	| 'colour'
 	| 'favorites';
 
+/** Ordered invite onboarding screens shown to the user (excludes `done`). */
+export const INVITE_FLOW_STEPS: readonly InviteFlowStep[] = [
+	'password',
+	'privacy',
+	'name',
+	'colour',
+	'favorites'
+] as const;
+
+export function inviteFlowStepIndex(step: InviteFlowStep): number {
+	return INVITE_FLOW_STEPS.indexOf(step);
+}
+
 export function isInviteOnboardingStep(
 	value: string | null | undefined
 ): value is InviteOnboardingStep {

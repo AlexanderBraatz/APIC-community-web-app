@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { setInviteColour } from '@/lib/invitations/actions';
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
 import { SubmitButton } from '@/components/ui/submit-button';
+import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
 
 type Props = {
 	error?: string;
@@ -66,6 +67,7 @@ export function InviteColourStep({ error, currentColor = null }: Props) {
 					Continue
 				</SubmitButton>
 			</form>
+			<InviteOnboardingProgress step="colour" />
 		</main>
 	);
 }

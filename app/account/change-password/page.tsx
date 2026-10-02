@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { changePassword } from '@/lib/account/actions';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { Input } from '@/components/ui/input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
@@ -34,10 +34,9 @@ export default async function ChangePasswordPage({ searchParams }: PageProps) {
 			<form action={changePassword} className="mt-8 space-y-4">
 				<div className="space-y-2">
 					<Label htmlFor="password">New password</Label>
-					<Input
+					<PasswordInput
 						id="password"
 						name="password"
-						type="password"
 						autoComplete="new-password"
 						minLength={8}
 						required
@@ -45,10 +44,9 @@ export default async function ChangePasswordPage({ searchParams }: PageProps) {
 				</div>
 				<div className="space-y-2">
 					<Label htmlFor="confirm">Confirm password</Label>
-					<Input
+					<PasswordInput
 						id="confirm"
 						name="confirm"
-						type="password"
 						autoComplete="new-password"
 						minLength={8}
 						required
