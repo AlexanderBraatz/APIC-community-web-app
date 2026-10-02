@@ -46,9 +46,9 @@ export function ProfileColorForm({ currentColor }: Props) {
 				})}
 			</div>
 
-			<div className="flex flex-wrap gap-3">
+			<div className="flex gap-3">
 				<SubmitButton
-					className="w-full sm:w-auto"
+					className="min-w-0 flex-1"
 					disabled={!draftColor || draftColor === currentColor}
 				>
 					Confirm change colour
@@ -57,7 +57,7 @@ export function ProfileColorForm({ currentColor }: Props) {
 					href="/account"
 					className={cn(
 						buttonVariants({ variant: 'outline' }),
-						'w-full sm:w-auto'
+						'min-w-0 flex-1'
 					)}
 				>
 					Cancel

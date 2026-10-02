@@ -11,8 +11,8 @@ type Props = {
 };
 
 export function InvitePrivacyStep({ error }: Props) {
-	const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
-	const [sessionReplayEnabled, setSessionReplayEnabled] = useState(false);
+	const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+	const [sessionReplayEnabled, setSessionReplayEnabled] = useState(true);
 	const [termsAccepted, setTermsAccepted] = useState(false);
 
 	return (
@@ -72,6 +72,16 @@ export function InvitePrivacyStep({ error }: Props) {
 					name="terms_accepted"
 					value={termsAccepted ? 'true' : 'false'}
 				/>
+				<input
+					type="hidden"
+					name="analytics_enabled"
+					value={analyticsEnabled ? 'true' : 'false'}
+				/>
+				<input
+					type="hidden"
+					name="session_replay_enabled"
+					value={sessionReplayEnabled ? 'true' : 'false'}
+				/>
 
 				<div className="space-y-4">
 					<div className="flex items-start justify-between gap-4">
@@ -127,33 +137,9 @@ export function InvitePrivacyStep({ error }: Props) {
 					You can change these later in your account settings.
 				</p>
 
-				<div className="space-y-3">
-					<SubmitButton
-						name="choice"
-						value="decline"
-						disabled={!termsAccepted}
-						variant="outline"
-						onClick={() => {
-							setAnalyticsEnabled(false);
-							setSessionReplayEnabled(false);
-						}}
-						className="w-full"
-					>
-						Continue without optional analytics
-					</SubmitButton>
-					<SubmitButton
-						name="choice"
-						value="accept"
-						disabled={!termsAccepted}
-						onClick={() => {
-							setAnalyticsEnabled(true);
-							setSessionReplayEnabled(true);
-						}}
-						className="w-full"
-					>
-						Accept all and continue
-					</SubmitButton>
-				</div>
+				<SubmitButton disabled={!termsAccepted} className="w-full">
+					Continue
+				</SubmitButton>
 			</form>
 		</main>
 	);

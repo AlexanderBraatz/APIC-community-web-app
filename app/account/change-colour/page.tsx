@@ -24,7 +24,7 @@ export default async function ChangeColourPage({ searchParams }: PageProps) {
 		.maybeSingle();
 
 	return (
-		<main className="mx-auto w-full max-w-lg px-4 py-12">
+		<main className="mx-auto w-full max-w-lg min-h-[100vh] px-4 py-12">
 			<h1 className="font-heading text-3xl text-[#805b32]">
 				Change profile colour
 			</h1>

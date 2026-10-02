@@ -30,7 +30,7 @@ export default async function ChangeNamePage({ searchParams }: PageProps) {
 		.maybeSingle();
 
 	return (
-		<main className="mx-auto w-full max-w-lg px-4 py-12">
+		<main className="mx-auto w-full max-w-lg min-h-[100vh] px-4 py-12">
 			<h1 className="font-heading text-3xl text-[#805b32]">Change name</h1>
 			<p className="mt-2 text-sm text-[#666]">
 				Update the name shown on your profile and on the community calendar.
@@ -58,15 +58,15 @@ export default async function ChangeNamePage({ searchParams }: PageProps) {
 						autoComplete="name"
 					/>
 				</div>
-				<div className="flex flex-wrap gap-3">
-					<SubmitButton className="w-full sm:w-auto">
+				<div className="flex gap-3">
+					<SubmitButton className="min-w-0 flex-1">
 						Confirm change name
 					</SubmitButton>
 					<Link
 						href="/account"
 						className={cn(
 							buttonVariants({ variant: 'outline' }),
-							'w-full sm:w-auto'
+							'min-w-0 flex-1'
 						)}
 					>
 						Cancel

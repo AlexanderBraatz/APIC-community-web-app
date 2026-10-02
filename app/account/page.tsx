@@ -29,7 +29,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
 		: '#805b32';
 
 	return (
-		<main className="mx-auto w-full max-w-lg px-4 py-12">
+		<main className="mx-auto w-full max-w-lg min-h-[100vh] px-4 py-12">
 			<h1 className="font-heading text-3xl text-[#805b32]">Account</h1>
 			<p className="mt-2 text-sm text-[#666]">
 				View your profile, update settings when you need them, or sign out.
@@ -95,10 +95,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				</p>
 				<Link
 					href="/account/change-name"
-					className={cn(
-						buttonVariants({ variant: 'outline' }),
-						'w-full sm:w-auto'
-					)}
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
 				>
 					Change name
 				</Link>
@@ -113,10 +110,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				</p>
 				<Link
 					href="/account/change-colour"
-					className={cn(
-						buttonVariants({ variant: 'outline' }),
-						'w-full sm:w-auto'
-					)}
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
 				>
 					Change colour
 				</Link>
@@ -133,10 +127,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				</p>
 				<Link
 					href="/account/privacy"
-					className={cn(
-						buttonVariants({ variant: 'outline' }),
-						'w-full sm:w-auto'
-					)}
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
 				>
 					Manage privacy &amp; analytics
 				</Link>
@@ -152,27 +143,24 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				</p>
 				<Link
 					href="/account/change-password"
-					className={cn(
-						buttonVariants({ variant: 'outline' }),
-						'w-full sm:w-auto'
-					)}
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
 				>
 					Change password
 				</Link>
 			</section>
 
-			<div className="mt-10 flex flex-wrap gap-3 border-t border-[#e5e5e5] pt-6">
+			<div className="mt-10 flex gap-3 border-t border-[#e5e5e5] pt-6">
 				<Link
 					href="/place"
 					className={cn(
 						buttonVariants({ variant: 'default' }),
-						'w-full sm:w-auto'
+						'min-w-0 flex-1'
 					)}
 				>
 					Members hub
 				</Link>
-				<form action={signOut}>
-					<SubmitButton variant="outline">
+				<form action={signOut} className="min-w-0 flex-1">
+					<SubmitButton variant="outline" className="w-full">
 						Sign out
 					</SubmitButton>
 				</form>

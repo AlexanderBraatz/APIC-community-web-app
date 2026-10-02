@@ -27,7 +27,7 @@ As a **visitor**, I want to browse the marketing site (home, about, events, cate
 As a **member or admin**, I want to sign in with email and password so that I can access the private members area.
 
 ### US-03 — Accept an invitation
-As an **invited owner**, I want to request a one-time code, enter it on the verify page, set a password, and create my account so that I can join without public registration (and request a new code if the old one expired).
+As an **invited owner**, I want to request a one-time code, enter it on the verify page, then complete joining (password, privacy choices, shown name, profile colour, and optional calendar favorites) so that I can join without public registration (and request a new code if the old one expired).
 
 ### US-04 — Reset a forgotten password
 As a **member or admin**, I want to request a one-time code by email, enter it on the reset page, and set a new password so that I can regain access if I forget my credentials (and request a new code if the old one expired).

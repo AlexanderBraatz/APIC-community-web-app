@@ -24,7 +24,7 @@ async function requireUser(signInNext?: string) {
 
 /**
  * First-time invite privacy step: requires Terms acceptance, then stores
- * optional analytics / session-replay preferences.
+ * optional analytics / session-replay preferences from the toggle values.
  */
 export async function saveInvitePrivacyChoices(formData: FormData) {
 	const termsAccepted = parseBool(formData.get('terms_accepted'));
@@ -36,23 +36,10 @@ export async function saveInvitePrivacyChoices(formData: FormData) {
 		);
 	}
 
-	const choice = String(formData.get('choice') ?? '');
-	let analyticsEnabled = false;
-	let sessionReplayEnabled = false;
-
-	if (choice === 'accept') {
-		analyticsEnabled = true;
-		sessionReplayEnabled = true;
-	} else if (choice === 'decline') {
-		analyticsEnabled = false;
-		sessionReplayEnabled = false;
-	} else {
-		redirect(
-			`/accept-invite?step=privacy&error=${encodeURIComponent(
-				'Choose Accept all and continue, or Continue without optional analytics.'
-			)}`
-		);
-	}
+	const analyticsEnabled = parseBool(formData.get('analytics_enabled'));
+	const sessionReplayEnabled = parseBool(
+		formData.get('session_replay_enabled')
+	);
 
 	const { supabase, user } = await requireUser();
 	const now = new Date().toISOString();
@@ -74,8 +61,22 @@ export async function saveInvitePrivacyChoices(formData: FormData) {
 		);
 	}
 
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ onboarding_step: 'name' })
+		.eq('id', user.id);
+
+	if (profileError) {
+		redirect(
+			`/accept-invite?step=privacy&error=${encodeURIComponent(
+				profileError.message
+			)}`
+		);
+	}
+
 	revalidatePath('/', 'layout');
-	redirect('/place?welcome=1&invite=1');
+	revalidatePath('/accept-invite');
+	redirect('/accept-invite?step=name');
 }
 
 /**

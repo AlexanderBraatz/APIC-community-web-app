@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { isIncompleteInviteOnboardingStep } from '@/lib/invitations/onboarding-steps';
 import { getSupabaseEnv } from './env';
 
 const PROTECTED_PREFIXES = [
@@ -13,7 +14,7 @@ const PROTECTED_PREFIXES = [
 
 const AUTH_ONLY_WHEN_SIGNED_OUT = ['/sign-in', '/forgot-password'] as const;
 
-/** Routes allowed while authenticated but before privacy onboarding is done. */
+/** Routes allowed while authenticated but before invite onboarding is done. */
 const PRIVACY_ONBOARDING_ALLOWLIST = [
 	'/accept-invite',
 	'/terms',
@@ -79,7 +80,7 @@ export async function updateSession(request: NextRequest) {
 		return NextResponse.redirect(redirectUrl);
 	}
 
-	// Gate protected member areas until privacy/terms preferences exist.
+	// Gate protected member areas until invite onboarding is finished.
 	if (
 		isAuthenticated &&
 		userId &&
@@ -96,7 +97,21 @@ export async function updateSession(request: NextRequest) {
 			const redirectUrl = request.nextUrl.clone();
 			redirectUrl.pathname = '/accept-invite';
 			redirectUrl.search = '';
-			redirectUrl.searchParams.set('step', 'privacy');
+			return NextResponse.redirect(redirectUrl);
+		}
+
+		const { data: profile } = await supabase
+			.from('profiles')
+			.select('onboarding_step')
+			.eq('id', userId)
+			.maybeSingle();
+
+		const step = profile?.onboarding_step;
+		if (isIncompleteInviteOnboardingStep(step)) {
+			const redirectUrl = request.nextUrl.clone();
+			redirectUrl.pathname = '/accept-invite';
+			redirectUrl.search = '';
+			redirectUrl.searchParams.set('step', step);
 			return NextResponse.redirect(redirectUrl);
 		}
 	}

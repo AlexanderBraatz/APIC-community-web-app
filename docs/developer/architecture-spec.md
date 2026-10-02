@@ -184,9 +184,9 @@ Document the chosen option when implementing §22 Phase 4.
 2. Backend verifies requester is admin (`profiles.role`).
 3. Reject if email already belongs to an auth user or has a `pending` invitation.
 4. Create/send Supabase invite; write `user_invitations` row; write `admin_audit_log`.
-5. Invitee opens link → sets password → Auth user created.
-6. Trigger/function creates `profiles` row with `role = user`, `full_name` from email local-part or prompt.
-7. Invitation marked `accepted`; `auth_user_id` set; audit logged.
+5. Invitee requests OTP on `/accept-invite`, verifies on `/accept-invite/verify` (Auth user + `profiles` row exist).
+6. Join wizard on `/accept-invite`: **password** → **privacy & analytics** → **shown name** (empty; no prefill) → **profile colour** → **favorites** (skippable pinned calendar members) → `/place`.
+7. Password step marks the invitation `accepted`; later steps advance `profiles.onboarding_step` (`name` → `colour` → `favorites` → `done`). Legacy members with privacy prefs and `onboarding_step` null are treated as complete.
 
 ### Sign-in
 
@@ -453,6 +453,8 @@ Reuse `LocationsMap` patterns for preview; do not invent a second map library.
 | full_name               | text not null             | Scheduler row label |
 | avatar_url              | text null                 |                     |
 | role                    | `user` \| `admin`         | default `user`      |
+| event_bar_color         | text null                 | Profile / bar colour |
+| onboarding_step         | text null                 | Invite wizard: `name` \| `colour` \| `favorites` \| `done`; null + privacy prefs = legacy complete |
 | created_at / updated_at | timestamptz               |                     |
 
 Email stays in `auth.users`. Admins resolve email via secure admin API / privileged view — **not** via a profiles column exposed to RLS `select` for members.
@@ -531,7 +533,7 @@ Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Ser
 | Route                                     | Purpose                             |
 | ----------------------------------------- | ----------------------------------- |
 | `/sign-in`                                | Email + password (no register link) |
-| `/accept-invite`                          | Request invite OTP / set password   |
+| `/accept-invite`                          | Invite OTP request + join wizard (password → privacy → name → colour → favorites) |
 | `/accept-invite/verify`                   | Enter invite OTP                    |
 | `/forgot-password`                        | Request recovery OTP                |
 | `/forgot-password/verify`                 | Enter recovery OTP                  |

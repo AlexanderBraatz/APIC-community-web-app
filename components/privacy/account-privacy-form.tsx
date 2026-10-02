@@ -1,10 +1,13 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { updatePrivacyPreferences } from '@/lib/privacy/actions';
 import { useAnalytics } from '@/components/analytics/posthog-provider';
+import { buttonVariants } from '@/components/ui/button-variants';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 type Props = {
 	analyticsEnabled: boolean;
@@ -120,9 +123,20 @@ export function AccountPrivacyForm({
 				</button>
 			</div>
 
-			<SubmitButton className="w-full sm:w-auto">
-				Confirm privacy preferences
-			</SubmitButton>
+			<div className="flex gap-3">
+				<SubmitButton className="min-w-0 flex-1">
+					Confirm privacy preferences
+				</SubmitButton>
+				<Link
+					href="/account"
+					className={cn(
+						buttonVariants({ variant: 'outline' }),
+						'min-w-0 flex-1'
+					)}
+				>
+					Back to account
+				</Link>
+			</div>
 		</form>
 	);
 }

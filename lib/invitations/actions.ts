@@ -2,6 +2,7 @@
 
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import {
 	limitInvite,
@@ -9,6 +10,7 @@ import {
 	limitInviteOtpByClient,
 	limitInviteOtpRequest
 } from '@/lib/admin/rate-limit';
+import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
 import { captureServerActionException } from '@/lib/sentry/capture';
 import { getRequestOrigin } from '@/lib/site-url';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
@@ -521,17 +523,20 @@ export async function requestInviteOtp(
 	}
 }
 
-export async function completeInviteAcceptance(formData: FormData): Promise<void> {
+function inviteStepRedirect(
+	step: string,
+	opts?: { error?: string }
+): never {
+	const params = new URLSearchParams();
+	params.set('step', step);
+	if (opts?.error) params.set('error', opts.error);
+	redirect(`/accept-invite?${params.toString()}`);
+}
+
+export async function setInvitePassword(formData: FormData): Promise<void> {
 	const password = String(formData.get('password') ?? '');
 	const confirm = String(formData.get('confirm') ?? '');
-	const fullName = String(formData.get('full_name') ?? '').trim();
 
-	if (!fullName) {
-		throw new Error('Name is required.');
-	}
-	if (fullName.length > 200) {
-		throw new Error('Name must be 200 characters or fewer.');
-	}
 	if (password.length < 8) {
 		throw new Error('Password must be at least 8 characters.');
 	}
@@ -555,14 +560,6 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 		});
 		if (passwordError) {
 			throw new Error(passwordError.message);
-		}
-
-		const { error: profileError } = await supabase
-			.from('profiles')
-			.update({ full_name: fullName })
-			.eq('id', user.id);
-		if (profileError) {
-			throw new Error(profileError.message);
 		}
 
 		const admin = createServiceRoleClient();
@@ -589,13 +586,148 @@ export async function completeInviteAcceptance(formData: FormData): Promise<void
 		const message = error instanceof Error ? error.message : '';
 		const isUserFacing =
 			message === 'Enter your invitation code first.' ||
-			message === 'Name is required.' ||
-			message === 'Name must be 200 characters or fewer.' ||
 			message === 'Password must be at least 8 characters.' ||
 			message === 'Passwords do not match.';
 		if (!isUserFacing) {
-			captureServerActionException(error, 'complete_invite_acceptance');
+			captureServerActionException(error, 'set_invite_password');
 		}
 		throw error;
 	}
+}
+
+export async function setInviteShownName(formData: FormData): Promise<void> {
+	const fullName = String(formData.get('full_name') ?? '').trim();
+
+	if (!fullName) {
+		inviteStepRedirect('name', { error: 'Name is required.' });
+	}
+	if (fullName.length > 200) {
+		inviteStepRedirect('name', {
+			error: 'Name must be 200 characters or fewer.'
+		});
+	}
+
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/accept-invite');
+	}
+
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ full_name: fullName, onboarding_step: 'colour' })
+		.eq('id', user.id);
+
+	if (profileError) {
+		inviteStepRedirect('name', { error: profileError.message });
+	}
+
+	revalidatePath('/accept-invite');
+	inviteStepRedirect('colour');
+}
+
+export async function setInviteColour(formData: FormData): Promise<void> {
+	const color = String(formData.get('color') ?? '');
+
+	if (!(EVENT_BAR_PALETTE as readonly string[]).includes(color)) {
+		inviteStepRedirect('colour', {
+			error: 'Choose a colour from the palette.'
+		});
+	}
+
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/accept-invite');
+	}
+
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ event_bar_color: color, onboarding_step: 'favorites' })
+		.eq('id', user.id);
+
+	if (profileError) {
+		inviteStepRedirect('colour', { error: profileError.message });
+	}
+
+	revalidatePath('/accept-invite');
+	revalidatePath('/community-calendar');
+	inviteStepRedirect('favorites');
+}
+
+const UUID_RE =
+	/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export async function saveInviteFavorites(formData: FormData): Promise<void> {
+	const raw = String(formData.get('favorite_ids') ?? '');
+	const favoriteIds = raw
+		.split(',')
+		.map(id => id.trim())
+		.filter(id => UUID_RE.test(id));
+
+	await finishInviteFavorites(favoriteIds);
+}
+
+export async function skipInviteFavorites(_formData?: FormData): Promise<void> {
+	await finishInviteFavorites(null);
+}
+
+async function finishInviteFavorites(
+	favoriteIds: string[] | null
+): Promise<void> {
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/accept-invite');
+	}
+
+	if (favoriteIds) {
+		const pinnedMemberIds = favoriteIds.filter(id => id !== user.id);
+		const { data: existing } = await supabase
+			.from('scheduler_preferences')
+			.select('font_size')
+			.eq('user_id', user.id)
+			.maybeSingle();
+
+		const { error: prefsError } = await supabase
+			.from('scheduler_preferences')
+			.upsert(
+				{
+					user_id: user.id,
+					font_size: existing?.font_size ?? 'medium',
+					pinned_member_ids: pinnedMemberIds
+				},
+				{ onConflict: 'user_id' }
+			);
+
+		if (prefsError) {
+			inviteStepRedirect('favorites', { error: prefsError.message });
+		}
+	}
+
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ onboarding_step: 'done' })
+		.eq('id', user.id);
+
+	if (profileError) {
+		inviteStepRedirect('favorites', { error: profileError.message });
+	}
+
+	revalidatePath('/accept-invite');
+	revalidatePath('/community-calendar');
+	revalidatePath('/', 'layout');
+	redirect('/place?welcome=1&invite=1');
 }
