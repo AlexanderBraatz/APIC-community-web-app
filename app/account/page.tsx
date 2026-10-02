@@ -149,6 +149,20 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				</Link>
 			</section>
 
+			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
+				<h2 className="text-lg font-medium text-[#444]">User manuals</h2>
+				<p className="text-sm text-[#666]">
+					Step-by-step guides for the public site, signing in, accepting an
+					invitation, and resetting a password — with screenshots.
+				</p>
+				<Link
+					href="/account/user-manuals"
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
+				>
+					Open user manuals
+				</Link>
+			</section>
+
 			<div className="mt-10 flex gap-3 border-t border-[#e5e5e5] pt-6">
 				<Link
 					href="/place"
