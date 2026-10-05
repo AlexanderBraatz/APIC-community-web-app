@@ -8,8 +8,11 @@ import {
 	STEP_CATEGORY,
 	STEP_CONTACT,
 	STEP_GOOGLE,
+	STEP_GOOGLE_SUMMARY,
 	STEP_INSPECT,
+	STEP_KEYWORDS_INTRO,
 	STEP_LOCATION,
+	STEP_OPENING_HOURS,
 	STEP_TAGS,
 	STEP_TYPE_NAME
 } from '@/components/admin/listing-form/constants';
@@ -19,14 +22,19 @@ import ContactStep from '@/components/admin/listing-form/steps/contact-step';
 import GoogleStep from '@/components/admin/listing-form/steps/google-step';
 import InspectStep from '@/components/admin/listing-form/steps/inspect-step';
 import LocationStep from '@/components/admin/listing-form/steps/location-step';
+import NotificationStep from '@/components/admin/listing-form/steps/notification-step';
+import OpeningHoursStep from '@/components/admin/listing-form/steps/opening-hours-step';
 import TagsStep from '@/components/admin/listing-form/steps/tags-step';
 import TypeNameStep from '@/components/admin/listing-form/steps/type-name-step';
 import type { SelectedTagChip } from '@/components/admin/listing-tags-editor';
 import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
+import GoogleMark from '@/components/icons/google-mark';
+import OpenAiMark from '@/components/icons/openai-mark';
 import { Button } from '@/components/ui/button';
 import { BROWSE_SEARCH_HASH } from '@/lib/listings/browse-url';
 import { createListing, updateListing } from '@/lib/listings/admin-actions';
 import {
+	CONTACT_KIND_LABELS,
 	contactsToFormRows,
 	formRowsToContactsPayload,
 	mergeContactsFromAutofill,
@@ -50,6 +58,20 @@ type ListingFormStepperProps = {
 	listing?: AdminListing;
 	knownTags: KnownTag[];
 };
+
+function collectPrefilledFields(place: PlaceAutofill): string[] {
+	const fields: string[] = [];
+	if (place.name) fields.push('Name');
+	if (place.type) fields.push('Business type');
+	if (place.address) fields.push('Address');
+	if (place.lat !== null && place.lng !== null) fields.push('Map location');
+	for (const contact of place.contacts) {
+		fields.push(CONTACT_KIND_LABELS[contact.kind] ?? contact.kind);
+	}
+	if (place.sourceUrl) fields.push('Google Maps link');
+	if (place.openingHours) fields.push('Opening hours');
+	return fields;
+}
 
 export default function ListingFormStepper({
 	mode,
@@ -106,6 +128,7 @@ export default function ListingFormStepper({
 	const [lngInput, setLngInput] = useState(
 		listing?.lng != null ? String(listing.lng) : ''
 	);
+	const [prefilledFields, setPrefilledFields] = useState<string[]>([]);
 
 	const lastStep = STEP_INSPECT;
 	const isLastStep = currentStep === lastStep;
@@ -181,12 +204,9 @@ export default function ListingFormStepper({
 		}
 		setPlacesPrimaryType(place.placesPrimaryType);
 		setPlacesTypes(place.placesTypes);
-		setCurrentStep(STEP_TYPE_NAME);
-		setMessage(
-			place.lat !== null && place.lng !== null
-				? 'Business applied — review the autofilled fields and confirm the map pin.'
-				: 'Business applied — review fields and set a map pin if needed.'
-		);
+		setPrefilledFields(collectPrefilledFields(place));
+		setCurrentStep(STEP_GOOGLE_SUMMARY);
+		setMessage(null);
 		setError(null);
 	}
 
@@ -308,6 +328,8 @@ export default function ListingFormStepper({
 		? category
 		: 'food-dining';
 
+	const googleSummaryHasImport = prefilledFields.length > 0;
+
 	return (
 		<div className="space-y-6">
 			{error ? (
@@ -350,21 +372,36 @@ export default function ListingFormStepper({
 						<GoogleStep
 							onPlaceSelected={applyPlaceAutofill}
 							onSkip={() => {
-								setCurrentStep(STEP_TYPE_NAME);
+								setPrefilledFields([]);
+								setCurrentStep(STEP_GOOGLE_SUMMARY);
 								setError(null);
-								setMessage(
-									'Skipped business lookup — enter recommendation details manually.'
-								);
+								setMessage(null);
 							}}
+						/>
+					) : null}
+
+					{currentStep === STEP_GOOGLE_SUMMARY ? (
+						<NotificationStep
+							heading={
+								googleSummaryHasImport
+									? 'Business details imported'
+									: 'No Google data imported'
+							}
+							paragraph={
+								googleSummaryHasImport
+									? 'Google Places provided the information below. Review and confirm each field on the following steps.'
+									: 'No Google Places data was imported for this recommendation. Enter the business details manually on the following steps.'
+							}
+							sourceIcon={<GoogleMark className="size-10" />}
+							sourceLabel="Google"
+							items={googleSummaryHasImport ? prefilledFields : undefined}
 						/>
 					) : null}
 
 					{currentStep === STEP_TYPE_NAME ? (
 						<TypeNameStep
-							category={category}
 							type={type}
 							name={name}
-							onCategoryChange={setCategory}
 							onTypeChange={setType}
 							onNameChange={setName}
 						/>
@@ -390,9 +427,14 @@ export default function ListingFormStepper({
 					{currentStep === STEP_CONTACT ? (
 						<ContactStep
 							contacts={contacts}
+							onContactsChange={setContacts}
+						/>
+					) : null}
+
+					{currentStep === STEP_OPENING_HOURS ? (
+						<OpeningHoursStep
 							hours={hours}
 							showHours={showHours}
-							onContactsChange={setContacts}
 							onHoursChange={setHours}
 							onShowHoursChange={setShowHours}
 						/>
@@ -402,6 +444,15 @@ export default function ListingFormStepper({
 						<ApicDescriptionStep
 							notes={notes}
 							onChange={setNotes}
+						/>
+					) : null}
+
+					{currentStep === STEP_KEYWORDS_INTRO ? (
+						<NotificationStep
+							heading="Keywords help members discover this place"
+							paragraph="Everything collected so far — the business profile, location, contacts, hours, and your APIC description — will be used to suggest keywords for this recommendation. Clear keywords make it easier for members to find what they are looking for."
+							sourceIcon={<OpenAiMark className="size-10 text-[#10a37f]" />}
+							sourceLabel="OpenAI"
 						/>
 					) : null}
 
