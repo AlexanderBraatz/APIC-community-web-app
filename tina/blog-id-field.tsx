@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TinaField } from '@tinacms/schema-tools';
-import { wrapFieldsWithMeta } from 'tinacms';
 import { isNumericPostId } from './blog-post-id';
 
 type TinaStringFieldComponent = (props: {
@@ -18,8 +17,35 @@ type TinaStringFieldComponent = (props: {
 	meta: { active?: boolean; dirty?: boolean; error?: unknown };
 }) => React.ReactNode;
 
-export const BlogIdField = wrapFieldsWithMeta(props => {
+type TinaForm = {
+	change?: (name: string, value: unknown) => void;
+	getState?: () => { values?: Record<string, unknown> };
+};
+
+function isStarterTitle(title: unknown): boolean {
+	if (typeof title !== 'string') return true;
+	const trimmed = title.trim();
+	if (!trimmed) return true;
+	if (trimmed === 'New blog post') return true;
+	// e.g. "1 — New blog post" or "21 - New blog post"
+	return /^\d+\s*[—–-]\s*New blog post$/i.test(trimmed);
+}
+
+function starterTitleForId(id: string | number) {
+	return `${id} — New blog post`;
+}
+
+/** Auto-assigns postId; UI is hidden unless assignment is pending or failed. */
+export const BlogIdField = ((props: {
+	form?: TinaForm;
+	tinaForm?: TinaForm;
+	input: {
+		onChange: (event: React.ChangeEvent<string> | string) => void;
+		value: string;
+	};
+}) => {
 	const { input } = props;
+	const form = props.form ?? props.tinaForm;
 	const requested = useRef(false);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(!input.value);
@@ -32,14 +58,20 @@ export const BlogIdField = wrapFieldsWithMeta(props => {
 			if (!res.ok) throw new Error('Failed to allocate blog id');
 			const data = (await res.json()) as { id: number };
 			if (!data.id) throw new Error('Invalid blog id response');
-			input.onChange(String(data.id));
+			const id = String(data.id);
+			input.onChange(id);
+
+			const currentTitle = form?.getState?.()?.values?.title;
+			if (isStarterTitle(currentTitle)) {
+				form?.change?.('title', starterTitleForId(id));
+			}
 		} catch {
 			setError('Could not assign Post ID. Retry before uploading or saving.');
 			requested.current = false;
 		} finally {
 			setLoading(false);
 		}
-	}, [input]);
+	}, [form, input]);
 
 	useEffect(() => {
 		if (isNumericPostId(input.value) || requested.current) {
@@ -51,25 +83,16 @@ export const BlogIdField = wrapFieldsWithMeta(props => {
 	}, [assignId, input.value]);
 
 	if (isNumericPostId(input.value)) {
-		return (
-			<div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-				<span className="font-medium">Post ID:</span> {input.value}
-				<p className="mt-1 text-xs text-gray-500">
-					Used in the URL (/blog/{input.value}) and media folder
-					(images/blog/{input.value}/). Wait for this ID before uploading
-					images or saving.
-				</p>
-			</div>
-		);
+		return null;
 	}
 
 	return (
-		<div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+		<div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
 			{loading ? (
-				<span>Assigning Post ID…</span>
+				<span>Setting up post…</span>
 			) : (
 				<div className="flex flex-col gap-2">
-					<span>{error || 'Post ID is required.'}</span>
+					<span>{error || 'Could not set up this post.'}</span>
 					<button
 						type="button"
 						className="w-fit rounded border border-amber-800 px-3 py-1 text-xs font-medium hover:bg-amber-100"

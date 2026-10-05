@@ -11,7 +11,7 @@ export default function BlogPullQuote(props: BlogBlocksPullQuote) {
 			<blockquote className="mx-auto max-w-2xl border-l-2 border-[#805b32] pl-6 sm:pl-8">
 				<p
 					data-tina-field={tinaField(props, 'quote')}
-					className="font-heading text-xl leading-relaxed text-[#5D4325] sm:text-2xl"
+					className="font-heading whitespace-pre-line text-xl leading-relaxed text-[#5D4325] sm:text-2xl"
 				>
 					{props.quote}
 				</p>

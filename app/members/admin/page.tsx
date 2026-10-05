@@ -21,7 +21,7 @@ const quickActions = [
 	},
 	{
 		label: 'Add Blog article',
-		href: '/admin#/collections/blog/new'
+		href: '/admin#/collections/new/blog'
 	}
 ] as const;
 
@@ -250,9 +250,8 @@ export default async function MembersAdminDashboardPage() {
 					</summary>
 					<div className="border-t border-[#e5e5e5] px-4 py-3">
 						<p className="text-sm text-[#666]">
-							Insurance document covering the tech stack, required accounts,
-							env vars, and how to relaunch or hand the app to another
-							developer.
+							Insurance document covering the tech stack, required accounts, env
+							vars, and how to relaunch or hand the app to another developer.
 						</p>
 						<p className="mt-3 text-sm">
 							<a

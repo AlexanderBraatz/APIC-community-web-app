@@ -159,7 +159,7 @@ export default function BlogPost({
 					{post.shortDescription ? (
 						<p
 							data-tina-field={tinaField(post, 'shortDescription')}
-							className="mt-6 font-sans text-lg leading-relaxed text-[#555555]"
+							className="mt-6 whitespace-pre-line font-sans text-lg leading-relaxed text-[#555555]"
 						>
 							{post.shortDescription}
 						</p>

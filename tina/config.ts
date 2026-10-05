@@ -2,7 +2,60 @@ import { defineConfig } from 'tinacms';
 import { BlogIdField } from './blog-id-field';
 import { BlogImageField } from './blog-image-field';
 import { BlogMapPostIdField } from './blog-map-post-id-field';
+import {
+	BlogAuthorField,
+	BlogCollapsedMetaPanel,
+	BlogPublishedAtField,
+	BlogShortDescriptionField,
+	BlogTitleField
+} from './blog-meta-panel';
 import { isNumericPostId, resolveBlogPostId } from './blog-post-id';
+
+const BLOG_STARTER_IMAGE = '/images/Il-Borgo-Garden-View-scaled.jpg';
+const BLOG_STARTER_HEADING = 'Click to replace this heading';
+const BLOG_STARTER_CAPTION = 'Click to replace this caption';
+const BLOG_STARTER_ALT = 'Click the image to replace it';
+const BLOG_STARTER_GALLERY_IMAGES = [
+	{
+		image: '/images/Il-Borgo-Garden-View-scaled.jpg',
+		alt: 'Click to replace gallery image 1'
+	},
+	{
+		image: '/images/apic-event.webp',
+		alt: 'Click to replace gallery image 2'
+	},
+	{
+		image: '/images/apic-food-hero.webp',
+		alt: 'Click to replace gallery image 3'
+	},
+	{
+		image: '/images/toskana-maremma-casale-marittimo-dt_m_136206543.jpg',
+		alt: 'Click to replace gallery image 4'
+	}
+] as const;
+const BLOG_STARTER_VIDEO_URL = 'https://www.youtube.com/watch?v=AKeUssuu3Is';
+
+/** Tina rich-text defaultItem must be Plate AST, not a plain string. */
+function richTextBody(...paragraphs: string[]) {
+	return {
+		type: 'root' as const,
+		children: paragraphs.map(text => ({
+			type: 'p' as const,
+			children: [{ type: 'text' as const, text }]
+		}))
+	};
+}
+
+const BLOG_STARTER_BODY = richTextBody(
+	'Click here to replace this text with your article.'
+);
+const BLOG_STARTER_INTRO_BODY = richTextBody(
+	'Click here to replace this introduction. Use this Rich Text block for the main story of your article.',
+	'You can add more paragraphs, headings, and links. Everything in this example post is placeholder content meant to be replaced.'
+);
+const BLOG_STARTER_FOLLOW_UP_BODY = richTextBody(
+	'Click here to continue your article after the gallery. Add details, quotes from members, or next steps for readers.'
+);
 
 const COMMUNITY_FEATURE_ICONS = ['Users', 'Mic', 'Heart', 'FileText'];
 
@@ -345,19 +398,114 @@ export default defineConfig({
 								'Post ID must be assigned before saving. Wait for it to appear, then save.'
 							);
 						}
-						return values;
-					}
+						const title =
+							typeof values?.title === 'string' ? values.title.trim() : '';
+						const author =
+							typeof values?.author === 'string' ? values.author.trim() : '';
+						const shortDescription =
+							typeof values?.shortDescription === 'string'
+								? values.shortDescription.trim()
+								: '';
+						const publishedAt =
+							typeof values?.publishedAt === 'string'
+								? values.publishedAt.trim()
+								: '';
+						if (!title) {
+							throw new Error('Title is required before saving.');
+						}
+						if (!author) {
+							throw new Error('Author is required before saving.');
+						}
+						if (!publishedAt) {
+							throw new Error('Publishing date is required before saving.');
+						}
+						if (!shortDescription) {
+							throw new Error('Short description is required before saving.');
+						}
+						const { _metaPanel: _unused, ...rest } = values as Record<
+							string,
+							unknown
+						> & { _metaPanel?: unknown };
+						void _unused;
+						return {
+							...rest,
+							title,
+							author,
+							publishedAt,
+							shortDescription
+						};
+					},
+					// Runtime supports ui.defaultItem on field collections; schema types lag behind.
+					// Seed all required fields so GraphQL never sees null on a half-created post.
+					...({
+						defaultItem: () => ({
+							// Replaced with "{postId} — New blog post" once Post ID is assigned.
+							title: 'New blog post',
+							author: 'APIC',
+							publishedAt: new Date().toISOString(),
+							shortDescription:
+								'Click to replace this short description. It appears on the blog index card.',
+							blocks: [
+								{
+									_template: 'image',
+									image: BLOG_STARTER_IMAGE,
+									alt: BLOG_STARTER_ALT,
+									caption: BLOG_STARTER_CAPTION
+								},
+								{ _template: 'divider', style: 'star' },
+								{
+									_template: 'richText',
+									heading: 'Click to replace this introduction heading',
+									body: BLOG_STARTER_INTRO_BODY
+								},
+								{
+									_template: 'pullQuote',
+									quote:
+										'Click to replace this pull quote.\nAdd a memorable line from your article here.',
+									attribution: 'Click to replace attribution'
+								},
+								{ _template: 'divider', style: 'line' },
+								{
+									_template: 'imageGallery',
+									images: BLOG_STARTER_GALLERY_IMAGES.map(item => ({
+										...item
+									}))
+								},
+								{
+									_template: 'richText',
+									heading: 'Click to replace this section heading',
+									body: BLOG_STARTER_FOLLOW_UP_BODY
+								},
+								{
+									_template: 'embed',
+									url: BLOG_STARTER_VIDEO_URL,
+									caption: 'Click to replace this video caption'
+								},
+								{ _template: 'divider', style: 'star' },
+								{
+									_template: 'cta',
+									title: 'Click to replace this call to action',
+									description:
+										'Click to replace this CTA description. Invite readers to get in touch or take the next step.',
+									buttonLabel: 'Click to replace button',
+									buttonLink: 'mailto:info.apic@aol.com'
+								},
+								{
+									_template: 'map',
+									postId: ''
+								}
+							]
+						})
+					} as object)
 				},
 				fields: [
 					{
 						name: 'postId',
-						label: 'Post ID',
+						label: false,
 						type: 'string',
 						required: true,
 						ui: {
 							component: BlogIdField,
-							description:
-								'Auto-assigned exclusive ID used for the URL and media folder.',
 							validate: (value: unknown) => {
 								if (!isNumericPostId(value)) {
 									return 'Post ID must be assigned before saving';
@@ -366,26 +514,51 @@ export default defineConfig({
 						}
 					} as any,
 					{
+						name: '_metaPanel',
+						label: false,
+						type: 'string',
+						ui: {
+							component: BlogCollapsedMetaPanel
+						}
+					} as any,
+					{
 						name: 'title',
 						label: 'Title',
 						type: 'string',
 						isTitle: true,
-						required: true
-					},
-					{ name: 'author', label: 'Author', type: 'string', required: true },
+						required: true,
+						ui: {
+							component: BlogTitleField
+						}
+					} as any,
+					{
+						name: 'author',
+						label: 'Author',
+						type: 'string',
+						required: true,
+						ui: {
+							component: BlogAuthorField
+						}
+					} as any,
 					{
 						name: 'publishedAt',
 						label: 'Publishing date',
 						type: 'datetime',
-						ui: { dateFormat: 'YYYY-MM-DD' }
-					},
+						required: true,
+						ui: {
+							dateFormat: 'YYYY-MM-DD',
+							component: BlogPublishedAtField
+						}
+					} as any,
 					{
 						name: 'shortDescription',
 						label: 'Short description',
 						type: 'string',
 						required: true,
-						ui: { component: 'textarea' }
-					},
+						ui: {
+							component: BlogShortDescriptionField
+						}
+					} as any,
 					{
 						name: 'blocks',
 						label: 'Blocks',
@@ -401,8 +574,8 @@ export default defineConfig({
 								ui: {
 									previewSrc: '/images/blocks/rich-text.svg',
 									defaultItem: {
-										heading: '',
-										body: ''
+										heading: BLOG_STARTER_HEADING,
+										body: BLOG_STARTER_BODY
 									}
 								},
 								fields: [
@@ -414,7 +587,12 @@ export default defineConfig({
 								name: 'image',
 								label: 'Image',
 								ui: {
-									previewSrc: '/images/blocks/image.svg'
+									previewSrc: '/images/blocks/image.svg',
+									defaultItem: {
+										image: BLOG_STARTER_IMAGE,
+										alt: BLOG_STARTER_ALT,
+										caption: BLOG_STARTER_CAPTION
+									}
 								},
 								fields: [
 									blogImageField,
@@ -431,7 +609,12 @@ export default defineConfig({
 								name: 'imageGallery',
 								label: 'Image Gallery',
 								ui: {
-									previewSrc: '/images/blocks/image-gallery.svg'
+									previewSrc: '/images/blocks/image-gallery.svg',
+									defaultItem: {
+										images: BLOG_STARTER_GALLERY_IMAGES.map(item => ({
+											...item
+										}))
+									}
 								},
 								fields: [
 									{
@@ -450,7 +633,12 @@ export default defineConfig({
 								name: 'pullQuote',
 								label: 'Pull Quote',
 								ui: {
-									previewSrc: '/images/blocks/pull-quote.svg'
+									previewSrc: '/images/blocks/pull-quote.svg',
+									defaultItem: {
+										quote:
+											'Click to replace this pull quote.\nAdd a memorable line from your article here.',
+										attribution: 'Click to replace attribution'
+									}
 								},
 								fields: [
 									{
@@ -467,7 +655,11 @@ export default defineConfig({
 								name: 'embed',
 								label: 'Embed',
 								ui: {
-									previewSrc: '/images/blocks/embed.svg'
+									previewSrc: '/images/blocks/embed.svg',
+									defaultItem: {
+										url: BLOG_STARTER_VIDEO_URL,
+										caption: 'Click to replace this video caption'
+									}
 								},
 								fields: [
 									{
@@ -484,7 +676,10 @@ export default defineConfig({
 								name: 'divider',
 								label: 'Divider',
 								ui: {
-									previewSrc: '/images/blocks/divider.svg'
+									previewSrc: '/images/blocks/divider.svg',
+									defaultItem: {
+										style: 'star'
+									}
 								},
 								fields: [
 									{
@@ -502,7 +697,14 @@ export default defineConfig({
 								name: 'cta',
 								label: 'Call to Action',
 								ui: {
-									previewSrc: '/images/blocks/cta.svg'
+									previewSrc: '/images/blocks/cta.svg',
+									defaultItem: {
+										title: 'Click to replace this call to action',
+										description:
+											'Click to replace this CTA description. Invite readers to get in touch or take the next step.',
+										buttonLabel: 'Click to replace button',
+										buttonLink: 'mailto:info.apic@aol.com'
+									}
 								},
 								fields: [
 									{ name: 'title', label: 'Title', type: 'string' },
