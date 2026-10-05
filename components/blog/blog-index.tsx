@@ -17,7 +17,6 @@ export type BlogIndexItem = {
 	author?: string | null;
 	publishedAt?: string | null;
 	image?: string | null;
-	imageAlt?: string | null;
 };
 
 function formatPublishedAt(value?: string | null) {
@@ -124,7 +123,7 @@ export default function BlogIndex({
 										{post.image ? (
 											<Image
 												src={post.image}
-												alt={post.imageAlt || ''}
+												alt="Blog image"
 												className="mt-5 w-full object-cover"
 												width={768}
 												height={576}

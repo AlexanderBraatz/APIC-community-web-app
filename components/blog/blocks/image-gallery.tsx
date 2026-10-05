@@ -28,7 +28,7 @@ export default function BlogImageGallery(props: BlogBlocksImageGallery) {
 				item,
 				image: {
 					src: item.image,
-					alt: item.alt || undefined
+					alt: 'Blog image'
 				}
 			});
 		}

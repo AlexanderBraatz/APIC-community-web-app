@@ -29,7 +29,7 @@ export default function BlogImage(props: BlogBlocksImage) {
 	const images: LightboxImage[] = [
 		{
 			src: props.image,
-			alt: props.alt || undefined,
+			alt: 'Blog image',
 			caption: props.caption || undefined
 		}
 	];
@@ -47,7 +47,7 @@ export default function BlogImage(props: BlogBlocksImage) {
 					<span className="block origin-center scale-100 transition-transform duration-500 ease-in-out will-change-transform group-hover:scale-105">
 						<Image
 							src={props.image}
-							alt={props.alt || props.caption || ''}
+							alt="Blog image"
 							className="w-full object-cover transition-[filter] duration-500 ease-in-out group-hover:brightness-[1.2]"
 							width={770}
 							height={449}

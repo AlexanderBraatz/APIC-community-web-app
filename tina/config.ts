@@ -14,24 +14,11 @@ import { isNumericPostId, resolveBlogPostId } from './blog-post-id';
 const BLOG_STARTER_IMAGE = '/images/Il-Borgo-Garden-View-scaled.jpg';
 const BLOG_STARTER_HEADING = 'Click to replace this heading';
 const BLOG_STARTER_CAPTION = 'Click to replace this caption';
-const BLOG_STARTER_ALT = 'Click the image to replace it';
 const BLOG_STARTER_GALLERY_IMAGES = [
-	{
-		image: '/images/Il-Borgo-Garden-View-scaled.jpg',
-		alt: 'Click to replace gallery image 1'
-	},
-	{
-		image: '/images/apic-event.webp',
-		alt: 'Click to replace gallery image 2'
-	},
-	{
-		image: '/images/apic-food-hero.webp',
-		alt: 'Click to replace gallery image 3'
-	},
-	{
-		image: '/images/toskana-maremma-casale-marittimo-dt_m_136206543.jpg',
-		alt: 'Click to replace gallery image 4'
-	}
+	{ image: '/images/Il-Borgo-Garden-View-scaled.jpg' },
+	{ image: '/images/apic-event.webp' },
+	{ image: '/images/apic-food-hero.webp' },
+	{ image: '/images/toskana-maremma-casale-marittimo-dt_m_136206543.jpg' }
 ] as const;
 const BLOG_STARTER_VIDEO_URL = 'https://www.youtube.com/watch?v=AKeUssuu3Is';
 
@@ -449,7 +436,6 @@ export default defineConfig({
 								{
 									_template: 'image',
 									image: BLOG_STARTER_IMAGE,
-									alt: BLOG_STARTER_ALT,
 									caption: BLOG_STARTER_CAPTION
 								},
 								{ _template: 'divider', style: 'star' },
@@ -590,19 +576,12 @@ export default defineConfig({
 									previewSrc: '/images/blocks/image.svg',
 									defaultItem: {
 										image: BLOG_STARTER_IMAGE,
-										alt: BLOG_STARTER_ALT,
 										caption: BLOG_STARTER_CAPTION
 									}
 								},
 								fields: [
 									blogImageField,
-									{ name: 'caption', label: 'Caption', type: 'string' },
-									{
-										name: 'alt',
-										label: 'Alt text',
-										type: 'string',
-										description: 'Describe the image for accessibility'
-									}
+									{ name: 'caption', label: 'Caption', type: 'string' }
 								]
 							},
 							{
@@ -622,10 +601,12 @@ export default defineConfig({
 										label: 'Images',
 										type: 'object',
 										list: true,
-										fields: [
-											blogImageField,
-											{ name: 'alt', label: 'Alt text', type: 'string' }
-										]
+										ui: {
+											defaultItem: {
+												image: BLOG_STARTER_IMAGE
+											}
+										},
+										fields: [blogImageField]
 									}
 								]
 							},

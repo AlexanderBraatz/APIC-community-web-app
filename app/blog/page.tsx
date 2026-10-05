@@ -10,19 +10,18 @@ type BlogNode = NonNullable<
 
 function firstPostImage(blocks: BlogNode['blocks']): {
 	image?: string | null;
-	imageAlt?: string | null;
 } {
 	for (const block of blocks ?? []) {
 		if (!block) continue;
 
 		if (block.__typename === 'BlogBlocksImage' && block.image) {
-			return { image: block.image, imageAlt: block.alt };
+			return { image: block.image };
 		}
 
 		if (block.__typename === 'BlogBlocksImageGallery') {
 			const first = (block.images ?? []).find(item => item?.image);
 			if (first?.image) {
-				return { image: first.image, imageAlt: first.alt };
+				return { image: first.image };
 			}
 		}
 	}
@@ -40,15 +39,14 @@ export default async function BlogPage() {
 		.map(edge => edge?.node)
 		.filter((node): node is NonNullable<typeof node> => Boolean(node))
 		.map(node => {
-			const { image, imageAlt } = firstPostImage(node.blocks);
+			const { image } = firstPostImage(node.blocks);
 			return {
 				slug: node._sys.filename,
 				title: node.title,
 				shortDescription: node.shortDescription,
 				author: node.author,
 				publishedAt: node.publishedAt,
-				image,
-				imageAlt
+				image
 			};
 		})
 		.sort((a, b) => {
