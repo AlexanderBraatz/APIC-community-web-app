@@ -557,6 +557,9 @@ const Scheduler = ({
 		);
 		setQuery('');
 		setActiveSuggestionIndex(0);
+		if (isNarrow) {
+			setMobileRowHeaderWidth(ROW_HEADER_WIDTH_MOBILE_MAX);
+		}
 	};
 
 	const onBeforeRowHeaderRender = (
