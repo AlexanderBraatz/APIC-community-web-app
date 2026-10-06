@@ -3,8 +3,10 @@
 import {
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
-	useSyncExternalStore
+	useSyncExternalStore,
+	type PointerEvent as ReactPointerEvent
 } from 'react';
 import { DayPilot, DayPilotScheduler } from '@daypilot/daypilot-lite-react';
 import {
@@ -15,6 +17,8 @@ import {
 	CalendarDays,
 	ChevronLeft,
 	ChevronRight,
+	Pin,
+	PinOff,
 	Search,
 	Settings
 } from 'lucide-react';
@@ -78,6 +82,22 @@ const defaultDays = new DayPilot.Duration(
 	defaultStart,
 	defaultEnd.addDays(1)
 ).totalDays();
+
+const ROW_HEADER_WIDTH_DESKTOP = 180;
+const ROW_HEADER_WIDTH_MOBILE_MIN = 0;
+const ROW_HEADER_WIDTH_MOBILE_MAX = 180;
+const ROW_HEADER_WIDTH_MOBILE_DEFAULT = 8;
+/** Below this width, show the “Show names” chip instead of the close control. */
+const ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW = 40;
+/** Keep the resize handle fully on-screen when the name column is closed. */
+const ROW_HEADER_RESIZE_HANDLE_INSET = 10;
+
+function clampRowHeaderWidth(width: number) {
+	return Math.min(
+		ROW_HEADER_WIDTH_MOBILE_MAX,
+		Math.max(ROW_HEADER_WIDTH_MOBILE_MIN, Math.round(width))
+	);
+}
 
 function useIsNarrowScreen(breakpointPx = 640) {
 	return useSyncExternalStore(
@@ -231,7 +251,14 @@ const Scheduler = ({
 	);
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const isNarrow = useIsNarrowScreen();
-	const [namesCollapsed, setNamesCollapsed] = useState(true);
+	const [mobileRowHeaderWidth, setMobileRowHeaderWidth] = useState(
+		ROW_HEADER_WIDTH_MOBILE_DEFAULT
+	);
+	const rowHeaderDragRef = useRef<{
+		pointerId: number;
+		startX: number;
+		startWidth: number;
+	} | null>(null);
 	const [fontSizeOverride, setFontSizeOverride] =
 		useState<SchedulerFontSize | null>(null);
 	const fontSize = fontSizeOverride ?? preferences.fontSize;
@@ -322,7 +349,11 @@ const Scheduler = ({
 			if (analytics.created > 0) {
 				track(AnalyticsEvents.STAY_CREATED, { count: analytics.created });
 			}
-			if (analytics.edited > 0 || analytics.deleted > 0 || deleteIds.length > 0) {
+			if (
+				analytics.edited > 0 ||
+				analytics.deleted > 0 ||
+				deleteIds.length > 0
+			) {
 				track(AnalyticsEvents.STAY_EDITED, {
 					count: analytics.edited,
 					deleted_count: Math.max(analytics.deleted, deleteIds.length)
@@ -340,9 +371,7 @@ const Scheduler = ({
 
 	const userAvailabilityEvents = useMemo(
 		() =>
-			dbEvents.filter(
-				event => String(event.resource) === availabilityTargetId
-			),
+			dbEvents.filter(event => String(event.resource) === availabilityTargetId),
 		[dbEvents, availabilityTargetId]
 	);
 
@@ -457,9 +486,19 @@ const Scheduler = ({
 				.filter(
 					resource =>
 						resource.id != null &&
-						!selectedIds.includes(String(resource.id)) &&
+						String(resource.id) !== currentUserId &&
 						fuzzyMatch(query, resource.name ?? '')
 				)
+				.sort((a, b) => {
+					const aPinned = selectedIds.includes(String(a.id)) ? 0 : 1;
+					const bPinned = selectedIds.includes(String(b.id)) ? 0 : 1;
+					if (aPinned !== bPinned) {
+						return aPinned - bPinned;
+					}
+					return (a.name ?? '').localeCompare(b.name ?? '', undefined, {
+						sensitivity: 'base'
+					});
+				})
 				.slice(0, 8)
 		: [];
 	const highlightedSuggestionIndex =
@@ -510,14 +549,6 @@ const Scheduler = ({
 		return [...(loggedIn ? [loggedIn] : []), ...selected, ...rest];
 	}, [resources, selectedIds, currentUserId, userIdsWithAttendance]);
 
-	const addSelected = (id: string) => {
-		updateSelectedIds(current =>
-			current.includes(id) ? current : [...current, id]
-		);
-		setQuery('');
-		setActiveSuggestionIndex(0);
-	};
-
 	const toggleSelected = (id: string) => {
 		updateSelectedIds(current =>
 			current.includes(id)
@@ -536,9 +567,7 @@ const Scheduler = ({
 		const isSelected = selectedIds.includes(id);
 
 		if (isLoggedIn) {
-			args.row.cssClass = isSelected
-				? 'resource-name-cell resource-name-cell-logged-in resource-name-cell-has-deselect'
-				: 'resource-name-cell resource-name-cell-logged-in';
+			args.row.cssClass = 'resource-name-cell resource-name-cell-logged-in';
 			args.row.backColor = resolveEventBarColor(id);
 			args.row.fontColor = '#ffffff';
 		} else if (isSelected) {
@@ -548,23 +577,7 @@ const Scheduler = ({
 			args.row.cssClass = 'resource-name-cell';
 		}
 
-		args.row.areas = isSelected
-			? [
-					{
-						right: 4,
-						top: 0,
-						bottom: 0,
-						width: 18,
-						html: '×',
-						cssClass: 'resource-deselect-mark',
-						fontColor: '#ffffff',
-						verticalAlignment: 'center',
-						horizontalAlignment: 'center',
-						toolTip: 'Deselect',
-						action: 'None'
-					}
-			  ]
-			: [];
+		args.row.areas = [];
 	};
 
 	const onBeforeCellRender = (args: DayPilot.SchedulerBeforeCellRenderArgs) => {
@@ -581,10 +594,6 @@ const Scheduler = ({
 		args.cell.properties.backColor = args.cell.properties.business
 			? activeScheme.cellSelectedBiz
 			: activeScheme.cellSelectedWeekend;
-	};
-
-	const onRowClick = (args: DayPilot.SchedulerRowClickArgs) => {
-		toggleSelected(String(args.row.id));
 	};
 
 	const onBeforeEventRender = (
@@ -638,8 +647,43 @@ const Scheduler = ({
 		setReadOnlyEvent(event);
 	};
 
-	const rowHeaderWidth = isNarrow && namesCollapsed ? 2 : 180;
+	const rowHeaderWidth = isNarrow
+		? mobileRowHeaderWidth
+		: ROW_HEADER_WIDTH_DESKTOP;
 	const fontSizeConfig = SCHEDULER_FONT_SIZE[fontSize];
+
+	const onRowHeaderResizePointerDown = (
+		event: ReactPointerEvent<HTMLDivElement>
+	) => {
+		event.preventDefault();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		rowHeaderDragRef.current = {
+			pointerId: event.pointerId,
+			startX: event.clientX,
+			startWidth: mobileRowHeaderWidth
+		};
+	};
+
+	const onRowHeaderResizePointerMove = (
+		event: ReactPointerEvent<HTMLDivElement>
+	) => {
+		const drag = rowHeaderDragRef.current;
+		if (!drag || drag.pointerId !== event.pointerId) return;
+		setMobileRowHeaderWidth(
+			clampRowHeaderWidth(drag.startWidth + (event.clientX - drag.startX))
+		);
+	};
+
+	const onRowHeaderResizePointerUp = (
+		event: ReactPointerEvent<HTMLDivElement>
+	) => {
+		const drag = rowHeaderDragRef.current;
+		if (!drag || drag.pointerId !== event.pointerId) return;
+		rowHeaderDragRef.current = null;
+		if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+			event.currentTarget.releasePointerCapture(event.pointerId);
+		}
+	};
 
 	const config: DayPilot.SchedulerConfig = useMemo(
 		() => ({
@@ -651,7 +695,7 @@ const Scheduler = ({
 			rowHeaderWidth,
 			// Override DayPilot’s iOS default (floatingEvents off) so labels stay sticky.
 			floatingEvents: true,
-			rowClickHandling: 'Enabled',
+			rowClickHandling: 'Disabled',
 			eventMoveHandling: 'Disabled',
 			eventResizeHandling: 'Disabled',
 			eventClickHandling: 'Enabled',
@@ -688,8 +732,8 @@ const Scheduler = ({
 								Your attendance bar colour
 							</Label>
 							<p className="text-xs text-muted-foreground">
-								Colours your name row and the top strip on your calendar
-								events. Others see this colour on your stays.
+								Colours your name row and the top strip on your calendar events.
+								Others see this colour on your stays.
 							</p>
 							<div
 								role="radiogroup"
@@ -1010,8 +1054,8 @@ const Scheduler = ({
 									id="scheduler-search-people"
 									type="search"
 									value={query}
-									placeholder="Find people"
-									aria-label="Find people to compare attendance"
+									placeholder="Pin members to compare"
+									aria-label="Pin members to compare"
 									aria-autocomplete="list"
 									aria-controls={
 										suggestions.length > 0
@@ -1037,7 +1081,7 @@ const Scheduler = ({
 											return;
 										}
 										event.preventDefault();
-										addSelected(String(highlightedSuggestion.id));
+										toggleSelected(String(highlightedSuggestion.id));
 									}}
 									autoComplete="off"
 									className="scheduler-search-input h-11 bg-muted pl-8"
@@ -1047,12 +1091,13 @@ const Scheduler = ({
 								<ul
 									id="scheduler-search-suggestions"
 									role="listbox"
-									className="absolute top-full z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md"
+									className="absolute top-full z-30 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-border bg-popover py-1 text-popover-foreground shadow-md"
 									onMouseLeave={() => setActiveSuggestionIndex(0)}
 								>
 									{suggestions.map((resource, index) => {
 										const id = String(resource.id);
 										const isHighlighted = index === highlightedSuggestionIndex;
+										const isPinned = selectedIds.includes(id);
 										return (
 											<li
 												key={id}
@@ -1064,16 +1109,34 @@ const Scheduler = ({
 												<button
 													type="button"
 													tabIndex={-1}
-													onClick={() => addSelected(id)}
+													onClick={() => toggleSelected(id)}
+													aria-label={
+														isPinned
+															? `Unpin ${resource.name ?? 'person'}`
+															: `Pin ${resource.name ?? 'person'}`
+													}
 													className={cn(
-														'block w-full cursor-pointer px-3 py-2 text-left text-sm',
+														'flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left text-sm',
 														'focus-visible:outline-none',
 														isHighlighted
 															? 'bg-accent text-accent-foreground'
 															: null
 													)}
 												>
-													{resource.name}
+													<span className="min-w-0 truncate">
+														{resource.name}
+													</span>
+													{isPinned ? (
+														<PinOff
+															aria-hidden
+															className="size-4 shrink-0 opacity-80"
+														/>
+													) : (
+														<Pin
+															aria-hidden
+															className="size-4 shrink-0 opacity-80"
+														/>
+													)}
 												</button>
 											</li>
 										);
@@ -1115,38 +1178,69 @@ const Scheduler = ({
 							data-font-size={fontSize}
 						>
 							{isNarrow ? (
-								<button
-									type="button"
-									className={
-										namesCollapsed
-											? 'scheduler-names-chip'
-											: 'scheduler-names-chip scheduler-names-chip-expanded'
-									}
-									aria-label={
-										namesCollapsed
-											? 'Show resource names'
-											: 'Hide resource names'
-									}
-									aria-pressed={!namesCollapsed}
-									onClick={() => setNamesCollapsed(collapsed => !collapsed)}
+								<div
+									role="separator"
+									aria-orientation="vertical"
+									aria-label="Resize name column"
+									aria-valuenow={rowHeaderWidth}
+									aria-valuemin={ROW_HEADER_WIDTH_MOBILE_MIN}
+									aria-valuemax={ROW_HEADER_WIDTH_MOBILE_MAX}
+									className="scheduler-rowheader-resize"
+									style={{
+										left: Math.max(
+											rowHeaderWidth,
+											ROW_HEADER_RESIZE_HANDLE_INSET
+										)
+									}}
+									onPointerDown={onRowHeaderResizePointerDown}
+									onPointerMove={onRowHeaderResizePointerMove}
+									onPointerUp={onRowHeaderResizePointerUp}
+									onPointerCancel={onRowHeaderResizePointerUp}
 								>
-									<span className="scheduler-names-chip-face">
-										{namesCollapsed ? (
-											<>
-												<span>Show names</span>
-												<ChevronRight
+									<button
+										type="button"
+										className={
+											rowHeaderWidth < ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+												? 'scheduler-rowheader-resize-indicator'
+												: 'scheduler-rowheader-resize-indicator scheduler-rowheader-resize-indicator-expanded'
+										}
+										aria-label={
+											rowHeaderWidth < ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+												? 'Show resource names'
+												: 'Hide resource names'
+										}
+										aria-pressed={
+											rowHeaderWidth >= ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+										}
+										onPointerDown={event => event.stopPropagation()}
+										onClick={() => {
+											setMobileRowHeaderWidth(
+												rowHeaderWidth <
+													ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+													? ROW_HEADER_WIDTH_MOBILE_MAX
+													: ROW_HEADER_WIDTH_MOBILE_MIN
+											);
+										}}
+									>
+										<span className="scheduler-rowheader-resize-indicator-face">
+											{rowHeaderWidth <
+											ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW ? (
+												<>
+													<span>Show names</span>
+													<ChevronRight
+														aria-hidden
+														className="scheduler-rowheader-resize-indicator-chevron"
+													/>
+												</>
+											) : (
+												<ChevronLeft
 													aria-hidden
-													className="scheduler-names-chip-chevron"
+													className="scheduler-rowheader-resize-indicator-chevron"
 												/>
-											</>
-										) : (
-											<ChevronLeft
-												aria-hidden
-												className="scheduler-names-chip-chevron"
-											/>
-										)}
-									</span>
-								</button>
+											)}
+										</span>
+									</button>
+								</div>
 							) : null}
 							<DayPilotScheduler
 								key={`${schedulerMountKey}-${currentUserId}`}
@@ -1157,7 +1251,6 @@ const Scheduler = ({
 								onBeforeRowHeaderRender={onBeforeRowHeaderRender}
 								onBeforeCellRender={onBeforeCellRender}
 								onBeforeEventRender={onBeforeEventRender}
-								onRowClick={onRowClick}
 								onEventClick={onEventClick}
 							/>
 						</div>
