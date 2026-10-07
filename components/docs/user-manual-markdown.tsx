@@ -6,6 +6,7 @@ function slugifyHeading(value: string) {
 	return value
 		.toLowerCase()
 		.trim()
+		.replace(/['']/g, '')
 		.replace(/[^\w]+/g, '-')
 		.replace(/^-+|-+$/g, '');
 }
@@ -27,7 +28,7 @@ function textFromChildren(children: ReactNode): string {
 
 const components: Components = {
 	h1: ({ children }) => (
-		<h1 className="font-heading text-3xl text-[#805b32]">{children}</h1>
+		<h1 className="font-heading text-4xl text-[#805b32]">{children}</h1>
 	),
 	h2: ({ children }) => {
 		const text = textFromChildren(children);
@@ -35,28 +36,49 @@ const components: Components = {
 		return (
 			<h2
 				id={id}
-				className="mt-12 scroll-mt-24 border-t border-[#e5e5e5] pt-8 font-heading text-2xl text-[#805b32]"
+				className="mt-12 scroll-mt-24 border-t border-[#e5e5e5] pt-8 font-heading text-3xl text-[#805b32]"
 			>
 				{children}
 			</h2>
 		);
 	},
-	h3: ({ children }) => (
-		<h3 className="mt-8 text-lg font-medium text-[#444]">{children}</h3>
-	),
-	h4: ({ children }) => (
-		<h4 className="mt-6 text-base font-medium text-[#444]">{children}</h4>
-	),
+	h3: ({ children }) => {
+		const text = textFromChildren(children);
+		const id = slugifyHeading(text);
+		return (
+			<h3
+				id={id}
+				className="mt-8 scroll-mt-24 text-xl font-medium text-[#444]"
+			>
+				{children}
+			</h3>
+		);
+	},
+	h4: ({ children }) => {
+		const text = textFromChildren(children);
+		const id = slugifyHeading(text);
+		return (
+			<h4
+				id={id}
+				className="mt-6 scroll-mt-24 text-lg font-medium text-[#444]"
+			>
+				{children}
+			</h4>
+		);
+	},
 	p: ({ children }) => (
-		<p className="mt-3 text-sm leading-relaxed text-[#666]">{children}</p>
+		<p className="mt-3 text-base leading-relaxed text-[#666]">{children}</p>
 	),
 	ul: ({ children }) => (
-		<ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-[#666]">
+		<ul className="mt-3 list-disc space-y-2 pl-5 text-base text-[#666]">
 			{children}
 		</ul>
 	),
-	ol: ({ children }) => (
-		<ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-[#666]">
+	ol: ({ children, start }) => (
+		<ol
+			start={start}
+			className="mt-3 list-decimal space-y-2 pl-5 text-base text-[#666]"
+		>
 			{children}
 		</ol>
 	),
@@ -98,6 +120,16 @@ const components: Components = {
 export function UserManualMarkdown({ markdown }: { markdown: string }) {
 	return (
 		<div className="user-manual-markdown">
+			{/* Space under each screenshot so the next bullet group clearly belongs to the image below it.
+			    Consecutive image paragraphs (desktop + mobile) stay tightly stacked. */}
+			<style>{`
+				.user-manual-markdown p:has(> img:only-child) {
+					margin-bottom: 60px;
+				}
+				.user-manual-markdown p:has(> img:only-child):has(+ p:has(> img:only-child)) {
+					margin-bottom: 0.5rem;
+				}
+			`}</style>
 			<ReactMarkdown components={components}>{markdown}</ReactMarkdown>
 		</div>
 	);

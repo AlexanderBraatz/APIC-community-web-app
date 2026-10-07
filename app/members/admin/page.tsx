@@ -1,14 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FileText } from 'lucide-react';
 import { getAdminDashboardCounts } from '@/lib/admin/audit-actions';
 import { getAuthEmailPreviews } from '@/lib/emails/auth-email-previews';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
-
-/** Set these when walkthrough videos are published on Vimeo. */
-const MEMBER_WALKTHROUGH_VIMEO_ID = '';
-const ADMIN_WALKTHROUGH_VIMEO_ID = '';
 
 const quickActions = [
 	{
@@ -25,38 +21,18 @@ const quickActions = [
 	}
 ] as const;
 
-function VimeoEmbed({
-	id,
-	title,
-	comingSoonLabel
-}: {
-	id: string;
-	title: string;
-	comingSoonLabel: string;
-}) {
-	return (
-		<figure>
-			<div className="aspect-video overflow-hidden border border-[#e5e5e5] bg-[#f7f4ef]">
-				{id ? (
-					<iframe
-						src={`https://player.vimeo.com/video/${id}`}
-						title={title}
-						className="size-full"
-						allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-						allowFullScreen
-					/>
-				) : (
-					<div className="flex size-full items-center justify-center px-4 text-center text-sm text-[#888]">
-						{comingSoonLabel}
-					</div>
-				)}
-			</div>
-			<figcaption className="mt-2 text-sm font-medium text-[#444]">
-				{title}
-			</figcaption>
-		</figure>
-	);
-}
+const userManuals = [
+	{
+		label: 'Member manual',
+		href: '/account/user-manual-member',
+		pdfHref: '/docs/apic-community-member-manual.pdf'
+	},
+	{
+		label: 'Admin manual',
+		href: '/account/user-manual-admin',
+		pdfHref: '/docs/apic-community-admin-manual.pdf'
+	}
+] as const;
 
 function AuthEmailPreviewDetails({
 	title,
@@ -150,7 +126,7 @@ export default async function MembersAdminDashboardPage() {
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Dashboard</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Operational overview, walkthroughs, and handover resources for
+					Operational overview, user manuals, and handover resources for
 					membership and places.
 				</p>
 			</section>
@@ -172,21 +148,47 @@ export default async function MembersAdminDashboardPage() {
 			</section>
 
 			<section>
-				<h3 className="text-lg font-medium text-[#444]">Walkthrough videos</h3>
+				<h3 className="text-lg font-medium text-[#444]">User manuals</h3>
 				<p className="mt-1 text-sm text-[#666]">
-					How to use the app as a member, then as an admin.
+					Step-by-step guides with screenshots for members and admins.
 				</p>
-				<div className="mt-4 grid gap-6 md:grid-cols-2">
-					<VimeoEmbed
-						id={MEMBER_WALKTHROUGH_VIMEO_ID}
-						title="Member walkthrough"
-						comingSoonLabel="Member walkthrough video coming soon"
-					/>
-					<VimeoEmbed
-						id={ADMIN_WALKTHROUGH_VIMEO_ID}
-						title="Admin walkthrough"
-						comingSoonLabel="Admin walkthrough video coming soon"
-					/>
+				<div className="mt-4 flex flex-col gap-4 sm:flex-row">
+					{userManuals.map(manual => (
+						<div
+							key={manual.href}
+							className="flex w-full flex-col gap-2 sm:flex-1"
+						>
+							<Link
+								href={manual.href}
+								className={cn(
+									buttonVariants({ variant: 'outline', size: 'lg' }),
+									'group h-11 w-full shrink-0 justify-between'
+								)}
+							>
+								<span>{manual.label}</span>
+								<ArrowRight
+									className="size-5 shrink-0 transition-transform duration-200 group-hover:translate-x-1"
+									strokeWidth={1.75}
+									aria-hidden
+								/>
+							</Link>
+							<a
+								href={manual.pdfHref}
+								download
+								className={cn(
+									buttonVariants({ variant: 'outline' }),
+									'inline-flex h-10 w-full items-center justify-center gap-2'
+								)}
+							>
+								<FileText
+									className="size-4 shrink-0"
+									strokeWidth={1.75}
+									aria-hidden
+								/>
+								Download PDF
+							</a>
+						</div>
+					))}
 				</div>
 			</section>
 

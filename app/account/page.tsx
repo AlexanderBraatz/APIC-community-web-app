@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { FileText } from 'lucide-react';
 import { signOut } from '@/app/auth/actions';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { SubmitButton } from '@/components/ui/submit-button';
@@ -152,15 +153,25 @@ export default async function AccountPage({ searchParams }: PageProps) {
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">User manuals</h2>
 				<p className="text-sm text-[#666]">
-					Step-by-step guides for the public site, signing in, accepting an
-					invitation, and resetting a password — with screenshots.
+					Step-by-step guides with screenshots for using the members area.
 				</p>
 				<Link
-					href="/account/user-manuals"
+					href="/account/user-manual-member"
 					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
 				>
-					Open user manuals
+					Open member manual
 				</Link>
+				<a
+					href="/docs/apic-community-member-manual.pdf"
+					download
+					className={cn(
+						buttonVariants({ variant: 'outline' }),
+						'inline-flex w-full items-center justify-center gap-2'
+					)}
+				>
+					<FileText className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+					Download PDF
+				</a>
 			</section>
 
 			<div className="mt-10 flex gap-3 border-t border-[#e5e5e5] pt-6">

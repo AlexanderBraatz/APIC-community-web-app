@@ -16,7 +16,7 @@ export default async function UserManualsPage() {
 			<div className="mb-8 flex flex-wrap items-center gap-3">
 				<Link
 					href="/account"
-					className={cn(buttonVariants({ variant: 'outline' }), 'text-sm')}
+					className={cn(buttonVariants({ variant: 'outline' }), 'text-base')}
 				>
 					Back to account
 				</Link>
