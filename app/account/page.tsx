@@ -88,6 +88,30 @@ export default async function AccountPage({ searchParams }: PageProps) {
 			</section>
 
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
+				<h2 className="text-lg font-medium text-[#444]">User manuals</h2>
+				<p className="text-sm text-[#666]">
+					Step-by-step guides with screenshots for using the members area.
+				</p>
+				<Link
+					href="/account/user-manual-member"
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
+				>
+					Open member manual
+				</Link>
+				<a
+					href="/docs/apic-community-member-manual.pdf"
+					download
+					className={cn(
+						buttonVariants({ variant: 'outline' }),
+						'inline-flex w-full items-center justify-center gap-2'
+					)}
+				>
+					<PdfFileIcon className="size-4 shrink-0" />
+					Download PDF
+				</a>
+			</section>
+
+			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">Name</h2>
 				<p className="text-sm text-[#666]">
 					You can change your display name at any time. Continue to a
@@ -148,30 +172,6 @@ export default async function AccountPage({ searchParams }: PageProps) {
 				>
 					Change password
 				</Link>
-			</section>
-
-			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
-				<h2 className="text-lg font-medium text-[#444]">User manuals</h2>
-				<p className="text-sm text-[#666]">
-					Step-by-step guides with screenshots for using the members area.
-				</p>
-				<Link
-					href="/account/user-manual-member"
-					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
-				>
-					Open member manual
-				</Link>
-				<a
-					href="/docs/apic-community-member-manual.pdf"
-					download
-					className={cn(
-						buttonVariants({ variant: 'outline' }),
-						'inline-flex w-full items-center justify-center gap-2'
-					)}
-				>
-					<PdfFileIcon className="size-4 shrink-0" />
-					Download PDF
-				</a>
 			</section>
 
 			<div className="mt-10 flex gap-3 border-t border-[#e5e5e5] pt-6">
