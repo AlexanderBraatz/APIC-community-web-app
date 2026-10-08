@@ -114,12 +114,29 @@ function buildHtml({ title, bodyHtml }) {
       border-top: 1px solid #e5e5e5;
       margin: 22pt 0;
     }
-    /* Screenshots: large gap after a group; tight stack for desktop + mobile pair */
+    /* Screenshots: keep step text with its image when possible; after a
+       screenshot group, start the next step on a fresh page so bullets
+       don't look like they belong to the wrong image when Chrome moves
+       an image that didn't fit. Desktop + mobile pairs stay together. */
+    ol, ul {
+      page-break-after: avoid;
+      break-after: avoid-page;
+    }
     p:has(> img:only-child) {
-      margin: 10pt 0 45pt;
+      margin: 10pt 0 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+      page-break-after: always;
+      break-after: page;
     }
     p:has(> img:only-child):has(+ p:has(> img:only-child)) {
       margin-bottom: 4pt;
+      page-break-after: avoid;
+      break-after: avoid-page;
+    }
+    p:has(> img:only-child):last-child {
+      page-break-after: auto;
+      break-after: auto;
     }
     img {
       display: block;
@@ -131,6 +148,7 @@ function buildHtml({ title, bodyHtml }) {
       background: #fff;
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
       page-break-inside: avoid;
+      break-inside: avoid;
     }
   </style>
 </head>
