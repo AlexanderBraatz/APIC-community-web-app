@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, FileText } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { getAdminDashboardCounts } from '@/lib/admin/audit-actions';
 import { getAuthEmailPreviews } from '@/lib/emails/auth-email-previews';
 import { buttonVariants } from '@/components/ui/button-variants';
@@ -180,11 +181,7 @@ export default async function MembersAdminDashboardPage() {
 									'inline-flex h-10 w-full items-center justify-center gap-2'
 								)}
 							>
-								<FileText
-									className="size-4 shrink-0"
-									strokeWidth={1.75}
-									aria-hidden
-								/>
+								<PdfFileIcon className="size-4 shrink-0" />
 								Download PDF
 							</a>
 						</div>

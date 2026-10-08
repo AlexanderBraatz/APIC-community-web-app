@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { UserManualMarkdown } from '@/components/docs/user-manual-markdown';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
@@ -29,7 +29,7 @@ export default async function UserManualAdminPage() {
 						'inline-flex items-center gap-2 text-base'
 					)}
 				>
-					<FileText className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+					<PdfFileIcon className="size-4 shrink-0" />
 					Download PDF
 				</a>
 			</div>

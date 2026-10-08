@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { FileText } from 'lucide-react';
+import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { signOut } from '@/app/auth/actions';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { SubmitButton } from '@/components/ui/submit-button';
@@ -169,7 +169,7 @@ export default async function AccountPage({ searchParams }: PageProps) {
 						'inline-flex w-full items-center justify-center gap-2'
 					)}
 				>
-					<FileText className="size-4 shrink-0" strokeWidth={1.75} aria-hidden />
+					<PdfFileIcon className="size-4 shrink-0" />
 					Download PDF
 				</a>
 			</section>

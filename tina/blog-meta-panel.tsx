@@ -53,7 +53,8 @@ function resolveMetaFieldName(raw: string | undefined | null): MetaFieldName | n
 	const path = raw.includes('---') ? raw.split('---')[1] ?? raw : raw;
 	const segments = path.split('.').filter(Boolean);
 	for (let i = segments.length - 1; i >= 0; i--) {
-		if (isMetaFieldName(segments[i])) return segments[i];
+		const segment = segments[i];
+		if (isMetaFieldName(segment)) return segment;
 	}
 	return null;
 }
