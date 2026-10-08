@@ -1,6 +1,6 @@
 # Member Manual
 
-How to use the map, calendar, and pinned members while signed in.
+How to use the map, calendar, and pinned members.
 
 ## Table of Contents
 

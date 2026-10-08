@@ -27,7 +27,8 @@ export default async function UserManualMemberPage({ searchParams }: PageProps) 
 					</h1>
 					<p className="text-sm text-[#666]">
 						Read the guide below (or download the PDF), then continue to
-						the members hub when you are ready.
+						the members hub when you are ready. You can always find this
+						manual again later on your account page.
 					</p>
 					<div className="flex flex-wrap items-center gap-3">
 						<Link
