@@ -75,6 +75,7 @@ export default async function MembersAdminDashboardPage() {
 	const emailPreviews = getAuthEmailPreviews();
 
 	const invitePreview = emailPreviews.find(p => p.kind === 'invite')!;
+	const joinCodePreview = emailPreviews.find(p => p.kind === 'magic_link')!;
 	const recoveryPreview = emailPreviews.find(p => p.kind === 'recovery')!;
 
 	const tiles = [
@@ -268,6 +269,11 @@ export default async function MembersAdminDashboardPage() {
 					title="Invitation email"
 					subject={invitePreview.subject}
 					html={invitePreview.html}
+				/>
+				<AuthEmailPreviewDetails
+					title="Join code email"
+					subject={joinCodePreview.subject}
+					html={joinCodePreview.html}
 				/>
 				<AuthEmailPreviewDetails
 					title="Password reset email"

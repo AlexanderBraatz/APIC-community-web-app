@@ -148,9 +148,7 @@ export default async function AcceptInvitePage({
 				Set your password
 			</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Welcome
-				{user.email ? ` (${user.email})` : ''}. Choose a password to continue
-				joining.
+				Choose a password to continue joining.
 			</p>
 
 			{params.error ? (
@@ -166,6 +164,20 @@ export default async function AcceptInvitePage({
 				action={passwordAction}
 				className="mt-8 space-y-4"
 			>
+				{user.email ? (
+					<div className="space-y-2">
+						<Label htmlFor="username">Email</Label>
+						<Input
+							id="username"
+							name="username"
+							type="email"
+							defaultValue={user.email}
+							readOnly
+							autoComplete="username"
+							className="cursor-default bg-[#f7f4ef] text-[#666]"
+						/>
+					</div>
+				) : null}
 				<div className="space-y-2">
 					<Label htmlFor="password">Password</Label>
 					<PasswordInput

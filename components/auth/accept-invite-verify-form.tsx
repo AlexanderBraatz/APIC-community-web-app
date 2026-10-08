@@ -43,12 +43,12 @@ export function AcceptInviteVerifyForm({
 			const { error: verifyError } = await supabase.auth.verifyOtp({
 				email,
 				token: nextToken,
-				type: 'invite'
+				type: 'email'
 			});
 
 			if (verifyError) {
 				setError(
-					'That code is invalid or expired. Go back and check the email address you provided, then request a new code.'
+					'That code is invalid or expired. Go back and request a new code.'
 				);
 				return;
 			}

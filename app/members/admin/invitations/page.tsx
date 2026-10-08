@@ -24,7 +24,7 @@ async function inviteAction(formData: FormData) {
 	}
 	redirect(
 		`/members/admin/invitations?message=${encodeURIComponent(
-			'Invitation sent with a one-time code.'
+			'Invitation sent with a join link.'
 		)}`
 	);
 }
@@ -73,9 +73,10 @@ export default async function AdminInvitationsPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Invite a member</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Adds the email to the allowlist and sends a one-time code (valid up to
-					24 hours). They stay on the allowlist until they finish joining, so
-					you can resend a code if they stop mid-way and lose the email.
+					Adds the email to the allowlist and sends an invitation link (valid up
+					to 24 hours). They stay on the allowlist until they finish joining, so
+					you can resend the invitation if they stop mid-way and lose the email.
+					If their link fails, they can request a one-time code themselves.
 				</p>
 
 				{params.error ? (
@@ -145,9 +146,9 @@ export default async function AdminInvitationsPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Pending invitations</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					These users have not finished joining yet. Click Resend to issue a
-					fresh invitation (and restarts onboarding if they already started).
-					Cancel removes them.
+					These users have not finished joining yet. Click Resend to send a
+					fresh invitation link (and restarts onboarding if they already
+					started). Cancel removes them.
 				</p>
 				{pending.length === 0 ? (
 					<p className="mt-3 text-sm text-[#888]">No pending invitations.</p>

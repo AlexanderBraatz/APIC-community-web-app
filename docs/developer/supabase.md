@@ -88,15 +88,16 @@ Already expected for this app:
 - [x] **Public sign-ups disabled** (invitation-only; see PR-02 for invite flow).
 - Confirm under **Authentication → Providers → Email** (disable “Enable sign ups” / equivalent).
 - **URL configuration:** set Site URL to your app origin (local: `http://localhost:3000`; production: your Vercel HTTPS URL).
-- Add matching Redirect URLs for local and production, including `/accept-invite`, `/accept-invite/verify`, `/forgot-password`, and `/forgot-password/verify` (wildcards like `http://localhost:3000/**` are fine).
+- Add matching Redirect URLs for local and production, including `/accept-invite`, `/accept-invite/confirm`, `/accept-invite/verify`, `/forgot-password`, and `/forgot-password/verify` (wildcards like `http://localhost:3000/**` are fine).
 - Set `NEXT_PUBLIC_SITE_URL` to that origin (`.env.local` locally; Vercel env in production) so invite and password-reset emails build the correct `redirectTo` when no request host is available.
 - [ ] **Leaked password protection** — Authentication → Attack Protection (HaveIBeenPwned); enable when ready for production.
-- [x] **Invite / recovery email templates** — APIC-branded HTML in [`supabase/templates/`](../../supabase/templates/) (`invite.html`, `recovery.html`); wired for local Auth in `supabase/config.toml`. Hosted project is updated via Management API (or paste into Authentication → Email Templates). Admin previews: `/members/admin` disclosures.
-  - **Invite emails use a one-time code** (`{{ .Token }}`) plus a **Set up your account** button to `{{ .RedirectTo }}` (the app’s `/accept-invite/verify?email=…` URL from `inviteUserByEmail`) — **do not** put `{{ .ConfirmationURL }}` in the invite template (email scanners can burn one-click links). Prefer `{{ .RedirectTo }}` over `{{ .SiteURL }}` so invites sent from localhost point at localhost, not the dashboard Site URL.
-  - Members request a code on `/accept-invite`, enter it on `/accept-invite/verify`, then complete the join wizard on `/accept-invite` (password → privacy & analytics → shown name → colour → favorites → `/place`).
-  - **Sender name** (From display name, e.g. `APIC Community`) is set in the hosted project under **Authentication → SMTP Settings** (or Custom SMTP). It is not controlled by the HTML templates in git.  - **Recovery emails** use the same OTP pattern: `{{ .Token }}` plus `{{ .RedirectTo }}` to `/forgot-password/verify?email=…` from `resetPasswordForEmail` (via `getRequestOrigin()`). Members request a code on `/forgot-password`, enter it on `/forgot-password/verify`, then set a password on `/reset-password`.
-  - Local OTP lifetime: `otp_expiry = 86400` (24h) in `config.toml`. On hosted Auth set **Authentication → Providers → Email → Email OTP Expiration** to **86400** (max) so invite and recovery codes match.
-  - After changing `invite.html` or `recovery.html`, sync the hosted Invite / Reset password templates (Dashboard or Management API) so production matches git/admin preview.
+- [x] **Invite / join-code / recovery email templates** — APIC-branded HTML in [`supabase/templates/`](../../supabase/templates/) (`invite.html`, `magic_link.html`, `recovery.html`); wired for local Auth in `supabase/config.toml`. Hosted project is updated via Management API (or paste into Authentication → Email Templates). Admin previews: `/members/admin` disclosures.
+  - **Invite emails are magic-link-only:** **Set up your account** uses `{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=invite` where `RedirectTo` is `/accept-invite/confirm` from `inviteUserByEmail` (scanner-safe interstitial — human **Continue** calls `verifyOtp` with `type: 'invite'`). Prefer `{{ .RedirectTo }}` over `{{ .SiteURL }}` so localhost invites stay on localhost. **Do not** put raw `{{ .ConfirmationURL }}` in the invite template (email scanners can burn one-click links). No OTC in the invite email.
+  - If the link expires or fails, members **Request a code** on `/accept-invite`; that sends the **Magic Link** template (`magic_link.html`) with `{{ .Token }}` plus a quiet text link to `{{ .RedirectTo }}` (`/accept-invite/verify?email=…`). They enter the code there (`verifyOtp` `type: 'email'`), then complete the join wizard on `/accept-invite` (password → privacy & analytics → shown name → colour → favorites → `/place`).
+  - Admin **Resend** sends another magic-link invite (`inviteUserByEmail`), not the OTC email.
+  - **Sender name** (From display name, e.g. `APIC Community`) is set in the hosted project under **Authentication → SMTP Settings** (or Custom SMTP). It is not controlled by the HTML templates in git.  - **Recovery emails** use the OTP pattern: `{{ .Token }}` plus `{{ .RedirectTo }}` to `/forgot-password/verify?email=…` from `resetPasswordForEmail` (via `getRequestOrigin()`). Members request a code on `/forgot-password`, enter it on `/forgot-password/verify`, then set a password on `/reset-password`.
+  - Local OTP lifetime: `otp_expiry = 86400` (24h) in `config.toml` (also governs invite magic links). `otp_length = 8`. On hosted Auth set **Authentication → Providers → Email → Email OTP Expiration** to **86400** (max) and OTP length to **8**.
+  - After changing `invite.html`, `magic_link.html`, or `recovery.html`, sync the hosted Invite / Magic Link / Reset password templates (Dashboard or Management API) so production matches git/admin preview.
 
 TinaCMS `/admin` is unrelated to Supabase Auth.
 
@@ -104,10 +105,10 @@ TinaCMS `/admin` is unrelated to Supabase Auth.
 
 | Concern | Location |
 |---------|----------|
-| HTML + subjects (git) | `supabase/templates/invite.html`, `recovery.html` + `[auth.email.template.*]` in `config.toml` |
+| HTML + subjects (git) | `supabase/templates/invite.html`, `magic_link.html`, `recovery.html` + `[auth.email.template.*]` in `config.toml` |
 | Local Auth | `config.toml` `content_path` (restart local stack after changes) |
-| Hosted Auth | Management API `PATCH …/config/auth` (`mailer_subjects_invite` / `mailer_templates_invite_content`, same for `recovery`) or Dashboard → Authentication → Email Templates |
-| Admin preview | `/members/admin` — Invitation email / Password reset email `<details>` (reads the same HTML files) |
+| Hosted Auth | Management API `PATCH …/config/auth` (`mailer_subjects_invite` / `mailer_templates_invite_content`, same for `magic_link` and `recovery`) or Dashboard → Authentication → Email Templates |
+| Admin preview | `/members/admin` — Invitation / Join code / Password reset email `<details>` (reads the same HTML files) |
 
 When you change a template file, update hosted Auth the same way (API or Dashboard paste) so live emails match the admin preview.
 
@@ -193,9 +194,9 @@ Only do this for the bootstrap admin. Later PRs add invite + role-change APIs wi
 
 - [ ] Migration `create_invitations_and_audit` applied.
 - [ ] Admin opens `/members/admin/invitations`, invites a new email, row is `pending` (allowlist).
-- [ ] Invite email arrives with a **one-time code** (not a one-click auth URL) and a **Set up your account** link to `/accept-invite/verify`.
-- [ ] Invitee verifies code on `/accept-invite/verify` → sets password on `/accept-invite` → profile exists (`role = user`) → invitation `accepted`.
-- [ ] Expired/wrong code: go back to `/accept-invite` and **Request a code** works only for pending allowlisted emails.
+- [ ] Invite email arrives with a **Set up your account** magic link to `/accept-invite/confirm` (TokenHash interstitial; no OTC in that email).
+- [ ] Invitee Continues on confirm → sets password on `/accept-invite` → profile exists (`role = user`) → invitation `accepted` after wizard.
+- [ ] Expired/invalid link: **Request a code** on `/accept-invite` sends OTC (Magic Link template) → verify on `/accept-invite/verify` works only for pending allowlisted emails.
 - [ ] Bulk invite accepts multiple emails; duplicates / existing users are skipped with errors.
 - [ ] Admin resend / cancel work; audit rows appear in `admin_audit_log`.
 - [ ] Non-admin visiting `/members/admin/invitations` redirects to `/place`.
@@ -269,6 +270,6 @@ Dashboard → **Authentication → URL configuration**
   - `http://localhost:3000/**`
   - `https://YOUR-PROJECT.vercel.app/**`
 
-**Invite flow:** members request a code on `/accept-invite`, enter `{{ .Token }}` on `/accept-invite/verify` (email CTA uses `{{ .RedirectTo }}` — **Set up your account**), then set password on `/accept-invite`. Pending `user_invitations` rows are the allowlist; OTP expiry does not remove allowlist membership.
+**Invite flow:** admin invite sends magic-link email → `/accept-invite/confirm` → wizard. Fallback: request OTC on `/accept-invite`, enter `{{ .Token }}` on `/accept-invite/verify`, then wizard. Pending `user_invitations` rows are the allowlist; OTP expiry does not remove allowlist membership.
 
 **Password recovery:** members request a code on `/forgot-password`, enter `{{ .Token }}` on `/forgot-password/verify` (email CTA uses `{{ .RedirectTo }}`), then set a new password on `/reset-password`. App actions pass `redirectTo` from `getRequestOrigin()` so resets requested on localhost stay on localhost.

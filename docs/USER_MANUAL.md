@@ -86,74 +86,77 @@ Related links on the sign-in page:
 
 ### Overview
 
-An invited owner enters the one-time code from the invitation email, sets a password, then completes a short onboarding (privacy, shown name, colour, favorites) to join. There is no public signup. Codes expire after 24 hours; if a code expires, go **Back** and click **Request a code** again.
+An invited owner opens the invitation email, clicks **Set up your account**, confirms on the join page, sets a password, then completes a short onboarding (privacy, shown name, colour, favorites) to join. There is no public signup. Invitation links expire after 24 hours. If the link does not work, request a one-time code on `/accept-invite` instead.
 
 **Before you start:** An admin must already have invited your email address.
 
 ### Steps
 
-#### Step 1 — Request a one-time code
+#### Step 1 — Open your invitation email
 
-- Open `/accept-invite` (or the link from your invitation email, which may include your email).
+- Open the invitation email from APIC.
+- Click **Set up your account** (or paste the link into your browser).
+- On **Set up your account**, click **Continue**.
+- You should continue to **Set your password** (Step 1 of 5).
+
+If the link has expired or is invalid, use **Request a one-time code** and follow the alternate steps below.
+
+#### Alternate — Request a one-time code (if the link failed)
+
+- Open `/accept-invite`.
 - Confirm the **Email** field matches the address you were invited with.
 - Click **Request a code**.
 - You should move to **Enter your code**, with a note that a one-time code is on its way.
-
-![Step 1](screenshots/us03-01-request-code.png)
-
-#### Step 2 — Enter the code from your email
-
-- Open the invitation email and copy the 8-digit code.
-- On **Enter your code**, paste it into **One-time code**.
-- Click **Continue**.
-- You should continue to **Set your password** (Step 1 of 5).
+- Open the join-code email, copy the 8-digit code, paste it into **One-time code**, and click **Continue**.
 
 If the code is invalid or expired, use **Back**, then **Request a code** again and use the newest email.
 
+![Step 1](screenshots/us03-01-request-code.png)
+
 ![Step 2](screenshots/us03-02-enter-code.png)
 
-#### Step 3 — Set your password
+#### Step 2 — Set your password
 
 - Enter a **Password** and **Confirm password** (at least 8 characters).
 - Click **Continue**.
 - You should see **Privacy & analytics** (Step 2 of 5).
 
-![Step 3](screenshots/us03-03-password.png)
+![Step 2](screenshots/us03-03-password.png)
 
-#### Step 4 — Accept privacy choices
+#### Step 3 — Accept privacy choices
 
 - Check **I accept the Terms & Conditions and have read the Privacy Policy.**
 - Optionally leave **Usage analytics** and **Product insights** on or turn them off.
 - Click **Continue**.
 - You should see **Your shown name** (Step 3 of 5).
 
-![Step 4](screenshots/us03-04-privacy.png)
+![Step 3](screenshots/us03-04-privacy.png)
 
-#### Step 5 — Choose your shown name
+#### Step 4 — Choose your shown name
 
 - Enter the name other members will see in **Shown name**.
 - Click **Continue**.
 - You should see **Choose your colour** (Step 4 of 5).
 
-![Step 5](screenshots/us03-05-name.png)
+![Step 4](screenshots/us03-05-name.png)
 
-#### Step 6 — Choose your profile colour
+#### Step 5 — Choose your profile colour
 
 - Select a **Profile colour** (used behind your initial on the calendar).
 - Click **Continue**.
 - You should see **Find your favorites** (Step 5 of 5).
 
-![Step 6](screenshots/us03-06-colour.png)
+![Step 5](screenshots/us03-06-colour.png)
 
-#### Step 7 — Favorites (or skip)
+#### Step 6 — Favorites (or skip)
 
 - Optionally search under **Find people** and add favorites, then click **Save favorites and continue**.
 - Or click **Skip for now**.
 - You should land in the members hub (**Members Area**).
 
-![Step 7](screenshots/us03-07-favorites.png)
+![Step 6](screenshots/us03-07-favorites.png)
 
-![Step 7 result](screenshots/us03-08-members-hub.png)
+![Step 6 result](screenshots/us03-08-members-hub.png)
 
 ---
 

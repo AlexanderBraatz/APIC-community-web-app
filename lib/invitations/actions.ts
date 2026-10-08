@@ -13,8 +13,10 @@ import {
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
 import { captureServerActionException } from '@/lib/sentry/capture';
 import { getRequestOrigin } from '@/lib/site-url';
+import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import type { Json } from '@/lib/supabase/database.types';
+import { getSupabaseEnv } from '@/lib/supabase/env';
 import { createClient } from '@/lib/supabase/server';
 import { isIncompleteInviteOnboardingStep } from '@/lib/invitations/onboarding-steps';
 
@@ -35,7 +37,13 @@ function normalizeEmail(email: string) {
 	return email.trim().toLowerCase();
 }
 
-async function inviteRedirectTo(email: string) {
+async function inviteMagicRedirectTo() {
+	const origin = await getRequestOrigin();
+	// Invite template appends ?token_hash=…&type=invite to this URL.
+	return `${origin}/accept-invite/confirm`;
+}
+
+async function inviteOtcRedirectTo(email: string) {
 	const origin = await getRequestOrigin();
 	return `${origin}/accept-invite/verify?email=${encodeURIComponent(email)}`;
 }
@@ -106,10 +114,10 @@ async function isIncompleteInvitee(userId: string): Promise<boolean> {
 }
 
 /**
- * Send (or resend) an invite OTP email. Deletes a prior auth user when they
- * never finished joining so inviteUserByEmail can issue a fresh code.
+ * Send (or resend) a magic-link invite email. Deletes a prior auth user when
+ * they never finished joining so inviteUserByEmail can issue a fresh link.
  */
-async function sendInviteOtpEmail(
+async function sendInviteMagicEmail(
 	email: string,
 	existingAuthUserId: string | null
 ): Promise<{ ok: true; authUserId: string | null } | { ok: false; error: string }> {
@@ -126,7 +134,7 @@ async function sendInviteOtpEmail(
 		) {
 			await admin.auth.admin.deleteUser(existingAuthUserId);
 		} else if (authUser.user?.email_confirmed_at || authUser.user?.last_sign_in_at) {
-			// Mid-onboarding: allow reset so they can receive a new code after
+			// Mid-onboarding: allow reset so they can receive a new invite after
 			// giving up / losing the email. Finished members stay blocked.
 			if (await isIncompleteInvitee(existingAuthUserId)) {
 				await admin.auth.admin.deleteUser(existingAuthUserId);
@@ -141,7 +149,7 @@ async function sendInviteOtpEmail(
 
 	const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(
 		email,
-		{ redirectTo: await inviteRedirectTo(email) }
+		{ redirectTo: await inviteMagicRedirectTo() }
 	);
 
 	if (inviteError) {
@@ -149,6 +157,98 @@ async function sendInviteOtpEmail(
 	}
 
 	return { ok: true, authUserId: invited.user?.id ?? null };
+}
+
+/**
+ * Send an OTC email for a pending invitee (Magic Link Auth template).
+ * Does not delete the auth user — used when the magic link failed.
+ *
+ * Hosted Auth has public sign-ups disabled. For invited users who are still
+ * "Waiting for verification", signInWithOtp is treated as signup and returns
+ * "Signups not allowed for this instance". Confirm the allowlisted auth user
+ * via admin first, then send OTC with the anon client (shouldCreateUser: false).
+ */
+async function sendInviteOtcEmail(
+	email: string,
+	existingAuthUserId: string | null
+): Promise<{ ok: true; authUserId: string | null } | { ok: false; error: string }> {
+	const admin = createServiceRoleClient();
+	let authUserId = existingAuthUserId;
+
+	if (authUserId) {
+		const { data: authUser } = await admin.auth.admin.getUserById(authUserId);
+		if (!authUser.user) {
+			authUserId = null;
+		} else if (
+			(authUser.user.email_confirmed_at || authUser.user.last_sign_in_at) &&
+			!(await isIncompleteInvitee(authUserId))
+		) {
+			return {
+				ok: false,
+				error: 'That email already belongs to a registered user.'
+			};
+		}
+	}
+
+	if (!authUserId) {
+		const { data: created, error: createError } = await admin.auth.admin.createUser({
+			email,
+			email_confirm: true
+		});
+		if (createError) {
+			// Auth user may already exist under another id — resolve via generateLink.
+			const alreadyExists = /already|registered|exists/i.test(createError.message);
+			if (!alreadyExists) {
+				return { ok: false, error: createError.message };
+			}
+			const { data: linked, error: linkError } = await admin.auth.admin.generateLink({
+				type: 'magiclink',
+				email,
+				options: { redirectTo: await inviteOtcRedirectTo(email) }
+			});
+			if (linkError) {
+				return { ok: false, error: linkError.message };
+			}
+			authUserId = linked.user?.id ?? null;
+		} else {
+			authUserId = created.user?.id ?? null;
+		}
+	}
+
+	if (authUserId) {
+		const { data: authUser } = await admin.auth.admin.getUserById(authUserId);
+		if (authUser.user && !authUser.user.email_confirmed_at) {
+			const { error: confirmError } = await admin.auth.admin.updateUserById(
+				authUserId,
+				{ email_confirm: true }
+			);
+			if (confirmError) {
+				return { ok: false, error: confirmError.message };
+			}
+		}
+	}
+
+	const { url, key } = getSupabaseEnv();
+	const anon = createSupabaseJsClient(url, key, {
+		auth: {
+			autoRefreshToken: false,
+			persistSession: false
+		}
+	});
+
+	const { error: otpError } = await anon.auth.signInWithOtp({
+		email,
+		options: {
+			shouldCreateUser: false,
+			emailRedirectTo: await inviteOtcRedirectTo(email)
+		}
+	});
+
+	if (otpError) {
+		return { ok: false, error: otpError.message };
+	}
+
+	return { ok: true, authUserId };
 }
 
 async function markInvitationAccepted(user: {
@@ -267,7 +367,7 @@ async function inviteOneEmail(
 		};
 	}
 
-	const sent = await sendInviteOtpEmail(email, existing?.id ?? null);
+	const sent = await sendInviteMagicEmail(email, existing?.id ?? null);
 	if (!sent.ok) {
 		captureServerActionException(new Error(sent.error), 'invite_user', {
 			step: 'invite_email'
@@ -413,7 +513,7 @@ export async function resendInvitation(
 			return { ok: false, error: 'Only pending invitations can be resent.' };
 		}
 
-		const sent = await sendInviteOtpEmail(
+		const sent = await sendInviteMagicEmail(
 			invitation.email,
 			invitation.auth_user_id
 		);
@@ -521,7 +621,8 @@ export async function cancelInvitation(
 }
 
 /**
- * Public: allowlisted invitee requests a fresh OTP (pending invitation required).
+ * Public: allowlisted invitee requests an OTC email (pending invitation required).
+ * Used when the magic-link invite failed or expired.
  */
 export async function requestInviteOtp(
 	formData: FormData
@@ -569,10 +670,10 @@ export async function requestInviteOtp(
 			};
 		}
 
-		const sent = await sendInviteOtpEmail(invitation.email, invitation.auth_user_id);
+		const sent = await sendInviteOtcEmail(invitation.email, invitation.auth_user_id);
 		if (!sent.ok) {
 			captureServerActionException(new Error(sent.error), 'request_invite_otp', {
-				step: 'invite_email'
+				step: 'invite_otc_email'
 			});
 			return { ok: false, error: sent.error };
 		}
@@ -643,7 +744,7 @@ export async function setInvitePassword(formData: FormData): Promise<void> {
 		}
 
 		// Stay on the allowlist until the full join wizard finishes so admins
-		// can resend a code if the member abandons mid-onboarding.
+		// can resend an invitation if the member abandons mid-onboarding.
 		const admin = createServiceRoleClient();
 		const { data: authUser, error: authLookupError } =
 			await admin.auth.admin.getUserById(user.id);

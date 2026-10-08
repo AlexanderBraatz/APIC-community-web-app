@@ -73,18 +73,10 @@ export async function updateSession(request: NextRequest) {
 		return NextResponse.redirect(redirectUrl);
 	}
 
-	if (isAuthenticated && matchesPrefix(pathname, AUTH_ONLY_WHEN_SIGNED_OUT)) {
-		const redirectUrl = request.nextUrl.clone();
-		redirectUrl.pathname = '/place';
-		redirectUrl.search = '';
-		return NextResponse.redirect(redirectUrl);
-	}
-
-	// Gate protected member areas until invite onboarding is finished.
+	// Keep invitees on the join wizard until onboarding is finished (any other route).
 	if (
 		isAuthenticated &&
 		userId &&
-		matchesPrefix(pathname, PROTECTED_PREFIXES) &&
 		!matchesPrefix(pathname, PRIVACY_ONBOARDING_ALLOWLIST)
 	) {
 		const { data: prefs } = await supabase
@@ -114,6 +106,13 @@ export async function updateSession(request: NextRequest) {
 			redirectUrl.searchParams.set('step', step);
 			return NextResponse.redirect(redirectUrl);
 		}
+	}
+
+	if (isAuthenticated && matchesPrefix(pathname, AUTH_ONLY_WHEN_SIGNED_OUT)) {
+		const redirectUrl = request.nextUrl.clone();
+		redirectUrl.pathname = '/place';
+		redirectUrl.search = '';
+		return NextResponse.redirect(redirectUrl);
 	}
 
 	return supabaseResponse;

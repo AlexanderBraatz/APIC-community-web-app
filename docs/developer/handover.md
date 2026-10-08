@@ -26,7 +26,7 @@ It is **not** a property booking or rental-availability product. Domain language
 
 ### Members can
 
-- Join via email one-time code: request on `/accept-invite`, verify on `/accept-invite/verify`, then set password on `/accept-invite`
+- Join via invitation magic link (`/accept-invite/confirm`), or request a one-time code on `/accept-invite` → `/accept-invite/verify`, then set password on `/accept-invite`
 - View and manage attendance on the community calendar
 - Browse local listings (places), search/filter, view on Google Maps
 - Manage their own profile and password
@@ -200,14 +200,14 @@ Anything prefixed `NEXT_PUBLIC_` is visible in the browser bundle. Treat service
 1. **Gain access** to the git repo and request account access for the systems in §4–§5.
 2. **Clone** the repository; run `npm install`.
 3. **Supabase:** create a new project **or** take ownership of the existing one. Link with `npx supabase link` / `npm run supabase:link`. Apply migrations with `npm run supabase:db:push`. Regenerate types with `npm run supabase:types` if the schema changed.
-4. **Auth settings (Supabase dashboard):** public sign-ups disabled (invitation-only); Site URL + Redirect URLs match the app origin (include `/accept-invite`, `/accept-invite/verify`, `/forgot-password`, and `/forgot-password/verify`); Email OTP expiry **86400**; sync hosted **Invite** and **Reset password** email templates from `supabase/templates/invite.html` and `recovery.html` (OTP + `{{ .RedirectTo }}`, no `ConfirmationURL`); set Custom SMTP **Sender name** to `APIC Community` (dashboard-owned; not in git); set `NEXT_PUBLIC_SITE_URL` accordingly.
+4. **Auth settings (Supabase dashboard):** public sign-ups disabled (invitation-only); Site URL + Redirect URLs match the app origin (include `/accept-invite`, `/accept-invite/confirm`, `/accept-invite/verify`, `/forgot-password`, and `/forgot-password/verify`); Email OTP expiry **86400**; OTP length **8**; sync hosted **Invite**, **Magic Link**, and **Reset password** email templates from `supabase/templates/invite.html`, `magic_link.html`, and `recovery.html` (invite = TokenHash confirm link, no `ConfirmationURL`; magic link = OTC + quiet verify link; recovery = OTP + `{{ .RedirectTo }}`); set Custom SMTP **Sender name** to `APIC Community` (dashboard-owned; not in git); set `NEXT_PUBLIC_SITE_URL` accordingly.
 5. **TinaCloud:** connect the repo; set `NEXT_PUBLIC_TINA_CLIENT_ID` and `TINA_TOKEN`.
 6. **Google Cloud:** enable Maps JavaScript API, Places, Geocoding; create restricted keys as in `.env.example` / `docs/developer/supabase.md`.
 7. **Optional:** create PostHog EU and Sentry EU projects (dev + prod). Wire Slack alerts per `docs/developer/sentry-alerts.md` if desired.
 8. **Env:** fill `.env.local` from `.env.example`; mirror values on Vercel for Production (and Preview as needed).
 9. **Domain:** point DNS at Vercel; confirm Auth redirect URLs and `NEXT_PUBLIC_SITE_URL`.
 10. **Deploy:** `npm run build` locally to verify, then deploy via Vercel.
-11. **Smoke-test:** invite → email OTP → `/accept-invite` request code → `/accept-invite/verify` → password → privacy → shown name → colour → favorites (or skip) → `/place`; request new code for pending email; password reset → `/forgot-password` request code → `/forgot-password/verify` → `/reset-password`; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
+11. **Smoke-test:** invite → magic-link email → `/accept-invite/confirm` Continue → password → privacy → shown name → colour → favorites (or skip) → `/place`; expired link → request code on `/accept-invite` → OTC email → `/accept-invite/verify` → wizard; admin Resend → fresh magic-link invite; password reset → `/forgot-password` request code → `/forgot-password/verify` → `/reset-password`; member login; attendance calendar; listings map; Tina `/admin`; `/members/admin` (users, invitations, listings, keywords); audit log; confirm Sentry receives real errors if DSN set; PostHog only when consent on.
 
 Local Docker (`supabase start`) is optional; cloud-linked `db push` is enough for typical maintenance.
 

@@ -47,10 +47,11 @@ export function AcceptInviteRequestForm({
 
 	return (
 		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
-			<h1 className="font-heading text-3xl text-[#805b32]">Accept invitation</h1>
+			<h1 className="font-heading text-3xl text-[#805b32]">Request a code</h1>
 			<p className="mt-3 text-sm text-[#666]">
-				Enter the email you were invited with and we will send a one-time code.
-				Codes expire after 24 hours — only approved emails can receive a code.
+				If your invitation link expired or did not work, enter the email you were
+				invited with and we will send a one-time code. Codes expire after 24
+				hours — only approved emails can receive a code.
 			</p>
 
 			{error ? (
