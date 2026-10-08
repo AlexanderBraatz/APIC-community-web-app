@@ -74,8 +74,8 @@ export default async function AdminInvitationsPage({
 				<h2 className="text-xl font-medium text-[#444]">Invite a member</h2>
 				<p className="mt-1 text-sm text-[#666]">
 					Adds the email to the allowlist and sends a one-time code (valid up to
-					24 hours). Pending invites stay valid — members can request a fresh
-					code from the join page later.
+					24 hours). They stay on the allowlist until they finish joining, so
+					you can resend a code if they stop mid-way and lose the email.
 				</p>
 
 				{params.error ? (
@@ -145,8 +145,9 @@ export default async function AdminInvitationsPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Pending invitations</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					These emails can request a new one-time code until they join or you
-					cancel them.
+					These users have not finished joining yet. Click Resend to issue a
+					fresh invitation (and restarts onboarding if they already started).
+					Cancel removes them.
 				</p>
 				{pending.length === 0 ? (
 					<p className="mt-3 text-sm text-[#888]">No pending invitations.</p>

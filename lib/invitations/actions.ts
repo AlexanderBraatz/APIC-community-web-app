@@ -16,6 +16,7 @@ import { getRequestOrigin } from '@/lib/site-url';
 import { createServiceRoleClient } from '@/lib/supabase/admin';
 import type { Json } from '@/lib/supabase/database.types';
 import { createClient } from '@/lib/supabase/server';
+import { isIncompleteInviteOnboardingStep } from '@/lib/invitations/onboarding-steps';
 
 export type InvitationListItem = {
 	id: string;
@@ -70,8 +71,43 @@ async function writeAudit(
 }
 
 /**
- * Send (or resend) an invite OTP email. Deletes a prior unconfirmed auth user
- * when needed so inviteUserByEmail can issue a fresh code.
+ * True when the auth user started joining but has not finished the invite
+ * wizard (so a fresh invite code may reset them).
+ */
+async function isIncompleteInvitee(userId: string): Promise<boolean> {
+	const admin = createServiceRoleClient();
+
+	const { data: prefs } = await admin
+		.from('privacy_preferences')
+		.select('user_id')
+		.eq('user_id', userId)
+		.maybeSingle();
+
+	const { data: profile } = await admin
+		.from('profiles')
+		.select('onboarding_step')
+		.eq('id', userId)
+		.maybeSingle();
+
+	if (!prefs) {
+		return true;
+	}
+
+	const step = profile?.onboarding_step;
+	if (isIncompleteInviteOnboardingStep(step)) {
+		return true;
+	}
+	// Legacy complete: privacy prefs exist and onboarding_step is null.
+	if (step === 'done' || step == null) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * Send (or resend) an invite OTP email. Deletes a prior auth user when they
+ * never finished joining so inviteUserByEmail can issue a fresh code.
  */
 async function sendInviteOtpEmail(
 	email: string,
@@ -90,10 +126,16 @@ async function sendInviteOtpEmail(
 		) {
 			await admin.auth.admin.deleteUser(existingAuthUserId);
 		} else if (authUser.user?.email_confirmed_at || authUser.user?.last_sign_in_at) {
-			return {
-				ok: false,
-				error: 'That email already belongs to a registered user.'
-			};
+			// Mid-onboarding: allow reset so they can receive a new code after
+			// giving up / losing the email. Finished members stay blocked.
+			if (await isIncompleteInvitee(existingAuthUserId)) {
+				await admin.auth.admin.deleteUser(existingAuthUserId);
+			} else {
+				return {
+					ok: false,
+					error: 'That email already belongs to a registered user.'
+				};
+			}
 		}
 	}
 
@@ -107,6 +149,40 @@ async function sendInviteOtpEmail(
 	}
 
 	return { ok: true, authUserId: invited.user?.id ?? null };
+}
+
+async function markInvitationAccepted(user: {
+	id: string;
+	email?: string | null;
+}): Promise<void> {
+	const email = user.email?.trim().toLowerCase();
+	if (!email) return;
+
+	const admin = createServiceRoleClient();
+	const { data: invitation, error: lookupError } = await admin
+		.from('user_invitations')
+		.select('id')
+		.eq('status', 'pending')
+		.eq('email', email)
+		.maybeSingle();
+
+	if (lookupError) {
+		throw new Error(lookupError.message);
+	}
+	if (!invitation) return;
+
+	const { error: updateError } = await admin
+		.from('user_invitations')
+		.update({
+			status: 'accepted',
+			accepted_at: new Date().toISOString(),
+			auth_user_id: user.id
+		})
+		.eq('id', invitation.id);
+
+	if (updateError) {
+		throw new Error(updateError.message);
+	}
 }
 
 export async function listInvitations(): Promise<InvitationListItem[]> {
@@ -414,8 +490,12 @@ export async function cancelInvitation(
 			const { data: authUser } = await admin.auth.admin.getUserById(
 				invitation.auth_user_id
 			);
-			// Only remove Auth users who never completed signup.
-			if (authUser.user && !authUser.user.email_confirmed_at) {
+			// Remove Auth users who never finished joining (including mid-wizard).
+			if (
+				authUser.user &&
+				(!authUser.user.email_confirmed_at ||
+					(await isIncompleteInvitee(invitation.auth_user_id)))
+			) {
 				await admin.auth.admin.deleteUser(invitation.auth_user_id);
 			}
 		}
@@ -562,25 +642,26 @@ export async function setInvitePassword(formData: FormData): Promise<void> {
 			throw new Error(passwordError.message);
 		}
 
+		// Stay on the allowlist until the full join wizard finishes so admins
+		// can resend a code if the member abandons mid-onboarding.
 		const admin = createServiceRoleClient();
-		const email = user.email.toLowerCase();
+		const { data: authUser, error: authLookupError } =
+			await admin.auth.admin.getUserById(user.id);
+		if (authLookupError) {
+			throw new Error(authLookupError.message);
+		}
 
-		const { data: invitation } = await admin
-			.from('user_invitations')
-			.select('id, status')
-			.eq('status', 'pending')
-			.ilike('email', email)
-			.maybeSingle();
-
-		if (invitation) {
-			await admin
-				.from('user_invitations')
-				.update({
-					status: 'accepted',
-					accepted_at: new Date().toISOString(),
-					auth_user_id: user.id
-				})
-				.eq('id', invitation.id);
+		const { error: metaError } = await admin.auth.admin.updateUserById(
+			user.id,
+			{
+				app_metadata: {
+					...(authUser.user?.app_metadata ?? {}),
+					invite_password_set: true
+				}
+			}
+		);
+		if (metaError) {
+			throw new Error(metaError.message);
 		}
 	} catch (error) {
 		const message = error instanceof Error ? error.message : '';
@@ -726,7 +807,22 @@ async function finishInviteFavorites(
 		inviteStepRedirect('favorites', { error: profileError.message });
 	}
 
+	try {
+		await markInvitationAccepted(user);
+	} catch (error) {
+		captureServerActionException(error, 'finish_invite_favorites', {
+			step: 'mark_invitation_accepted'
+		});
+		inviteStepRedirect('favorites', {
+			error:
+				error instanceof Error
+					? error.message
+					: 'Could not finish joining. Try again.'
+		});
+	}
+
 	revalidatePath('/accept-invite');
+	revalidatePath('/members/admin/invitations');
 	revalidatePath('/community-calendar');
 	revalidatePath('/', 'layout');
 	redirect('/place?welcome=1&invite=1');

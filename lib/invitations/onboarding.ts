@@ -17,10 +17,13 @@ export {
 /**
  * Resolve where an authenticated invitee should be in the join flow.
  * Legacy members: privacy prefs exist and onboarding_step is null → done.
+ * Pending allowlist membership lasts until the wizard finishes, so password
+ * progress is tracked in app_metadata instead of invitation status.
  */
 export async function resolveInviteFlowStep(user: {
 	id: string;
 	email?: string | null;
+	app_metadata?: Record<string, unknown> | null;
 }): Promise<InviteFlowStep | 'done'> {
 	const supabase = await createClient();
 
@@ -47,18 +50,23 @@ export async function resolveInviteFlowStep(user: {
 		return 'done';
 	}
 
-	const email = user.email?.toLowerCase();
+	const email = user.email?.trim().toLowerCase();
 	if (email) {
 		const admin = createServiceRoleClient();
 		const { data: invitation } = await admin
 			.from('user_invitations')
 			.select('id, status')
 			.eq('status', 'pending')
-			.ilike('email', email)
+			.eq('email', email)
 			.maybeSingle();
 
 		if (invitation) {
-			return 'password';
+			// Prefer live app_metadata (JWT can lag right after password step).
+			const { data: authUser } = await admin.auth.admin.getUserById(user.id);
+			const passwordSet =
+				authUser.user?.app_metadata?.invite_password_set === true ||
+				user.app_metadata?.invite_password_set === true;
+			return passwordSet ? 'privacy' : 'password';
 		}
 	}
 

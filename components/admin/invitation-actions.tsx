@@ -76,7 +76,7 @@ export default function InvitationActions({
 						</DialogTitle>
 						<DialogDescription>
 							{kind === 'resend'
-								? `Send a new one-time code to “${email}”.`
+								? `Send a new one-time code to “${email}”. If they already started joining, their unfinished progress is cleared so they can begin again.`
 								: `Remove “${email}” from the allowlist. They will no longer be able to request a code or join.`}
 						</DialogDescription>
 					</DialogHeader>
