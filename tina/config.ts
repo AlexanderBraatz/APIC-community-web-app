@@ -44,6 +44,31 @@ const BLOG_STARTER_FOLLOW_UP_BODY = richTextBody(
 	'Click here to continue your article after the gallery. Add details, quotes from members, or next steps for readers.'
 );
 
+const PAGE_STARTER_IMAGE = BLOG_STARTER_IMAGE;
+const PAGE_STARTER_HEADING = 'Click to replace this heading';
+const PAGE_STARTER_SUBTITLE = 'Click to replace this subtitle';
+const PAGE_STARTER_DESCRIPTION =
+	'Click to replace this description with your own text.';
+const PAGE_STARTER_BUTTON_LABEL = 'Click to replace';
+const PAGE_STARTER_BUTTON_LINK = 'mailto:info.apic@aol.com';
+const PAGE_STARTER_CAPTION = 'Click to replace this caption';
+const PAGE_STARTER_VIDEO = '/videos/apicherovideo.mp4';
+const PAGE_STARTER_TEXT_BODY = richTextBody(
+	'Click here to replace this text with your page content.',
+	'You can add more paragraphs, headings, and links. Everything in this block is placeholder content meant to be replaced.'
+);
+const PAGE_STARTER_FEATURE_IMAGES = [
+	'/images/apic-connect.webp',
+	'/images/apic-shared.webp',
+	'/images/apic-offer-2.png',
+	'/images/apic-member.webp'
+] as const;
+const PAGE_STARTER_CATEGORY_IMAGES = [
+	'/images/apic-event.webp',
+	'/images/apic-food-hero.webp',
+	'/images/Il-Borgo-Garden-View-scaled.jpg'
+] as const;
+
 const COMMUNITY_FEATURE_ICONS = ['Users', 'Mic', 'Heart', 'FileText'];
 
 /** Media path under mediaRoot (`images`), e.g. blog/3 */
@@ -101,10 +126,22 @@ export default defineConfig({
 						label: 'Blocks',
 						type: 'object',
 						list: true,
+						ui: {
+							visualSelector: true
+						},
 						templates: [
 							{
 								name: 'heroBanner',
 								label: 'Hero Banner',
+								ui: {
+									previewSrc: '/images/blocks/hero-banner.svg',
+									defaultItem: {
+										heading: PAGE_STARTER_HEADING,
+										subtitle: PAGE_STARTER_SUBTITLE,
+										backgroundVideo: PAGE_STARTER_VIDEO,
+										backgroundImage: '/images/apicherovideo.jpg'
+									}
+								},
 								fields: [
 									{ name: 'heading', type: 'string', required: true },
 									{ name: 'subtitle', type: 'string' },
@@ -125,6 +162,38 @@ export default defineConfig({
 							{
 								name: 'communityFeatures',
 								label: 'Community Features',
+								ui: {
+									previewSrc: '/images/blocks/community-features.svg',
+									defaultItem: {
+										title: PAGE_STARTER_HEADING,
+										features: [
+											{
+												icon: 'Users',
+												label: 'Click to replace this feature',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_FEATURE_IMAGES[0]
+											},
+											{
+												icon: 'Mic',
+												label: 'Click to replace this feature',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_FEATURE_IMAGES[1]
+											},
+											{
+												icon: 'Heart',
+												label: 'Click to replace this feature',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_FEATURE_IMAGES[2]
+											},
+											{
+												icon: 'FileText',
+												label: 'Click to replace this feature',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_FEATURE_IMAGES[3]
+											}
+										]
+									}
+								},
 								fields: [
 									{ name: 'title', type: 'string', required: true },
 									{
@@ -136,9 +205,9 @@ export default defineConfig({
 											itemProps: item => ({ label: item.label }),
 											defaultItem: {
 												icon: 'Users',
-												label: 'New Feature',
-												description:
-													'Describe this community feature for members.'
+												label: 'Click to replace this feature',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_IMAGE
 											}
 										},
 										fields: [
@@ -161,6 +230,16 @@ export default defineConfig({
 							{
 								name: 'quoteBanner',
 								label: 'Quote Banner',
+								ui: {
+									previewSrc: '/images/blocks/quote-banner.svg',
+									defaultItem: {
+										intro: 'Click to replace this intro line',
+										heading: PAGE_STARTER_HEADING,
+										buttonLabel: PAGE_STARTER_BUTTON_LABEL,
+										buttonLink: PAGE_STARTER_BUTTON_LINK,
+										backgroundImage: '/images/apic-footer-hero.webp'
+									}
+								},
 								fields: [
 									{ name: 'intro', type: 'string' },
 									{ name: 'heading', type: 'string', required: true },
@@ -180,6 +259,23 @@ export default defineConfig({
 							{
 								name: 'buttonList',
 								label: 'Button List',
+								ui: {
+									previewSrc: '/images/blocks/button-list.svg',
+									defaultItem: {
+										sectionTitle: PAGE_STARTER_HEADING,
+										description: PAGE_STARTER_DESCRIPTION,
+										buttons: [
+											{
+												label: PAGE_STARTER_BUTTON_LABEL,
+												link: PAGE_STARTER_BUTTON_LINK
+											},
+											{
+												label: 'Click to replace',
+												link: '/about'
+											}
+										]
+									}
+								},
 								fields: [
 									{ name: 'sectionTitle', label: 'Heading', type: 'string' },
 									{
@@ -194,7 +290,11 @@ export default defineConfig({
 										type: 'object',
 										list: true,
 										ui: {
-											itemProps: item => ({ label: item.label || 'Button' })
+											itemProps: item => ({ label: item.label || 'Button' }),
+											defaultItem: {
+												label: PAGE_STARTER_BUTTON_LABEL,
+												link: PAGE_STARTER_BUTTON_LINK
+											}
 										},
 										fields: [
 											{ name: 'label', type: 'string' },
@@ -206,6 +306,35 @@ export default defineConfig({
 							{
 								name: 'categoryGrid',
 								label: 'Category Grid',
+								ui: {
+									previewSrc: '/images/blocks/category-grid.svg',
+									defaultItem: {
+										sectionTitle: PAGE_STARTER_HEADING,
+										items: [
+											{
+												title: 'Click to replace this category',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_CATEGORY_IMAGES[0],
+												link: '/about',
+												buttonLabel: PAGE_STARTER_BUTTON_LABEL
+											},
+											{
+												title: 'Click to replace this category',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_CATEGORY_IMAGES[1],
+												link: '/about',
+												buttonLabel: PAGE_STARTER_BUTTON_LABEL
+											},
+											{
+												title: 'Click to replace this category',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_CATEGORY_IMAGES[2],
+												link: '/about',
+												buttonLabel: PAGE_STARTER_BUTTON_LABEL
+											}
+										]
+									}
+								},
 								fields: [
 									{
 										name: 'sectionTitle',
@@ -218,7 +347,14 @@ export default defineConfig({
 										type: 'object',
 										list: true,
 										ui: {
-											itemProps: item => ({ label: item.title })
+											itemProps: item => ({ label: item.title }),
+											defaultItem: {
+												title: 'Click to replace this category',
+												description: PAGE_STARTER_DESCRIPTION,
+												image: PAGE_STARTER_IMAGE,
+												link: '/about',
+												buttonLabel: PAGE_STARTER_BUTTON_LABEL
+											}
 										},
 										fields: [
 											{ name: 'title', type: 'string' },
@@ -241,6 +377,15 @@ export default defineConfig({
 							{
 								name: 'ctaSection',
 								label: 'CTA Section',
+								ui: {
+									previewSrc: '/images/blocks/cta-section.svg',
+									defaultItem: {
+										title: PAGE_STARTER_HEADING,
+										description: PAGE_STARTER_DESCRIPTION,
+										buttonLabel: PAGE_STARTER_BUTTON_LABEL,
+										buttonLink: PAGE_STARTER_BUTTON_LINK
+									}
+								},
 								fields: [
 									{ name: 'title', type: 'string', required: true },
 									{
@@ -259,6 +404,12 @@ export default defineConfig({
 							{
 								name: 'sectionHeading',
 								label: 'Section Heading',
+								ui: {
+									previewSrc: '/images/blocks/section-heading.svg',
+									defaultItem: {
+										sectionTitle: PAGE_STARTER_HEADING
+									}
+								},
 								fields: [
 									{
 										name: 'sectionTitle',
@@ -270,6 +421,13 @@ export default defineConfig({
 							{
 								name: 'textSection',
 								label: 'Text',
+								ui: {
+									previewSrc: '/images/blocks/text-section.svg',
+									defaultItem: {
+										sectionTitle: PAGE_STARTER_HEADING,
+										body: PAGE_STARTER_TEXT_BODY
+									}
+								},
 								fields: [
 									{ name: 'sectionTitle', label: 'Heading', type: 'string' },
 									{
@@ -282,6 +440,25 @@ export default defineConfig({
 							{
 								name: 'imageCaptionList',
 								label: 'Image and Caption List',
+								ui: {
+									previewSrc: '/images/blocks/image-caption-list.svg',
+									defaultItem: {
+										items: [
+											{
+												image: PAGE_STARTER_CATEGORY_IMAGES[0],
+												caption: PAGE_STARTER_CAPTION
+											},
+											{
+												image: PAGE_STARTER_CATEGORY_IMAGES[1],
+												caption: PAGE_STARTER_CAPTION
+											},
+											{
+												image: PAGE_STARTER_CATEGORY_IMAGES[2],
+												caption: PAGE_STARTER_CAPTION
+											}
+										]
+									}
+								},
 								fields: [
 									{
 										name: 'items',
@@ -291,7 +468,11 @@ export default defineConfig({
 										ui: {
 											itemProps: item => ({
 												label: item.caption || 'Item'
-											})
+											}),
+											defaultItem: {
+												image: PAGE_STARTER_IMAGE,
+												caption: PAGE_STARTER_CAPTION
+											}
 										},
 										fields: [
 											{ name: 'image', type: 'image' },
@@ -303,6 +484,14 @@ export default defineConfig({
 							{
 								name: 'locationsMap',
 								label: 'Recommendations map & search',
+								ui: {
+									previewSrc: '/images/blocks/locations-map.svg',
+									defaultItem: {
+										heading: PAGE_STARTER_HEADING,
+										subtitle: 'local places',
+										caption: PAGE_STARTER_CAPTION
+									}
+								},
 								fields: [
 									{
 										name: 'heading',
