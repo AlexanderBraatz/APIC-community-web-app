@@ -21,12 +21,14 @@ const manuals = [
 	{
 		source: 'USER_MANUAL_MEMBER.md',
 		output: 'apic-community-member-manual.pdf',
-		title: 'Member Manual'
+		title: 'Member Manual',
+		lang: 'en'
 	},
 	{
 		source: 'USER_MANUAL_ADMIN.md',
 		output: 'apic-community-admin-manual.pdf',
-		title: 'Admin Manual'
+		title: 'Admin Manual',
+		lang: 'en'
 	}
 ];
 
@@ -48,9 +50,9 @@ function escapeHtml(value) {
 		.replaceAll('"', '&quot;');
 }
 
-function buildHtml({ title, bodyHtml }) {
+function buildHtml({ title, bodyHtml, lang = 'en' }) {
 	return `<!DOCTYPE html>
-<html lang="en">
+<html lang="${escapeHtml(lang)}">
 <head>
   <meta charset="utf-8" />
   <title>${escapeHtml(title)}</title>
@@ -225,7 +227,11 @@ async function main() {
 	for (const manual of manuals) {
 		const markdown = await readFile(path.join(docsDir, manual.source), 'utf8');
 		const bodyHtml = await markdownToPdfHtml(markdown);
-		const html = buildHtml({ title: manual.title, bodyHtml });
+		const html = buildHtml({
+			title: manual.title,
+			bodyHtml,
+			lang: manual.lang
+		});
 		const htmlPath = path.join(outDir, `${manual.output}.html`);
 		const pdfPath = path.join(outDir, manual.output);
 		await writeFile(htmlPath, html, 'utf8');

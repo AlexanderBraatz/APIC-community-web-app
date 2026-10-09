@@ -7,7 +7,8 @@ function slugifyHeading(value: string) {
 		.toLowerCase()
 		.trim()
 		.replace(/['']/g, '')
-		.replace(/[^\w]+/g, '-')
+		// Keep letters from any language (ä, ö, ü, ß, …) so TOC hashes match heading ids.
+		.replace(/[^\p{L}\p{N}]+/gu, '-')
 		.replace(/^-+|-+$/g, '');
 }
 
