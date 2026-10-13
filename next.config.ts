@@ -3,12 +3,6 @@ import { withSentryConfig } from '@sentry/nextjs/config';
 
 const nextConfig: NextConfig = {
 	/* config options here */
-	env: {
-		NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-		NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-		NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY:
-			process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-	},
 	// Phone / LAN testing: Next blocks /_next/* from non-localhost hosts unless listed.
 	// Dev-only. Prefer a specific LAN IP over private-range wildcards.
 	allowedDevOrigins: ['192.168.0.115'],
