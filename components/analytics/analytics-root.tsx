@@ -9,7 +9,17 @@ export async function AnalyticsRoot({
 }: {
 	children: React.ReactNode;
 }) {
-	const supabase = await createClient();
+	let supabase: Awaited<ReturnType<typeof createClient>> | null = null;
+	try {
+		supabase = await createClient();
+	} catch {
+		// Supabase is optional for public preview rendering until its vars are injected.
+	}
+
+	if (!supabase) {
+		return <>{children}</>;
+	}
+
 	const {
 		data: { user }
 	} = await supabase.auth.getUser();

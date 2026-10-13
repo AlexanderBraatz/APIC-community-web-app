@@ -35,7 +35,15 @@ export async function updateSession(request: NextRequest) {
 		request
 	});
 
-	const { url, key } = getSupabaseEnv();
+	let url: string;
+	let key: string;
+
+	try {
+		({ url, key } = getSupabaseEnv());
+	} catch {
+		// Allow public pages to render when the preview has not injected Supabase vars yet.
+		return supabaseResponse;
+	}
 
 	const supabase = createServerClient(url, key, {
 		cookies: {

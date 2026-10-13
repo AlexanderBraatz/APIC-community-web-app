@@ -20,9 +20,17 @@ export default function AuthHeaderActions({
 	const [signedIn, setSignedIn] = useState<boolean | null>(null);
 	const [isAdmin, setIsAdmin] = useState(false);
 
-	useEffect(() => {
-		const supabase = createClient();
-		let cancelled = false;
+		useEffect(() => {
+			let supabase: ReturnType<typeof createClient>;
+			try {
+				supabase = createClient();
+			} catch {
+				setSignedIn(false);
+				setIsAdmin(false);
+				return;
+			}
+
+			let cancelled = false;
 
 		async function syncFromCookies() {
 			const { data } = await supabase.auth.getClaims();
