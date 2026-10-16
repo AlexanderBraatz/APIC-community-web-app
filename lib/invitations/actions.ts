@@ -833,7 +833,7 @@ export async function setInviteColour(formData: FormData): Promise<void> {
 
 	const { error: profileError } = await supabase
 		.from('profiles')
-		.update({ event_bar_color: color, onboarding_step: 'favorites' })
+		.update({ event_bar_color: color, onboarding_step: 'attendance' })
 		.eq('id', user.id);
 
 	if (profileError) {
@@ -842,7 +842,43 @@ export async function setInviteColour(formData: FormData): Promise<void> {
 
 	revalidatePath('/accept-invite');
 	revalidatePath('/community-calendar');
+	inviteStepRedirect('attendance');
+}
+
+async function finishInviteAttendance(): Promise<void> {
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/accept-invite');
+	}
+
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ onboarding_step: 'favorites' })
+		.eq('id', user.id);
+
+	if (profileError) {
+		inviteStepRedirect('attendance', { error: profileError.message });
+	}
+
+	revalidatePath('/accept-invite');
 	inviteStepRedirect('favorites');
+}
+
+export async function continueInviteAttendance(
+	_formData?: FormData
+): Promise<void> {
+	await finishInviteAttendance();
+}
+
+export async function skipInviteAttendance(
+	_formData?: FormData
+): Promise<void> {
+	await finishInviteAttendance();
 }
 
 const UUID_RE =

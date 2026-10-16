@@ -11,6 +11,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Label } from '@/components/ui/label';
 import { InvitePrivacyStep } from '@/components/privacy/invite-privacy-step';
 import { AcceptInviteRequestForm } from '@/components/auth/accept-invite-request-form';
+import { InviteAttendanceStep } from '@/components/auth/invite-attendance-step';
 import { InviteColourStep } from '@/components/auth/invite-colour-step';
 import { InviteFavoritesStep } from '@/components/auth/invite-favorites-step';
 import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
@@ -123,6 +124,32 @@ export default async function AcceptInvitePage({
 			<InviteColourStep
 				error={params.error}
 				currentColor={profile?.event_bar_color ?? null}
+			/>
+		);
+	}
+
+	if (activeStep === 'attendance') {
+		const today = new Date().toISOString().slice(0, 10);
+		const [{ data: profile }, { data: stays }] = await Promise.all([
+			supabase
+				.from('profiles')
+				.select('full_name')
+				.eq('id', user.id)
+				.maybeSingle(),
+			supabase
+				.from('attendance')
+				.select('id, user_id, title, note, start_date, end_date')
+				.eq('user_id', user.id)
+				.gte('end_date', today)
+				.order('start_date', { ascending: true })
+		]);
+
+		return (
+			<InviteAttendanceStep
+				error={params.error}
+				currentUserId={user.id}
+				defaultTitle={profile?.full_name?.trim() || 'Stay'}
+				initialStays={stays ?? []}
 			/>
 		);
 	}
