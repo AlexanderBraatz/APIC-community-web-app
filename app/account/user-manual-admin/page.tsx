@@ -1,12 +1,20 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { UserManualMarkdown } from '@/components/docs/user-manual-markdown';
 import { buttonVariants } from '@/components/ui/button-variants';
+import { requireAdmin } from '@/lib/admin/require-admin';
 import { cn } from '@/lib/utils';
 
 export default async function UserManualAdminPage() {
+	try {
+		await requireAdmin();
+	} catch {
+		redirect('/account/user-manual-member');
+	}
+
 	const markdown = await readFile(
 		path.join(process.cwd(), 'docs', 'USER_MANUAL_ADMIN.md'),
 		'utf8'
