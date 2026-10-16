@@ -745,6 +745,8 @@ const Scheduler = ({
 							>
 								{EVENT_BAR_PALETTE.map(color => {
 									const selected = currentUserBarColor === color;
+									const dimmed =
+										currentUserBarColor != null && !selected;
 									return (
 										<button
 											key={color}
@@ -755,10 +757,11 @@ const Scheduler = ({
 											title={color}
 											onClick={() => persistEventBarColor(color)}
 											className={cn(
-												'size-8 rounded-full border-2 transition-[box-shadow,transform]',
+												'size-8 rounded-full transition-[box-shadow,transform,opacity]',
 												selected
-													? 'scale-105 border-[#333] shadow-sm'
-													: 'border-transparent hover:scale-105'
+													? 'scale-105 border-4 border-[#333] shadow-sm'
+													: 'border-2 border-transparent hover:scale-105',
+												dimmed && 'opacity-[0.66]'
 											)}
 											style={{ background: color }}
 										/>

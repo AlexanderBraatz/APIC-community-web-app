@@ -59,12 +59,14 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 	return (
 		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
 			<h1 className="font-heading text-3xl text-[#805b32]">
-				Find your favorites
+				Keep track of your neighbours
 			</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Save a few people as favorites so they are easier to find on the
-				attendance calendar later. You can skip this if you prefer.
+				Choose your neighbours or anyone else whose attendance you&apos;d like
+				to keep an eye on. We&apos;ll pin them to the top of the attendance
+				calendar, so you can easily see when they&apos;re around.
 			</p>
+			<p className="mt-2 text-sm text-[#666]">This step is optional.</p>
 
 			{error ? (
 				<p
@@ -77,7 +79,7 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 
 			<div className="mt-8 space-y-4">
 				<div className="space-y-2">
-					<Label htmlFor="favorite-search">Find people</Label>
+					<Label htmlFor="favorite-search">Search by name</Label>
 					<Input
 						id="favorite-search"
 						type="search"
@@ -128,7 +130,7 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 						))}
 					</ul>
 				) : (
-					<p className="text-sm text-[#666]">No favorites selected yet.</p>
+					<p className="text-sm text-[#666]">No neighbours selected yet.</p>
 				)}
 			</div>
 
@@ -156,7 +158,7 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 					className="w-full"
 					disabled={selectedIds.length === 0}
 				>
-					Save favorites and continue
+					Save neighbours and continue
 				</SubmitButton>
 			</form>
 			<InviteOnboardingProgress step="favorites" />
