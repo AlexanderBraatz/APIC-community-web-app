@@ -541,7 +541,7 @@ export default defineConfig({
 						ui: {
 							component: 'textarea',
 							description:
-								'Use a line break where the heading should wrap (for example after “Events, Activities &”).'
+								'Use a line break where the heading should wrap (for example after “News &”).'
 						}
 					},
 					{

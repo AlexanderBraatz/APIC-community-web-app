@@ -44,14 +44,13 @@ blocks:
       - label: Attendance Calendar
         link: /community-calendar
     _template: buttonList
-  - title: APIC Events and Activities
+  - title: APIC News & Events
     description: >-
-      This is our shared chronicle of community life at Castelfalfi. Return here
-      to revisit gatherings of years past, from seasonal dinners and cultural
-      outings to occasions such as the Castelfalfi Owners & Friends Golf
-      Tournament, and enjoy looking back on the friendships, celebrations, and
-      moments that have shaped APIC over time.
-    buttonLabel: Events and activities
+      News about upcoming gatherings and a living record of community life at
+      Castelfalfi — from seasonal dinners and cultural outings to occasions such
+      as the Castelfalfi Owners & Friends Golf Tournament, plus the friendships,
+      celebrations, and everyday moments that shape APIC over time.
+    buttonLabel: News & Events
     buttonLink: /blog
     _template: ctaSection
   - title: About Our Community

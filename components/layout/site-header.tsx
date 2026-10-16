@@ -14,7 +14,7 @@ const NAV_ITEMS = [
 	{ label: 'Services & Maintenance', href: '/services-maintenance' },
 	{ label: 'Health & Wellness', href: '/health-wellness' },
 	{ label: 'Shop & Market', href: '/shop-market' },
-	{ label: 'Events & Activities', href: '/blog' },
+	{ label: 'News & Events', href: '/blog' },
 	{ label: 'About Us', href: '/about' }
 ] as const;
 
