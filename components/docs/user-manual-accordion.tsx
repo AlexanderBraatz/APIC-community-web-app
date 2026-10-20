@@ -11,31 +11,73 @@ import {
 	parseUserManual,
 	slugifyManualHeading
 } from '@/lib/docs/parse-user-manual';
+import { cn } from '@/lib/utils';
 
-export function UserManualAccordion({ markdown }: { markdown: string }) {
+type UserManualAccordionProps = {
+	markdown: string;
+	/** Top-level section slug to expand, e.g. `map`. */
+	openSection?: string;
+	/** Nested howto value to expand, e.g. `map--find-recommendations`. */
+	openItem?: string;
+	/** Compact typography for the help sheet. */
+	compact?: boolean;
+};
+
+export function UserManualAccordion({
+	markdown,
+	openSection,
+	openItem,
+	compact = false
+}: UserManualAccordionProps) {
 	const { title, introMarkdown, sections } = parseUserManual(markdown);
+	const sectionDefault = openSection ? [openSection] : [];
 
 	return (
 		<div className="user-manual-accordion">
 			{title ? (
-				<h1 className="font-heading text-4xl text-[#805b32]">{title}</h1>
+				<h1
+					className={cn(
+						'font-heading text-[#805b32]',
+						compact ? 'text-2xl' : 'text-4xl'
+					)}
+				>
+					{title}
+				</h1>
 			) : null}
 			{introMarkdown ? (
-				<div className="mt-3">
+				<div className={cn(compact ? 'mt-2' : 'mt-3')}>
 					<ManualMarkdownBody markdown={introMarkdown} />
 				</div>
 			) : null}
 
-			<Accordion className="mt-8 border-t border-[#e5e5e5]">
+			<Accordion
+				className={cn(
+					'border-t border-[#e5e5e5]',
+					compact ? 'mt-4' : 'mt-8'
+				)}
+				defaultValue={sectionDefault}
+			>
 				{sections.map((section) => {
-					const sectionValue = slugifyManualHeading(section.title);
+					const sectionSlug = slugifyManualHeading(section.title);
+					const itemDefault =
+						openItem && openSection === sectionSlug
+							? [openItem]
+							: [];
+
 					return (
 						<AccordionItem
-							key={sectionValue}
-							value={sectionValue}
+							key={sectionSlug}
+							value={sectionSlug}
 							className="px-3 transition-colors data-open:bg-[#f3f1ed]"
 						>
-							<AccordionTrigger className="font-heading text-2xl text-[#805b32] hover:no-underline sm:text-3xl">
+							<AccordionTrigger
+								className={cn(
+									'font-heading text-[#805b32] hover:no-underline',
+									compact
+										? 'text-xl'
+										: 'text-2xl sm:text-3xl'
+								)}
+							>
 								{section.title}
 							</AccordionTrigger>
 							<AccordionContent>
@@ -46,7 +88,10 @@ export function UserManualAccordion({ markdown }: { markdown: string }) {
 										/>
 									</div>
 								) : null}
-								<Accordion className="pl-0 sm:pl-1">
+								<Accordion
+									className="pl-0 sm:pl-1"
+									defaultValue={itemDefault}
+								>
 									{section.items
 										.filter(
 											(item) =>
@@ -54,11 +99,11 @@ export function UserManualAccordion({ markdown }: { markdown: string }) {
 												'overview'
 										)
 										.map((item) => {
-											const itemValue = `${sectionValue}--${slugifyManualHeading(item.title)}`;
+											const itemSlug = `${sectionSlug}--${slugifyManualHeading(item.title)}`;
 											return (
 												<AccordionItem
-													key={itemValue}
-													value={itemValue}
+													key={itemSlug}
+													value={itemSlug}
 													className="px-3 transition-colors data-open:bg-[#e8e4dc]"
 												>
 													<AccordionTrigger className="py-3 text-lg font-medium text-[#444] hover:text-[#805b32] hover:no-underline">

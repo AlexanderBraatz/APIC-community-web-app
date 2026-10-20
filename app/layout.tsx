@@ -3,6 +3,7 @@ import { Suspense } from 'react';
 import { Inter, Playfair_Display } from 'next/font/google';
 import { AnalyticsRoot } from '@/components/analytics/analytics-root';
 import { PostHogSignOutReset } from '@/components/analytics/posthog-sign-out-reset';
+import { ManualHelpProvider } from '@/components/docs/manual-help-provider';
 import SiteFooter from '@/components/layout/site-footer';
 import SiteHeader from '@/components/layout/site-header';
 import './globals.css';
@@ -44,12 +45,14 @@ export default function RootLayout({
 				 */}
 				<div className="root isolate flex min-h-full flex-col">
 					<AnalyticsRoot>
-						<Suspense fallback={null}>
-							<PostHogSignOutReset />
-						</Suspense>
-						<SiteHeader />
-						<div className="flex-1">{children}</div>
-						<SiteFooter />
+						<ManualHelpProvider>
+							<Suspense fallback={null}>
+								<PostHogSignOutReset />
+							</Suspense>
+							<SiteHeader />
+							<div className="flex-1">{children}</div>
+							<SiteFooter />
+						</ManualHelpProvider>
 					</AnalyticsRoot>
 				</div>
 			</body>

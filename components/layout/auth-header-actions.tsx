@@ -3,8 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useManualHelp } from '@/components/docs/manual-help-provider';
 import { buttonVariants } from '@/components/ui/button';
+import {
+	getTinaAdminHash,
+	resolveManualHelpTarget
+} from '@/lib/docs/manual-help-targets';
+import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 
 type AuthHeaderActionsProps = {
@@ -17,8 +22,18 @@ export default function AuthHeaderActions({
 	onNavigate
 }: AuthHeaderActionsProps) {
 	const pathname = usePathname();
+	const { openHelp } = useManualHelp();
 	const [signedIn, setSignedIn] = useState<boolean | null>(null);
 	const [isAdmin, setIsAdmin] = useState(false);
+
+	function handleHelpClick() {
+		const target = resolveManualHelpTarget({
+			pathname,
+			tinaHash: getTinaAdminHash()
+		});
+		openHelp(target);
+		onNavigate?.();
+	}
 
 	useEffect(() => {
 		const supabase = createClient();
@@ -128,20 +143,41 @@ export default function AuthHeaderActions({
 				</Link>
 			) : null}
 			{mobile ? (
-				<Link
-					href="/account"
-					className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium text-white underline"
-					onClick={onNavigate}
-				>
-					Account
-				</Link>
+				<>
+					<Link
+						href="/account"
+						className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium text-white underline"
+						onClick={onNavigate}
+					>
+						Account
+					</Link>
+					<button
+						type="button"
+						onClick={handleHelpClick}
+						className={cn(
+							buttonVariants({ variant: 'outline' }),
+							'w-full border-white/40 bg-transparent text-white hover:bg-white/10'
+						)}
+					>
+						Help
+					</button>
+				</>
 			) : (
-				<Link
-					href="/account"
-					className={buttonVariants({ variant: 'outline' })}
-				>
-					Account
-				</Link>
+				<>
+					<Link
+						href="/account"
+						className={buttonVariants({ variant: 'outline' })}
+					>
+						Account
+					</Link>
+					<button
+						type="button"
+						onClick={handleHelpClick}
+						className={buttonVariants({ variant: 'outline' })}
+					>
+						Help
+					</button>
+				</>
 			)}
 		</div>
 	);

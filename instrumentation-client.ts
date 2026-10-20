@@ -22,7 +22,7 @@ Sentry.init({
 		...(isSentryConfigured()
 			? [
 					Sentry.feedbackIntegration({
-						autoInject: true,
+						autoInject: false,
 						colorScheme: 'light',
 						themeLight: feedbackTheme,
 						triggerLabel: '',
