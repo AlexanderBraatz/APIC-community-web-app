@@ -11,6 +11,7 @@ import {
 	parseUserManual,
 	slugifyManualHeading
 } from '@/lib/docs/parse-user-manual';
+import type { ManualKind } from '@/lib/docs/manual-help-targets';
 import { cn } from '@/lib/utils';
 
 type UserManualAccordionProps = {
@@ -21,13 +22,16 @@ type UserManualAccordionProps = {
 	openItem?: string;
 	/** Compact typography for the help sheet. */
 	compact?: boolean;
+	/** Which manual is shown; drives mobile screenshot behavior in the sheet. */
+	manualKind?: ManualKind;
 };
 
 export function UserManualAccordion({
 	markdown,
 	openSection,
 	openItem,
-	compact = false
+	compact = false,
+	manualKind
 }: UserManualAccordionProps) {
 	const { title, introMarkdown, sections } = parseUserManual(markdown);
 	const sectionDefault = openSection ? [openSection] : [];
@@ -46,7 +50,11 @@ export function UserManualAccordion({
 			) : null}
 			{introMarkdown ? (
 				<div className={cn(compact ? 'mt-2' : 'mt-3')}>
-					<ManualMarkdownBody markdown={introMarkdown} />
+					<ManualMarkdownBody
+						markdown={introMarkdown}
+						compact={compact}
+						manualKind={manualKind}
+					/>
 				</div>
 			) : null}
 
@@ -85,6 +93,8 @@ export function UserManualAccordion({
 									<div className="mb-2">
 										<ManualMarkdownBody
 											markdown={section.preambleMarkdown}
+											compact={compact}
+											manualKind={manualKind}
 										/>
 									</div>
 								) : null}
@@ -113,6 +123,10 @@ export function UserManualAccordion({
 														<ManualMarkdownBody
 															markdown={
 																item.bodyMarkdown
+															}
+															compact={compact}
+															manualKind={
+																manualKind
 															}
 														/>
 													</AccordionContent>

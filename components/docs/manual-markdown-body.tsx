@@ -1,6 +1,13 @@
 import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
 
+import type { ManualKind } from '@/lib/docs/manual-help-targets';
+import { cn } from '@/lib/utils';
+
+function isMobileScreenshotSrc(src: string | undefined | null) {
+	return typeof src === 'string' && /mobile/i.test(src);
+}
+
 export const manualMarkdownComponents: Components = {
 	h1: ({ children }) => (
 		<h1 className="font-heading text-4xl text-[#805b32]">{children}</h1>
@@ -48,33 +55,70 @@ export const manualMarkdownComponents: Components = {
 		);
 	},
 	img: ({ src, alt }) => {
-		const resolved =
-			typeof src === 'string' && src.startsWith('screenshots/')
-				? `/account/user-manuals/${src}`
-				: src;
-		if (!resolved) return null;
+		if (typeof src !== 'string' || !src) return null;
+		const resolved = src.startsWith('screenshots/')
+			? `/account/user-manuals/${src}`
+			: src;
+		const isMobile = isMobileScreenshotSrc(src);
 		return (
 			// Manual screenshots are static PNGs from docs/; next/image not needed.
 			// eslint-disable-next-line @next/next/no-img-element
 			<img
 				src={resolved}
 				alt={alt || ''}
+				{...(isMobile ? { 'data-manual-mobile': '' } : {})}
 				className="mt-4 w-full max-w-3xl rounded-[2px] border border-[#e5e5e5] bg-white shadow-sm"
 			/>
 		);
 	}
 };
 
-export function ManualMarkdownBody({ markdown }: { markdown: string }) {
+type ManualMarkdownBodyProps = {
+	markdown: string;
+	compact?: boolean;
+	manualKind?: ManualKind;
+};
+
+export function ManualMarkdownBody({
+	markdown,
+	compact = false,
+	manualKind
+}: ManualMarkdownBodyProps) {
 	if (!markdown.trim()) return null;
+
+	const memberSheetMobile = compact && manualKind === 'member';
+
 	return (
-		<div className="user-manual-markdown">
+		<div
+			className={cn(
+				'user-manual-markdown',
+				memberSheetMobile && 'user-manual-markdown--member-sheet'
+			)}
+		>
 			<style>{`
 				.user-manual-markdown p:has(> img:only-child) {
 					margin-bottom: 60px;
 				}
 				.user-manual-markdown p:has(> img:only-child):has(+ p:has(> img:only-child)) {
 					margin-bottom: 0.5rem;
+				}
+				${
+					memberSheetMobile
+						? `
+				@media (max-width: 767px) {
+					.user-manual-markdown--member-sheet p:has(> img:only-child:not([data-manual-mobile])) {
+						display: none;
+					}
+					.user-manual-markdown--member-sheet img[data-manual-mobile] {
+						aspect-ratio: 1 / 1;
+						object-fit: cover;
+						object-position: center;
+						width: 100%;
+						max-width: none;
+					}
+				}
+				`
+						: ''
 				}
 			`}</style>
 			<ReactMarkdown components={manualMarkdownComponents}>

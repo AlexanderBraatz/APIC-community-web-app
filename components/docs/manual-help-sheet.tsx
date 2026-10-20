@@ -64,6 +64,7 @@ export function ManualHelpSheet({
 							markdown={markdown}
 							openSection={target?.section}
 							openItem={target?.item}
+							manualKind={target?.manual ?? 'member'}
 							compact
 						/>
 					) : null}
