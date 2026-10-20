@@ -1,6 +1,17 @@
 'use client';
 
 import { ArrowRight } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useRef,
+	useState,
+	type KeyboardEvent as ReactKeyboardEvent,
+	type PointerEvent as ReactPointerEvent,
+	type UIEvent as ReactUIEvent
+} from 'react';
 
 import { UserManualAccordion } from '@/components/docs/user-manual-accordion';
 import { Button } from '@/components/ui/button';
@@ -13,6 +24,32 @@ import {
 	SheetTitle
 } from '@/components/ui/sheet';
 import type { ManualHelpTarget } from '@/lib/docs/manual-help-targets';
+import { cn } from '@/lib/utils';
+
+const DEFAULT_WIDTH = 512;
+const MIN_WIDTH = 280;
+const WIDTH_STORAGE_KEY = 'manual-help-sheet-width';
+
+function maxSheetWidth(viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1280) {
+	return Math.min(Math.floor(viewportWidth * 0.92), 900);
+}
+
+function clampWidth(width: number, viewportWidth?: number) {
+	return Math.min(maxSheetWidth(viewportWidth), Math.max(MIN_WIDTH, Math.round(width)));
+}
+
+function readStoredWidth(): number {
+	if (typeof window === 'undefined') return DEFAULT_WIDTH;
+	try {
+		const raw = localStorage.getItem(WIDTH_STORAGE_KEY);
+		if (!raw) return DEFAULT_WIDTH;
+		const parsed = Number(raw);
+		if (!Number.isFinite(parsed)) return DEFAULT_WIDTH;
+		return clampWidth(parsed);
+	} catch {
+		return DEFAULT_WIDTH;
+	}
+}
 
 type ManualHelpSheetProps = {
 	open: boolean;
@@ -31,15 +68,234 @@ export function ManualHelpSheet({
 	loading,
 	error
 }: ManualHelpSheetProps) {
+	const pathname = usePathname();
+	const [width, setWidth] = useState(DEFAULT_WIDTH);
+	const [sectionValue, setSectionValue] = useState<string[]>([]);
+	const [itemValue, setItemValue] = useState<string[]>([]);
+	const dragStartXRef = useRef(0);
+	const dragStartWidthRef = useRef(DEFAULT_WIDTH);
+	const bodyRef = useRef<HTMLDivElement>(null);
+	const scrollTopRef = useRef(0);
+	const seededForPathRef = useRef<string | null>(null);
+	const restoringScrollRef = useRef(false);
+
+	useEffect(() => {
+		setWidth(readStoredWidth());
+	}, []);
+
+	useEffect(() => {
+		function onViewportResize() {
+			setWidth(prev => clampWidth(prev));
+		}
+		window.addEventListener('resize', onViewportResize);
+		return () => window.removeEventListener('resize', onViewportResize);
+	}, []);
+
+	// Reset session UI when the user navigates to another page.
+	useEffect(() => {
+		seededForPathRef.current = null;
+		setSectionValue([]);
+		setItemValue([]);
+		scrollTopRef.current = 0;
+		if (bodyRef.current) {
+			bodyRef.current.scrollTop = 0;
+		}
+	}, [pathname]);
+
+	// Seed accordion from the route target once per pathname (on open).
+	useEffect(() => {
+		if (!open || !target) return;
+		if (seededForPathRef.current === pathname) return;
+		seededForPathRef.current = pathname;
+		setSectionValue(target.section ? [target.section] : []);
+		setItemValue(target.item ? [target.item] : []);
+		scrollTopRef.current = 0;
+	}, [open, target, pathname]);
+
+	const persistWidth = useCallback((next: number) => {
+		try {
+			localStorage.setItem(WIDTH_STORAGE_KEY, String(next));
+		} catch {
+			// ignore quota / private mode
+		}
+	}, []);
+
+	function captureScroll() {
+		const el = bodyRef.current;
+		if (!el || restoringScrollRef.current) return;
+		scrollTopRef.current = el.scrollTop;
+	}
+
+	function onBodyScroll(event: ReactUIEvent<HTMLDivElement>) {
+		if (restoringScrollRef.current) return;
+		scrollTopRef.current = event.currentTarget.scrollTop;
+	}
+
+	function handleOpenChange(nextOpen: boolean) {
+		if (!nextOpen) {
+			captureScroll();
+		}
+		onOpenChange(nextOpen);
+	}
+
+	// FAB `closeHelp` sets `open` without going through handleOpenChange. Prefer
+	// an in-DOM position when still available; never overwrite a saved offset
+	// with 0 after the drawer has already reset scroll.
+	useLayoutEffect(() => {
+		if (open) return;
+		const el = bodyRef.current;
+		if (!el || restoringScrollRef.current) return;
+		if (el.scrollTop > 0) {
+			scrollTopRef.current = el.scrollTop;
+		}
+	}, [open]);
+
+	// Restore scroll on reopen. The drawer remounts SheetBody (ref may be null
+	// briefly), and accordion height grows after paint — wait for the body, then
+	// keep re-applying until layout settles. Ignore onScroll while restoring so
+	// a clamped 0 does not wipe the saved position.
+	useEffect(() => {
+		if (!open || loading || !markdown) return;
+		const targetTop = scrollTopRef.current;
+		if (targetTop <= 0) return;
+
+		let cancelled = false;
+		let observer: ResizeObserver | null = null;
+		let doneTimer: ReturnType<typeof setTimeout> | undefined;
+		let attachTimer: ReturnType<typeof setInterval> | undefined;
+		restoringScrollRef.current = true;
+
+		function apply() {
+			const el = bodyRef.current;
+			if (!el || cancelled) return;
+			el.scrollTop = targetTop;
+		}
+
+		function start(el: HTMLDivElement) {
+			apply();
+			if (typeof ResizeObserver !== 'undefined') {
+				observer = new ResizeObserver(apply);
+				observer.observe(el);
+				if (el.firstElementChild) {
+					observer.observe(el.firstElementChild);
+				}
+			}
+			requestAnimationFrame(() => {
+				apply();
+				requestAnimationFrame(apply);
+			});
+			doneTimer = setTimeout(() => {
+				observer?.disconnect();
+				observer = null;
+				if (!cancelled) restoringScrollRef.current = false;
+			}, 700);
+		}
+
+		const existing = bodyRef.current;
+		if (existing) {
+			start(existing);
+		} else {
+			attachTimer = setInterval(() => {
+				const el = bodyRef.current;
+				if (!el) return;
+				if (attachTimer) clearInterval(attachTimer);
+				attachTimer = undefined;
+				start(el);
+			}, 16);
+		}
+
+		return () => {
+			cancelled = true;
+			if (attachTimer) clearInterval(attachTimer);
+			if (doneTimer) clearTimeout(doneTimer);
+			observer?.disconnect();
+			restoringScrollRef.current = false;
+		};
+	}, [open, loading, markdown]);
+
+	function onResizePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+		event.preventDefault();
+		event.stopPropagation();
+		event.currentTarget.setPointerCapture(event.pointerId);
+		dragStartXRef.current = event.clientX;
+		dragStartWidthRef.current = width;
+	}
+
+	function onResizePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+		if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+		event.preventDefault();
+		event.stopPropagation();
+		// Sheet is docked on the right; dragging the left edge leftward widens it.
+		const deltaX = dragStartXRef.current - event.clientX;
+		setWidth(clampWidth(dragStartWidthRef.current + deltaX));
+	}
+
+	function onResizePointerUp(event: ReactPointerEvent<HTMLDivElement>) {
+		if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+		event.currentTarget.releasePointerCapture(event.pointerId);
+		setWidth(prev => {
+			const next = clampWidth(prev);
+			persistWidth(next);
+			return next;
+		});
+	}
+
+	function onResizeKeyDown(event: ReactKeyboardEvent<HTMLDivElement>) {
+		const step = event.shiftKey ? 48 : 24;
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			setWidth(prev => {
+				const next = clampWidth(prev + step);
+				persistWidth(next);
+				return next;
+			});
+		} else if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			setWidth(prev => {
+				const next = clampWidth(prev - step);
+				persistWidth(next);
+				return next;
+			});
+		}
+	}
+
 	return (
 		<Sheet
 			open={open}
-			onOpenChange={onOpenChange}
+			onOpenChange={handleOpenChange}
 			swipeDirection="right"
 			modal={false}
 			disablePointerDismissal
 		>
-			<SheetContent showOverlay={false} showCloseButton={false}>
+			<SheetContent
+				showOverlay={false}
+				showCloseButton={false}
+				className="max-w-none after:pointer-events-none after:absolute after:top-0 after:left-full after:h-full after:w-screen after:bg-white after:content-['']"
+				style={{ width }}
+			>
+				<div
+					role="separator"
+					aria-orientation="vertical"
+					aria-label="Resize help panel"
+					aria-valuemin={MIN_WIDTH}
+					aria-valuemax={maxSheetWidth()}
+					aria-valuenow={width}
+					tabIndex={0}
+					className={cn(
+						'group absolute top-0 left-0 z-10 flex h-full w-3 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center',
+						'outline-none focus-visible:ring-2 focus-visible:ring-[#805b32] focus-visible:ring-offset-2'
+					)}
+					onPointerDown={onResizePointerDown}
+					onPointerMove={onResizePointerMove}
+					onPointerUp={onResizePointerUp}
+					onPointerCancel={onResizePointerUp}
+					onKeyDown={onResizeKeyDown}
+				>
+					<span
+						aria-hidden
+						className="h-12 w-1 rounded-full bg-[#c4b5a5] transition-colors group-hover:bg-[#805b32] group-focus-visible:bg-[#805b32]"
+					/>
+				</div>
 				<SheetHeader className="flex-row items-center justify-between gap-3 pr-5">
 					<SheetTitle>Help</SheetTitle>
 					<SheetClose
@@ -51,7 +307,7 @@ export function ManualHelpSheet({
 						<ArrowRight className="size-3.5" aria-hidden />
 					</SheetClose>
 				</SheetHeader>
-				<SheetBody>
+				<SheetBody ref={bodyRef} onScroll={onBodyScroll}>
 					{loading ? (
 						<p className="text-sm text-[#666]">Loading manual…</p>
 					) : null}
@@ -60,10 +316,12 @@ export function ManualHelpSheet({
 					) : null}
 					{!loading && !error && markdown ? (
 						<UserManualAccordion
-							key={`${target?.manual ?? 'member'}-${target?.section ?? ''}-${target?.item ?? ''}`}
+							key={target?.manual ?? 'member'}
 							markdown={markdown}
-							openSection={target?.section}
-							openItem={target?.item}
+							sectionValue={sectionValue}
+							onSectionValueChange={setSectionValue}
+							itemValue={itemValue}
+							onItemValueChange={setItemValue}
 							manualKind={target?.manual ?? 'member'}
 							compact
 						/>

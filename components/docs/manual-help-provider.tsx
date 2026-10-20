@@ -1,9 +1,11 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import {
 	createContext,
 	useCallback,
 	useContext,
+	useEffect,
 	useMemo,
 	useRef,
 	useState,
@@ -11,9 +13,11 @@ import {
 } from 'react';
 import { HelpFab } from '@/components/docs/help-fab';
 import { ManualHelpSheet } from '@/components/docs/manual-help-sheet';
-import type {
-	ManualHelpTarget,
-	ManualKind
+import {
+	getTinaAdminHash,
+	resolveManualHelpTarget,
+	type ManualHelpTarget,
+	type ManualKind
 } from '@/lib/docs/manual-help-targets';
 
 type ManualHelpContextValue = {
@@ -32,12 +36,14 @@ export function useManualHelp() {
 }
 
 export function ManualHelpProvider({ children }: { children: ReactNode }) {
+	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
 	const [target, setTarget] = useState<ManualHelpTarget | null>(null);
 	const [markdown, setMarkdown] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const cacheRef = useRef<Partial<Record<ManualKind, string>>>({});
+	const pathForOpenTargetRef = useRef(pathname);
 
 	const loadManual = useCallback(async (kind: ManualKind) => {
 		const cached = cacheRef.current[kind];
@@ -67,13 +73,33 @@ export function ManualHelpProvider({ children }: { children: ReactNode }) {
 		}
 	}, []);
 
+	// Keep target in sync with the route while the sheet is open (same render as
+	// pathname change so the sheet can seed from the new page's section).
+	if (open && pathForOpenTargetRef.current !== pathname) {
+		pathForOpenTargetRef.current = pathname;
+		setTarget(
+			resolveManualHelpTarget({
+				pathname,
+				tinaHash: getTinaAdminHash()
+			})
+		);
+	} else if (!open) {
+		pathForOpenTargetRef.current = pathname;
+	}
+
+	useEffect(() => {
+		if (!open || !target) return;
+		void loadManual(target.manual);
+	}, [open, target, loadManual]);
+
 	const openHelp = useCallback(
 		(next: ManualHelpTarget) => {
 			setTarget(next);
 			setOpen(true);
+			pathForOpenTargetRef.current = pathname;
 			void loadManual(next.manual);
 		},
-		[loadManual]
+		[loadManual, pathname]
 	);
 
 	const closeHelp = useCallback(() => {

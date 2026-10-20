@@ -37,7 +37,7 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ### How to Add a New Blog Post
 
-1. Click **Add new blog article**.
+1. Click [**Add new blog article**](/admin#/collections/new/blog).
 
 ![Add new blog article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
 
@@ -233,7 +233,7 @@ Add or edit places via the recommendation stepper-form, or remove recommendation
 
 ![Find business name on Google Maps](screenshots/screenshotsreal/how-to-add-a-recommendation-1.jpg)
 
-1. Click **Add Recommendation**.
+1. Click [**Add Recommendation**](/members/admin/listings/new).
 
 ![Add Recommendation](screenshots/screenshotsreal/how-to-add-a-recommendation-2.jpg)
 
@@ -311,7 +311,7 @@ Add or edit places via the recommendation stepper-form, or remove recommendation
 
 ### How to Delete a Recommendation
 
-1. Click **Recommendations**.
+1. Click [**Recommendations**](/members/admin/listings).
 
 ![Open Recommendations](screenshots/screenshotsreal/how-to-delete-a-recommendation-1.jpg)
 
@@ -341,7 +341,7 @@ Invite new members by email, promote trusted members to admin, or remove members
 
 ### How to Add a New Member
 
-1. Click **Add Member**.
+1. Click [**Add Member**](/members/admin/invitations).
 
 ![Add Member](screenshots/screenshotsreal/how-to-add-a-new-member-1.jpg)
 
@@ -352,7 +352,7 @@ Invite new members by email, promote trusted members to admin, or remove members
 
 ### How to Promote a Member to Admin
 
-1. Click **Members**.
+1. Click [**Members**](/members/admin/users).
 
 ![Open Members](screenshots/screenshotsreal/how-to-promote-a-member-to-admin-1.jpg)
 
@@ -370,7 +370,7 @@ Invite new members by email, promote trusted members to admin, or remove members
 
 ### How to Delete a Member
 
-1. Click **Members**.
+1. Click [**Members**](/members/admin/users).
 
 ![Open Members](screenshots/screenshotsreal/how-to-delete-a-member-1.jpg)
 
@@ -400,7 +400,7 @@ Use Content Admin to edit marketing pages the same way you edit blog posts — t
 
 ### How to Edit the Website’s Text and Images
 
-1. Click **Content Admin**.
+1. Click [**Content Admin**](/admin#/~/place).
 
 ![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
 

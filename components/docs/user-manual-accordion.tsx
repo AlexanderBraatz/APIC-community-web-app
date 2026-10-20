@@ -1,5 +1,7 @@
 'use client';
 
+import { useCallback, useState } from 'react';
+
 import { ManualMarkdownBody } from '@/components/docs/manual-markdown-body';
 import {
 	Accordion,
@@ -9,7 +11,8 @@ import {
 } from '@/components/ui/accordion';
 import {
 	parseUserManual,
-	slugifyManualHeading
+	slugifyManualHeading,
+	type ManualSection
 } from '@/lib/docs/parse-user-manual';
 import type { ManualKind } from '@/lib/docs/manual-help-targets';
 import { cn } from '@/lib/utils';
@@ -20,21 +23,91 @@ type UserManualAccordionProps = {
 	openSection?: string;
 	/** Nested howto value to expand, e.g. `map--find-recommendations`. */
 	openItem?: string;
+	/** Controlled top-level accordion values (sheet session persistence). */
+	sectionValue?: string[];
+	onSectionValueChange?: (value: string[]) => void;
+	/** Controlled nested accordion values (sheet session persistence). */
+	itemValue?: string[];
+	onItemValueChange?: (value: string[]) => void;
 	/** Compact typography for the help sheet. */
 	compact?: boolean;
 	/** Which manual is shown; drives mobile screenshot behavior in the sheet. */
 	manualKind?: ManualKind;
 };
 
+function resolveManualHash(
+	sections: ManualSection[],
+	hash: string
+): { section: string; item?: string } | null {
+	const slug = hash.replace(/^#/, '').trim();
+	if (!slug) return null;
+
+	for (const section of sections) {
+		const sectionSlug = slugifyManualHeading(section.title);
+		if (sectionSlug === slug) {
+			return { section: sectionSlug };
+		}
+	}
+
+	for (const section of sections) {
+		const sectionSlug = slugifyManualHeading(section.title);
+		for (const item of section.items) {
+			const itemPart = slugifyManualHeading(item.title);
+			const full = `${sectionSlug}--${itemPart}`;
+			if (slug === itemPart || slug === full) {
+				return { section: sectionSlug, item: full };
+			}
+		}
+	}
+
+	return null;
+}
+
 export function UserManualAccordion({
 	markdown,
 	openSection,
 	openItem,
+	sectionValue: sectionValueProp,
+	onSectionValueChange,
+	itemValue: itemValueProp,
+	onItemValueChange,
 	compact = false,
 	manualKind
 }: UserManualAccordionProps) {
 	const { title, introMarkdown, sections } = parseUserManual(markdown);
-	const sectionDefault = openSection ? [openSection] : [];
+	const [uncontrolledSectionValue, setUncontrolledSectionValue] = useState<
+		string[]
+	>(openSection ? [openSection] : []);
+	const [uncontrolledItemValue, setUncontrolledItemValue] = useState<string[]>(
+		openItem ? [openItem] : []
+	);
+
+	const sectionControlled = onSectionValueChange !== undefined;
+	const itemControlled = onItemValueChange !== undefined;
+	const sectionValue = sectionControlled
+		? (sectionValueProp ?? [])
+		: uncontrolledSectionValue;
+	const itemValue = itemControlled
+		? (itemValueProp ?? [])
+		: uncontrolledItemValue;
+	const setSectionValue = sectionControlled
+		? onSectionValueChange
+		: setUncontrolledSectionValue;
+	const setItemValue = itemControlled
+		? onItemValueChange
+		: setUncontrolledItemValue;
+
+	const onHashNavigate = useCallback(
+		(hash: string) => {
+			const resolved = resolveManualHash(sections, hash);
+			if (!resolved) return;
+			setSectionValue([resolved.section]);
+			setItemValue(resolved.item ? [resolved.item] : []);
+		},
+		[sections, setSectionValue, setItemValue]
+	);
+
+	const hashNavigate = compact ? onHashNavigate : undefined;
 
 	return (
 		<div className="user-manual-accordion">
@@ -54,6 +127,7 @@ export function UserManualAccordion({
 						markdown={introMarkdown}
 						compact={compact}
 						manualKind={manualKind}
+						onHashNavigate={hashNavigate}
 					/>
 				</div>
 			) : null}
@@ -63,14 +137,11 @@ export function UserManualAccordion({
 					'border-t border-[#e5e5e5]',
 					compact ? 'mt-4' : 'mt-8'
 				)}
-				defaultValue={sectionDefault}
+				value={sectionValue}
+				onValueChange={setSectionValue}
 			>
 				{sections.map((section) => {
 					const sectionSlug = slugifyManualHeading(section.title);
-					const itemDefault =
-						openItem && openSection === sectionSlug
-							? [openItem]
-							: [];
 
 					return (
 						<AccordionItem
@@ -95,12 +166,14 @@ export function UserManualAccordion({
 											markdown={section.preambleMarkdown}
 											compact={compact}
 											manualKind={manualKind}
+											onHashNavigate={hashNavigate}
 										/>
 									</div>
 								) : null}
 								<Accordion
 									className="pl-0 sm:pl-1"
-									defaultValue={itemDefault}
+									value={itemValue}
+									onValueChange={setItemValue}
 								>
 									{section.items
 										.filter(
@@ -127,6 +200,9 @@ export function UserManualAccordion({
 															compact={compact}
 															manualKind={
 																manualKind
+															}
+															onHashNavigate={
+																hashNavigate
 															}
 														/>
 													</AccordionContent>

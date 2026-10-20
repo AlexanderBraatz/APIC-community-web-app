@@ -8,6 +8,21 @@ function isMobileScreenshotSrc(src: string | undefined | null) {
 	return typeof src === 'string' && /mobile/i.test(src);
 }
 
+const linkClassName = 'text-[#805b32] underline underline-offset-2';
+
+/** App-relative paths (and same-origin absolute URLs) navigate in-tab like dashboard links. */
+function isAppPathHref(href: string | undefined | null): boolean {
+	if (!href) return false;
+	if (href.startsWith('/')) return true;
+	if (typeof window === 'undefined') return false;
+	try {
+		const url = new URL(href, window.location.origin);
+		return url.origin === window.location.origin;
+	} catch {
+		return false;
+	}
+}
+
 export const manualMarkdownComponents: Components = {
 	h1: ({ children }) => (
 		<h1 className="font-heading text-4xl text-[#805b32]">{children}</h1>
@@ -44,11 +59,14 @@ export const manualMarkdownComponents: Components = {
 	hr: () => <hr className="my-6 border-[#e5e5e5]" />,
 	a: ({ href, children }) => {
 		const isHash = href?.startsWith('#');
+		const isAppPath = isAppPathHref(href);
 		return (
 			<a
 				href={href}
-				className="text-[#805b32] underline underline-offset-2"
-				{...(isHash ? {} : { target: '_blank', rel: 'noreferrer' })}
+				className={linkClassName}
+				{...(isHash || isAppPath
+					? {}
+					: { target: '_blank', rel: 'noreferrer' })}
 			>
 				{children}
 			</a>
@@ -73,20 +91,64 @@ export const manualMarkdownComponents: Components = {
 	}
 };
 
+function buildMarkdownComponents(
+	onHashNavigate?: (hash: string) => void
+): Components {
+	if (!onHashNavigate) return manualMarkdownComponents;
+
+	return {
+		...manualMarkdownComponents,
+		a: ({ href, children }) => {
+			const isHash = href?.startsWith('#');
+			if (isHash && href) {
+				const hash = href.slice(1);
+				return (
+					<a
+						href={href}
+						className={linkClassName}
+						onClick={(event) => {
+							event.preventDefault();
+							onHashNavigate(hash);
+						}}
+					>
+						{children}
+					</a>
+				);
+			}
+			const isAppPath = isAppPathHref(href);
+			return (
+				<a
+					href={href}
+					className={linkClassName}
+					{...(isAppPath
+						? {}
+						: { target: '_blank', rel: 'noreferrer' })}
+				>
+					{children}
+				</a>
+			);
+		}
+	};
+}
+
 type ManualMarkdownBodyProps = {
 	markdown: string;
 	compact?: boolean;
 	manualKind?: ManualKind;
+	/** When set (help sheet), hash links open accordion sections instead of scrolling. */
+	onHashNavigate?: (hash: string) => void;
 };
 
 export function ManualMarkdownBody({
 	markdown,
 	compact = false,
-	manualKind
+	manualKind,
+	onHashNavigate
 }: ManualMarkdownBodyProps) {
 	if (!markdown.trim()) return null;
 
 	const memberSheetMobile = compact && manualKind === 'member';
+	const components = buildMarkdownComponents(onHashNavigate);
 
 	return (
 		<div
@@ -121,9 +183,7 @@ export function ManualMarkdownBody({
 						: ''
 				}
 			`}</style>
-			<ReactMarkdown components={manualMarkdownComponents}>
-				{markdown}
-			</ReactMarkdown>
+			<ReactMarkdown components={components}>{markdown}</ReactMarkdown>
 		</div>
 	);
 }
