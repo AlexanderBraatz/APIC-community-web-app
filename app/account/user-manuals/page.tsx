@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import Link from 'next/link';
-import { UserManualMarkdown } from '@/components/docs/user-manual-markdown';
+import { UserManualAccordion } from '@/components/docs/user-manual-accordion';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
 
@@ -23,7 +23,7 @@ export default async function UserManualsPage() {
 			</div>
 
 			<article>
-				<UserManualMarkdown markdown={markdown} />
+				<UserManualAccordion markdown={markdown} />
 			</article>
 		</main>
 	);

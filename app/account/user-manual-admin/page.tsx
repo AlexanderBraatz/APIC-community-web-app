@@ -3,7 +3,7 @@ import path from 'node:path';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
-import { UserManualMarkdown } from '@/components/docs/user-manual-markdown';
+import { UserManualAccordion } from '@/components/docs/user-manual-accordion';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import { cn } from '@/lib/utils';
@@ -43,7 +43,7 @@ export default async function UserManualAdminPage() {
 			</div>
 
 			<article>
-				<UserManualMarkdown markdown={markdown} />
+				<UserManualAccordion markdown={markdown} />
 			</article>
 		</main>
 	);

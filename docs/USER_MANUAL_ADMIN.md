@@ -4,22 +4,28 @@ How to manage blog posts, blocks, recommendations, members, and website content.
 
 ## Table of Contents
 
-- [How to Add a New Blog Post](#how-to-add-a-new-blog-post)
-- [How to Change an Image on a Blog Post](#how-to-change-an-image-on-a-blog-post)
-- [How to Edit Text on a Blog Post](#how-to-edit-text-on-a-blog-post)
-- [How to Add a New Block](#how-to-add-a-new-block)
-- [How to Move Blocks Around](#how-to-move-blocks-around)
-- [How to Delete a Blog Post Block](#how-to-delete-a-blog-post-block)
-- [How to Update the Map Block](#how-to-update-the-map-block)
-- [How to Change the Email Address Connected to a CTA Button](#how-to-change-the-email-address-connected-to-a-cta-button)
-- [How to Add an Image to the Image Gallery](#how-to-add-an-image-to-the-image-gallery)
-- [How to change an embedded video](#how-to-change-an-embedded-video)
-- [How to Add a Recommendation](#how-to-add-a-recommendation)
-- [How to Delete a Recommendation](#how-to-delete-a-recommendation)
-- [How to Add a New Member](#how-to-add-a-new-member)
-- [How to Promote a Member to Admin](#how-to-promote-a-member-to-admin)
-- [How to Delete a Member](#how-to-delete-a-member)
-- [How to Edit the Website’s Text and Images](#how-to-edit-the-websites-text-and-images)
+- **Posts**
+  - [How to Add a New Blog Post](#how-to-add-a-new-blog-post)
+  - [How to Change an Image on a Blog Post](#how-to-change-an-image-on-a-blog-post)
+  - [How to Edit Text on a Blog Post](#how-to-edit-text-on-a-blog-post)
+- **Working with Blocks**
+  - [How to Add a New Block](#how-to-add-a-new-block)
+  - [How to Move Blocks Around](#how-to-move-blocks-around)
+  - [How to Delete a Blog Post Block](#how-to-delete-a-blog-post-block)
+- **Special Blocks**
+  - [How to Update the Map Block](#how-to-update-the-map-block)
+  - [How to Change the Email Address Connected to a CTA Button](#how-to-change-the-email-address-connected-to-a-cta-button)
+  - [How to Add an Image to the Image Gallery](#how-to-add-an-image-to-the-image-gallery)
+  - [How to change an embedded video](#how-to-change-an-embedded-video)
+- **Recommendations**
+  - [How to Add a Recommendation](#how-to-add-a-recommendation)
+  - [How to Delete a Recommendation](#how-to-delete-a-recommendation)
+- **Members**
+  - [How to Add a New Member](#how-to-add-a-new-member)
+  - [How to Promote a Member to Admin](#how-to-promote-a-member-to-admin)
+  - [How to Delete a Member](#how-to-delete-a-member)
+- **Website Content**
+  - [How to Edit the Website’s Text and Images](#how-to-edit-the-websites-text-and-images)
 
 ---
 
@@ -92,15 +98,13 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ---
 
-## Blocks
+## Working with Blocks
 
 ### Overview
 
-Blocks are the building pieces of a blog post (and other pages). Add, reorder, or delete them from the TinaCMS sidebar, then update block-specific content such as maps, CTA emails, galleries, and videos.
+Blocks are the building pieces of a blog post (and other pages). Add, reorder, or delete them from the TinaCMS sidebar.
 
-### Main Block Actions
-
-#### How to Add a New Block
+### How to Add a New Block
 
 1. Click on the blog post ID number to navigate to the blog post overview.
 
@@ -118,12 +122,12 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![New block on page](screenshots/screenshotsreal/how-to-add-a-new-block-4.jpg)
 
-5. Update the text or other content of the block as you like. (For details on how to update different blocks, see the [Block-Specific Actions](#block-specific-actions) section.)
+5. Update the text or other content of the block as you like. (For details on how to update different blocks, see the [Special Blocks](#special-blocks) section.)
 6. Save your changes.
 
 ![Update block and save](screenshots/screenshotsreal/how-to-add-a-new-block-5.jpg)
 
-#### How to Move Blocks Around
+### How to Move Blocks Around
 
 1. Click and hold the three dots to start dragging the block.
 
@@ -138,7 +142,7 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![Block moved](screenshots/screenshotsreal/how-to-move-blocks-around-3.jpg)
 
-#### How to Delete a Blog Post Block
+### How to Delete a Blog Post Block
 
 1. Click on the blog post ID number to navigate to the blog post overview.
 
@@ -153,9 +157,15 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![Block removed](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-3.png)
 
-### Block-Specific Actions
+---
 
-#### How to Update the Map Block
+## Special Blocks
+
+### Overview
+
+Update block-specific content such as maps, CTA emails, galleries, and videos.
+
+### How to Update the Map Block
 
 1. Click the **Set Location** button.
 
@@ -177,14 +187,14 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
 
-#### How to Change the Email Address Connected to a CTA Button
+### How to Change the Email Address Connected to a CTA Button
 
 1. Change the email address but keep the `mailto:` prefix.
 2. Save your changes.
 
 ![Change CTA email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
 
-#### How to Add an Image to the Image Gallery
+### How to Add an Image to the Image Gallery
 
 1. Click on one of the images in the image gallery to open that image in the TinaCMS editor.
 2. Click **Image Gallery** to get to the block overview.
@@ -200,7 +210,7 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
 
-#### How to change an embedded video
+### How to change an embedded video
 
 1. Change the link to the link of the video you want to embed.
 2. Save your changes.

@@ -4,14 +4,16 @@ How to use the map, calendar, and pinned members.
 
 ## Table of Contents
 
-- [Find Recommendations](#find-recommendations)
-- [Go back to overview of all recommendations](#go-back-to-overview-of-all-recommendations)
-- [How to Add, change or delete your attendance dates](#how-to-add-change-or-delete-your-attendance-dates)
-- [How to Pin Members for Easy Attendance Comparison](#how-to-pin-members-for-easy-attendance-comparison)
+- **Map**
+  - [Find Recommendations](#find-recommendations)
+  - [Go back to overview of all recommendations](#go-back-to-overview-of-all-recommendations)
+- **Calendar**
+  - [How to Add, change or delete your attendance dates](#how-to-add-change-or-delete-your-attendance-dates)
+  - [How to Pin Members for Easy Attendance Comparison](#how-to-pin-members-for-easy-attendance-comparison)
 
 ---
 
-## Main User Map Actions
+## Map
 
 ### Overview
 
@@ -38,7 +40,7 @@ Browse member recommendations on the map, open a place, then return to the full 
 
 ---
 
-## Main User Calendar Actions
+## Calendar
 
 ### Overview
 
