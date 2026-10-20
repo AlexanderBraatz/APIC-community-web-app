@@ -1,5 +1,16 @@
 'use client';
 
+import {
+	Boxes,
+	Calendar,
+	Globe,
+	Map,
+	MapPin,
+	Newspaper,
+	Sparkles,
+	Users,
+	type LucideIcon
+} from 'lucide-react';
 import { useCallback, useState } from 'react';
 
 import { ManualMarkdownBody } from '@/components/docs/manual-markdown-body';
@@ -16,6 +27,18 @@ import {
 } from '@/lib/docs/parse-user-manual';
 import type { ManualKind } from '@/lib/docs/manual-help-targets';
 import { cn } from '@/lib/utils';
+
+/** Icons for top-level manual section headings (by slug). */
+const MANUAL_SECTION_ICONS: Record<string, LucideIcon> = {
+	map: Map,
+	calendar: Calendar,
+	recommendations: MapPin,
+	members: Users,
+	'website-content': Globe,
+	posts: Newspaper,
+	'working-with-blocks': Boxes,
+	'special-blocks': Sparkles
+};
 
 type UserManualAccordionProps = {
 	markdown: string;
@@ -142,6 +165,7 @@ export function UserManualAccordion({
 			>
 				{sections.map((section) => {
 					const sectionSlug = slugifyManualHeading(section.title);
+					const SectionIcon = MANUAL_SECTION_ICONS[sectionSlug];
 
 					return (
 						<AccordionItem
@@ -157,7 +181,18 @@ export function UserManualAccordion({
 										: 'text-2xl sm:text-3xl'
 								)}
 							>
-								{section.title}
+								<span className="flex min-w-0 items-center gap-2.5">
+									{SectionIcon ? (
+										<SectionIcon
+											aria-hidden
+											className={cn(
+												'shrink-0 text-[#805b32]',
+												compact ? 'size-5' : 'size-6 sm:size-7'
+											)}
+										/>
+									) : null}
+									<span className="min-w-0">{section.title}</span>
+								</span>
 							</AccordionTrigger>
 							<AccordionContent>
 								{section.preambleMarkdown ? (
