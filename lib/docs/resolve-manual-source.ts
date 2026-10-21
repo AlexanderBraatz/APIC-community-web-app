@@ -5,6 +5,7 @@ import {
 	type ManualLanguage
 } from '@/lib/docs/manual-language';
 import type { ManualKind } from '@/lib/docs/manual-help-targets';
+import { isIncompleteInviteOnboardingStep } from '@/lib/invitations/onboarding-steps';
 import { createClient } from '@/lib/supabase/server';
 
 const MANUAL_BASE_FILES: Record<ManualKind, string> = {
@@ -56,23 +57,44 @@ export async function getProfileManualLanguage(): Promise<ManualLanguage> {
 export async function getProfileManualHelpContext(): Promise<{
 	language: ManualLanguage;
 	isAdmin: boolean;
+	/** False while invite onboarding is incomplete (Help shows a notice). */
+	canReadManual: boolean;
+	/** When false, the help FAB coach mark never shows (account opt-out). */
+	helpFabHintEnabled: boolean;
 }> {
 	const supabase = await createClient();
 	const {
 		data: { user }
 	} = await supabase.auth.getUser();
 	if (!user) {
-		return { language: 'en', isAdmin: false };
+		return {
+			language: 'en',
+			isAdmin: false,
+			canReadManual: true,
+			helpFabHintEnabled: true
+		};
 	}
 
 	const { data: profile } = await supabase
 		.from('profiles')
-		.select('language, role')
+		.select('language, role, onboarding_step, help_fab_hint_enabled')
 		.eq('id', user.id)
 		.maybeSingle();
 
+	const { data: prefs } = await supabase
+		.from('privacy_preferences')
+		.select('user_id')
+		.eq('user_id', user.id)
+		.maybeSingle();
+
+	const canReadManual =
+		Boolean(prefs) &&
+		!isIncompleteInviteOnboardingStep(profile?.onboarding_step);
+
 	return {
 		language: parseManualLanguage(profile?.language),
-		isAdmin: profile?.role === 'admin'
+		isAdmin: profile?.role === 'admin',
+		canReadManual,
+		helpFabHintEnabled: profile?.help_fab_hint_enabled !== false
 	};
 }

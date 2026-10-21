@@ -61,11 +61,16 @@ function readStoredWidth(): number {
 	}
 }
 
+const ONBOARDING_MANUAL_NOTICE =
+	'The user manual is available to members after joining. Please finish setting up your account to read it.';
+
 type ManualHelpSheetProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	target: ManualHelpTarget | null;
 	isAdmin?: boolean;
+	/** False during invite onboarding; shows a notice instead of the manual. */
+	canReadManual?: boolean;
 	/** Single-manual markdown (non-admin). */
 	markdown: string | null;
 	adminMarkdown?: string | null;
@@ -79,6 +84,7 @@ export function ManualHelpSheet({
 	onOpenChange,
 	target,
 	isAdmin = false,
+	canReadManual = true,
 	markdown,
 	adminMarkdown = null,
 	memberMarkdown = null,
@@ -362,13 +368,21 @@ export function ManualHelpSheet({
 					</SheetClose>
 				</SheetHeader>
 				<SheetBody ref={bodyRef} onScroll={onBodyScroll}>
-					{loading ? (
+					{!canReadManual ? (
+						<p
+							className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+							role="status"
+						>
+							{ONBOARDING_MANUAL_NOTICE}
+						</p>
+					) : null}
+					{canReadManual && loading ? (
 						<p className="text-sm text-[#666]">Loading manual…</p>
 					) : null}
-					{error ? (
+					{canReadManual && error ? (
 						<p className="text-sm text-red-700">{error}</p>
 					) : null}
-					{!loading && !error && contentReady ? (
+					{canReadManual && !loading && !error && contentReady ? (
 						isAdmin && adminMarkdown && memberMarkdown ? (
 							<Accordion
 								value={manualValue}

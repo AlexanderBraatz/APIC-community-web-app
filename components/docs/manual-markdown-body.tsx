@@ -179,6 +179,11 @@ export function ManualMarkdownBody({
 						max-width: none;
 					}
 				}
+				@media (min-width: 768px) {
+					.user-manual-markdown--member-sheet p:has(> img[data-manual-mobile]:only-child) {
+						display: none;
+					}
+				}
 				`
 						: ''
 				}

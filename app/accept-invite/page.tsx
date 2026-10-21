@@ -92,11 +92,10 @@ export default async function AcceptInvitePage({
 		return (
 			<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
 				<h1 className="font-heading text-3xl text-[#805b32]">
-					Your shown name
+					Your name
 				</h1>
 				<p className="mt-2 text-sm text-[#666]">
-					This is the name other members will see on the calendar and around the
-					community.
+					This is the name other members will see on the calendar.
 				</p>
 
 				{params.error ? (
@@ -113,7 +112,7 @@ export default async function AcceptInvitePage({
 					className="mt-8 space-y-4"
 				>
 					<div className="space-y-2">
-						<Label htmlFor="full_name">Shown name</Label>
+						<Label htmlFor="full_name">Name</Label>
 						<Input
 							id="full_name"
 							name="full_name"

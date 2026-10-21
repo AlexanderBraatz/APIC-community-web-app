@@ -280,6 +280,13 @@ export const AttendanceEditor = forwardRef<
 	const endDateMin =
 		startValue && startValue > todayYmd ? startValue : todayYmd;
 
+	const handleStartChange = (nextStart: string) => {
+		setStartValue(nextStart);
+		if (endValue && nextStart > endValue) {
+			setEndValue('');
+		}
+	};
+
 	const handleSave = () => {
 		if (formMode == null) {
 			return;
@@ -633,8 +640,7 @@ export const AttendanceEditor = forwardRef<
 									id="availability-start"
 									value={startValue}
 									min={startDateMin}
-									max={endValue || undefined}
-									onChange={setStartValue}
+									onChange={handleStartChange}
 									className="bg-background"
 								/>
 							</div>

@@ -9,7 +9,7 @@ export const MANUAL_LANGUAGE_LABELS: Record<ManualLanguage, string> = {
 };
 
 export const MANUAL_LANGUAGE_DISCLAIMER =
-	'This setting currently only affects the user manuals. The rest of the site stays in English for now.';
+	'This setting currently only affects the user manual. The rest of the site stays in English for now.';
 
 export function isManualLanguage(
 	value: string | null | undefined

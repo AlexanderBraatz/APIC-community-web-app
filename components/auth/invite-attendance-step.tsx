@@ -132,11 +132,11 @@ export function InviteAttendanceStep({
 	return (
 		<main className="mx-auto flex w-full max-w-xl min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
 			<h1 className="font-heading text-3xl text-[#805b32]">
-				When will you be around?
+				Add your attendance dates
 			</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Add the dates of your stay so others can see when you are here. You can
-				skip this and add stays later from the calendar.
+				Add the dates of your stay so others can see when you will be on site.
+				You can skip this and add stays later from the calendar.
 			</p>
 			<p className="mt-2 text-sm text-[#666]">This step is optional.</p>
 
@@ -186,7 +186,7 @@ export function InviteAttendanceStep({
 			{showAfterSavePrompt ? (
 				<div className="mt-8 space-y-3">
 					<p className="text-sm text-[#444]">
-						Stay saved. Want to add another?
+						Attendance saved. Want to add another?
 					</p>
 					<Button
 						type="button"

@@ -509,6 +509,7 @@ export type Database = {
           created_at: string
           event_bar_color: string | null
           full_name: string
+          help_fab_hint_enabled: boolean
           id: string
           language: string
           onboarding_step: string | null
@@ -520,6 +521,7 @@ export type Database = {
           created_at?: string
           event_bar_color?: string | null
           full_name?: string
+          help_fab_hint_enabled?: boolean
           id: string
           language?: string
           onboarding_step?: string | null
@@ -531,6 +533,7 @@ export type Database = {
           created_at?: string
           event_bar_color?: string | null
           full_name?: string
+          help_fab_hint_enabled?: boolean
           id?: string
           language?: string
           onboarding_step?: string | null
@@ -677,6 +680,7 @@ export type Database = {
           created_at: string
           event_bar_color: string | null
           full_name: string
+          help_fab_hint_enabled: boolean
           id: string
           language: string
           onboarding_step: string | null

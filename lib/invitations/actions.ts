@@ -996,5 +996,5 @@ async function finishInviteFavorites(
 	revalidatePath('/members/admin/invitations');
 	revalidatePath('/community-calendar');
 	revalidatePath('/', 'layout');
-	redirect('/account/user-manual-member?welcome=1&invite=1&from=invite');
+	redirect('/account/welcome?welcome=1&invite=1');
 }

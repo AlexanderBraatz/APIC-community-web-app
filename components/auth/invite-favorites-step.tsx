@@ -59,15 +59,13 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 	return (
 		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
 			<h1 className="font-heading text-3xl text-[#805b32]">
-				Keep track of your neighbours
+				Find your Neighbours
 			</h1>
 			<p className="mt-2 text-sm text-[#666]">
 				Choose your neighbours or anyone else whose attendance you&apos;d like
 				to keep an eye on. We&apos;ll pin them to the top of the attendance
 				calendar, so you can easily see when they&apos;re around.
 			</p>
-			<p className="mt-2 text-sm text-[#666]">This step is optional.</p>
-
 			{error ? (
 				<p
 					className="mt-4 border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"

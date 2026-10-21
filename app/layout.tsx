@@ -33,8 +33,12 @@ export default async function RootLayout({
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
-	const { language: manualLanguage, isAdmin } =
-		await getProfileManualHelpContext();
+	const {
+		language: manualLanguage,
+		isAdmin,
+		canReadManual,
+		helpFabHintEnabled
+	} = await getProfileManualHelpContext();
 
 	return (
 		<html
@@ -52,6 +56,8 @@ export default async function RootLayout({
 						<ManualHelpProvider
 							language={manualLanguage}
 							isAdmin={isAdmin}
+							canReadManual={canReadManual}
+							helpFabHintEnabled={helpFabHintEnabled}
 						>
 							<Suspense fallback={null}>
 								<PostHogSignOutReset />

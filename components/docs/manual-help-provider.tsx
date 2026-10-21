@@ -42,12 +42,18 @@ type ManualHelpProviderProps = {
 	language?: ManualLanguage;
 	/** When true, Help sheet stacks admin + member manuals. */
 	isAdmin?: boolean;
+	/** False during invite onboarding; Help shows a notice instead of the manual. */
+	canReadManual?: boolean;
+	/** When false, the help FAB coach mark never shows (account opt-out). */
+	helpFabHintEnabled?: boolean;
 };
 
 export function ManualHelpProvider({
 	children,
 	language = 'en',
-	isAdmin = false
+	isAdmin = false,
+	canReadManual = true,
+	helpFabHintEnabled = true
 }: ManualHelpProviderProps) {
 	const pathname = usePathname();
 	const [open, setOpen] = useState(false);
@@ -129,10 +135,10 @@ export function ManualHelpProvider({
 	);
 
 	const kindsToLoad = useMemo((): ManualKind[] | null => {
-		if (!open || !target) return null;
+		if (!canReadManual || !open || !target) return null;
 		if (isAdmin) return ['admin', 'member'];
 		return [target.manual];
-	}, [open, target, isAdmin]);
+	}, [canReadManual, open, target, isAdmin]);
 
 	// Drop cached manuals when language preference changes.
 	useEffect(() => {
@@ -166,9 +172,14 @@ export function ManualHelpProvider({
 			setTarget(next);
 			setOpen(true);
 			pathForOpenTargetRef.current = pathname;
+			if (!canReadManual) {
+				setLoading(false);
+				setError(null);
+				return;
+			}
 			void loadManuals(isAdmin ? ['admin', 'member'] : [next.manual]);
 		},
-		[loadManuals, pathname, isAdmin]
+		[loadManuals, pathname, isAdmin, canReadManual]
 	);
 
 	const closeHelp = useCallback(() => {
@@ -191,6 +202,7 @@ export function ManualHelpProvider({
 				onOpenChange={setOpen}
 				target={target}
 				isAdmin={isAdmin}
+				canReadManual={canReadManual}
 				markdown={markdown}
 				adminMarkdown={markdownByKind.admin ?? null}
 				memberMarkdown={markdownByKind.member ?? null}
@@ -201,6 +213,8 @@ export function ManualHelpProvider({
 				sheetOpen={open}
 				onCloseSheet={closeHelp}
 				onOpenManual={openHelp}
+				language={language}
+				hintEnabled={helpFabHintEnabled}
 			/>
 		</ManualHelpContext.Provider>
 	);

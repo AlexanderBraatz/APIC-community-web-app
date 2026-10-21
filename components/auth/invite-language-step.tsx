@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { setInviteLanguage } from '@/lib/invitations/actions';
 import {
-	MANUAL_LANGUAGE_DISCLAIMER,
 	MANUAL_LANGUAGE_LABELS,
 	MANUAL_LANGUAGES,
 	type ManualLanguage
 } from '@/lib/docs/manual-language';
+import { INVITE_LANGUAGE_STEP_COPY } from '@/components/auth/invite-language-step-copy';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
 import { cn } from '@/lib/utils';
@@ -24,13 +24,19 @@ export function InviteLanguageStep({
 	const [draft, setDraft] = useState<ManualLanguage | null>(
 		currentLanguage ?? 'en'
 	);
+	const t = INVITE_LANGUAGE_STEP_COPY[draft ?? 'en'];
 
 	return (
 		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
-			<h1 className="font-heading text-3xl text-[#805b32]">Language</h1>
-			<p className="mt-2 text-sm text-[#666]">
-				{MANUAL_LANGUAGE_DISCLAIMER}
-			</p>
+			<h1 className="font-heading text-3xl text-[#805b32]">{t.heading}</h1>
+			<div className="mt-4 space-y-2" role="status">
+				<p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+					{t.noticeOfficial}
+				</p>
+				<p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+					{t.noticeHelp}
+				</p>
+			</div>
 
 			{error ? (
 				<p
@@ -46,7 +52,7 @@ export function InviteLanguageStep({
 
 				<div
 					role="radiogroup"
-					aria-label="Language"
+					aria-label={t.languageGroupLabel}
 					className="flex flex-col gap-2"
 				>
 					{MANUAL_LANGUAGES.map((code) => {
@@ -72,7 +78,7 @@ export function InviteLanguageStep({
 				</div>
 
 				<SubmitButton className="w-full" disabled={!draft}>
-					Continue
+					{t.continue}
 				</SubmitButton>
 			</form>
 			<InviteOnboardingProgress step="language" />
