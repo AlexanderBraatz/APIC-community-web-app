@@ -1,11 +1,13 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { UserManualAccordion } from '@/components/docs/user-manual-accordion';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { requireAdmin } from '@/lib/admin/require-admin';
+import {
+	getProfileManualLanguage,
+	readManualMarkdown
+} from '@/lib/docs/resolve-manual-source';
 import { cn } from '@/lib/utils';
 
 export default async function UserManualAdminPage() {
@@ -15,10 +17,8 @@ export default async function UserManualAdminPage() {
 		redirect('/account/user-manual-member');
 	}
 
-	const markdown = await readFile(
-		path.join(process.cwd(), 'docs', 'USER_MANUAL_ADMIN.md'),
-		'utf8'
-	);
+	const language = await getProfileManualLanguage();
+	const markdown = await readManualMarkdown('admin', language);
 
 	return (
 		<main className="mx-auto w-full max-w-3xl min-h-[100vh] px-4 py-12">

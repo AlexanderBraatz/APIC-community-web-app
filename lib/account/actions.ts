@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
+import { isManualLanguage } from '@/lib/docs/manual-language';
 
 function accountRedirect(opts: { error?: string; message?: string }): never {
 	const params = new URLSearchParams();
@@ -94,6 +95,49 @@ export async function updateProfileColor(formData: FormData) {
 	revalidatePath('/account/change-colour');
 	revalidatePath('/community-calendar');
 	accountRedirect({ message: 'Profile colour updated.' });
+}
+
+function changeLanguageRedirect(opts: { error?: string }): never {
+	const params = new URLSearchParams();
+	if (opts.error) params.set('error', opts.error);
+	const qs = params.toString();
+	redirect(qs ? `/account/change-language?${qs}` : '/account/change-language');
+}
+
+export async function updateLanguage(formData: FormData) {
+	const language = String(formData.get('language') ?? '');
+
+	if (!isManualLanguage(language)) {
+		changeLanguageRedirect({
+			error: 'Choose English, Deutsch, or Italiano.'
+		});
+	}
+
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/sign-in?next=/account/change-language');
+	}
+
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ language })
+		.eq('id', user.id);
+
+	if (profileError) {
+		changeLanguageRedirect({ error: profileError.message });
+	}
+
+	revalidatePath('/', 'layout');
+	revalidatePath('/account');
+	revalidatePath('/account/change-language');
+	revalidatePath('/account/user-manual-member');
+	revalidatePath('/account/user-manual-admin');
+	accountRedirect({ message: 'Language updated.' });
 }
 
 function changePasswordRedirect(opts: {

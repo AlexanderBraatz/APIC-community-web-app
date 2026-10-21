@@ -112,6 +112,20 @@ export default async function AccountPage({ searchParams }: PageProps) {
 			</section>
 
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
+				<h2 className="text-lg font-medium text-[#444]">Language</h2>
+				<p className="text-sm text-[#666]">
+					This setting currently only affects the user manuals. The rest of
+					the site stays in English for now.
+				</p>
+				<Link
+					href="/account/change-language"
+					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
+				>
+					Change language
+				</Link>
+			</section>
+
+			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">Name</h2>
 				<p className="text-sm text-[#666]">
 					You can change your display name at any time. Continue to a

@@ -2,7 +2,7 @@
 
 How to use the map, calendar, and pinned members.
 
-## Table of Contents
+## Table of Contents {#table-of-contents}
 
 - **Map**
   - [Find Recommendations](#find-recommendations)
@@ -13,13 +13,13 @@ How to use the map, calendar, and pinned members.
 
 ---
 
-## Map
+## Map {#map}
 
-### Overview
+### Overview {#overview}
 
-Browse member recommendations on the map, open a place, then return to the full list when you are done.
+Browse APIC recommendations on the map, open a place, then return to the full overview.
 
-### Find Recommendations
+### Find Recommendations {#find-recommendations}
 
 1. Scroll to browse recommendations.
 2. Search for recommendations.
@@ -29,7 +29,7 @@ Browse member recommendations on the map, open a place, then return to the full 
 
 ![Find recommendations (mobile)](screenshots/screenshotsreal/find-recommendations-1-mobile.jpg)
 
-### Go back to overview of all recommendations
+### Go back to overview of all recommendations {#go-back-to-overview-of-all-recommendations}
 
 1. Open the recommendation in Google Maps.
 2. Return to the overview of all recommendations.
@@ -40,13 +40,13 @@ Browse member recommendations on the map, open a place, then return to the full 
 
 ---
 
-## Calendar
+## Calendar {#calendar}
 
-### Overview
+### Overview {#overview}
 
-Manage your own attendance dates on the shared calendar, and pin other members so you can compare who will be around.
+Manage your own attendance dates on the shared calendar, and pin other members so you can compare who will be on site at the same time.
 
-### How to Add, change or delete your attendance dates
+### How to Add, change or delete your attendance dates {#how-to-add-change-or-delete-your-attendance-dates}
 
 1. Click the **Manage attendance** button.
 
@@ -76,7 +76,7 @@ Manage your own attendance dates on the shared calendar, and pin other members s
 
 ![Add new entry (mobile)](screenshots/screenshotsreal/how-to-add-change-or-delete-your-attendance-dates-mobile-4.jpg)
 
-### How to Pin Members for Easy Attendance Comparison
+### How to Pin Members for Easy Attendance Comparison {#how-to-pin-members-for-easy-attendance-comparison}
 
 1. Type the name of the member into the search field.
 2. Click the **Pin** icon to pin that member to the top of the calendar.

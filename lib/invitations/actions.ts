@@ -11,6 +11,7 @@ import {
 	limitInviteOtpRequest
 } from '@/lib/admin/rate-limit';
 import { EVENT_BAR_PALETTE } from '@/lib/attendance/event-bar-palette';
+import { isManualLanguage } from '@/lib/docs/manual-language';
 import { captureServerActionException } from '@/lib/sentry/capture';
 import { getRequestOrigin } from '@/lib/site-url';
 import { createClient as createSupabaseJsClient } from '@supabase/supabase-js';
@@ -775,6 +776,39 @@ export async function setInvitePassword(formData: FormData): Promise<void> {
 		}
 		throw error;
 	}
+}
+
+export async function setInviteLanguage(formData: FormData): Promise<void> {
+	const language = String(formData.get('language') ?? '');
+
+	if (!isManualLanguage(language)) {
+		inviteStepRedirect('language', {
+			error: 'Choose English, Deutsch, or Italiano.'
+		});
+	}
+
+	const supabase = await createClient();
+	const {
+		data: { user },
+		error: userError
+	} = await supabase.auth.getUser();
+
+	if (userError || !user) {
+		redirect('/accept-invite');
+	}
+
+	const { error: profileError } = await supabase
+		.from('profiles')
+		.update({ language, onboarding_step: 'name' })
+		.eq('id', user.id);
+
+	if (profileError) {
+		inviteStepRedirect('language', { error: profileError.message });
+	}
+
+	revalidatePath('/', 'layout');
+	revalidatePath('/accept-invite');
+	inviteStepRedirect('name');
 }
 
 export async function setInviteShownName(formData: FormData): Promise<void> {

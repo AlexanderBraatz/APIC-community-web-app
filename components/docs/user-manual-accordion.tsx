@@ -22,13 +22,12 @@ import {
 } from '@/components/ui/accordion';
 import {
 	parseUserManual,
-	slugifyManualHeading,
 	type ManualSection
 } from '@/lib/docs/parse-user-manual';
 import type { ManualKind } from '@/lib/docs/manual-help-targets';
 import { cn } from '@/lib/utils';
 
-/** Icons for top-level manual section headings (by slug). */
+/** Icons for top-level manual section headings (by stable English id). */
 const MANUAL_SECTION_ICONS: Record<string, LucideIcon> = {
 	map: Map,
 	calendar: Calendar,
@@ -42,7 +41,7 @@ const MANUAL_SECTION_ICONS: Record<string, LucideIcon> = {
 
 type UserManualAccordionProps = {
 	markdown: string;
-	/** Top-level section slug to expand, e.g. `map`. */
+	/** Top-level section id to expand, e.g. `map`. */
 	openSection?: string;
 	/** Nested howto value to expand, e.g. `map--find-recommendations`. */
 	openItem?: string;
@@ -56,6 +55,8 @@ type UserManualAccordionProps = {
 	compact?: boolean;
 	/** Which manual is shown; drives mobile screenshot behavior in the sheet. */
 	manualKind?: ManualKind;
+	/** Hide the H1 when an outer accordion already shows the title. */
+	hideTitle?: boolean;
 };
 
 function resolveManualHash(
@@ -66,19 +67,16 @@ function resolveManualHash(
 	if (!slug) return null;
 
 	for (const section of sections) {
-		const sectionSlug = slugifyManualHeading(section.title);
-		if (sectionSlug === slug) {
-			return { section: sectionSlug };
+		if (section.id === slug) {
+			return { section: section.id };
 		}
 	}
 
 	for (const section of sections) {
-		const sectionSlug = slugifyManualHeading(section.title);
 		for (const item of section.items) {
-			const itemPart = slugifyManualHeading(item.title);
-			const full = `${sectionSlug}--${itemPart}`;
-			if (slug === itemPart || slug === full) {
-				return { section: sectionSlug, item: full };
+			const full = `${section.id}--${item.id}`;
+			if (slug === item.id || slug === full) {
+				return { section: section.id, item: full };
 			}
 		}
 	}
@@ -95,7 +93,8 @@ export function UserManualAccordion({
 	itemValue: itemValueProp,
 	onItemValueChange,
 	compact = false,
-	manualKind
+	manualKind,
+	hideTitle = false
 }: UserManualAccordionProps) {
 	const { title, introMarkdown, sections } = parseUserManual(markdown);
 	const [uncontrolledSectionValue, setUncontrolledSectionValue] = useState<
@@ -134,7 +133,7 @@ export function UserManualAccordion({
 
 	return (
 		<div className="user-manual-accordion">
-			{title ? (
+			{!hideTitle && title ? (
 				<h1
 					className={cn(
 						'font-heading text-[#805b32]',
@@ -145,7 +144,15 @@ export function UserManualAccordion({
 				</h1>
 			) : null}
 			{introMarkdown ? (
-				<div className={cn(compact ? 'mt-2' : 'mt-3')}>
+				<div
+					className={cn(
+						!hideTitle && title
+							? compact
+								? 'mt-2'
+								: 'mt-3'
+							: undefined
+					)}
+				>
 					<ManualMarkdownBody
 						markdown={introMarkdown}
 						compact={compact}
@@ -164,13 +171,12 @@ export function UserManualAccordion({
 				onValueChange={setSectionValue}
 			>
 				{sections.map((section) => {
-					const sectionSlug = slugifyManualHeading(section.title);
-					const SectionIcon = MANUAL_SECTION_ICONS[sectionSlug];
+					const SectionIcon = MANUAL_SECTION_ICONS[section.id];
 
 					return (
 						<AccordionItem
-							key={sectionSlug}
-							value={sectionSlug}
+							key={section.id}
+							value={section.id}
 							className="px-3 transition-colors data-open:bg-[#f3f1ed]"
 						>
 							<AccordionTrigger
@@ -213,11 +219,11 @@ export function UserManualAccordion({
 									{section.items
 										.filter(
 											(item) =>
-												item.title.toLowerCase() !==
-												'overview'
+												item.id !== 'overview' &&
+												item.title.toLowerCase() !== 'overview'
 										)
 										.map((item) => {
-											const itemSlug = `${sectionSlug}--${slugifyManualHeading(item.title)}`;
+											const itemSlug = `${section.id}--${item.id}`;
 											return (
 												<AccordionItem
 													key={itemSlug}

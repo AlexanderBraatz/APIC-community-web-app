@@ -1,9 +1,11 @@
-import { readFile } from 'node:fs/promises';
-import path from 'node:path';
 import Link from 'next/link';
 import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { UserManualAccordion } from '@/components/docs/user-manual-accordion';
 import { buttonVariants } from '@/components/ui/button-variants';
+import {
+	getProfileManualLanguage,
+	readManualMarkdown
+} from '@/lib/docs/resolve-manual-source';
 import { cn } from '@/lib/utils';
 
 type PageProps = {
@@ -13,10 +15,8 @@ type PageProps = {
 export default async function UserManualMemberPage({ searchParams }: PageProps) {
 	const params = await searchParams;
 	const fromInviteOnboarding = params.from === 'invite';
-	const markdown = await readFile(
-		path.join(process.cwd(), 'docs', 'USER_MANUAL_MEMBER.md'),
-		'utf8'
-	);
+	const language = await getProfileManualLanguage();
+	const markdown = await readManualMarkdown('member', language);
 
 	return (
 		<main className="mx-auto w-full max-w-3xl min-h-[100vh] px-4 py-12">

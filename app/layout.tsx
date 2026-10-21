@@ -6,6 +6,7 @@ import { PostHogSignOutReset } from '@/components/analytics/posthog-sign-out-res
 import { ManualHelpProvider } from '@/components/docs/manual-help-provider';
 import SiteFooter from '@/components/layout/site-footer';
 import SiteHeader from '@/components/layout/site-header';
+import { getProfileManualHelpContext } from '@/lib/docs/resolve-manual-source';
 import './globals.css';
 
 const inter = Inter({
@@ -27,11 +28,14 @@ export const metadata: Metadata = {
 	}
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const { language: manualLanguage, isAdmin } =
+		await getProfileManualHelpContext();
+
 	return (
 		<html
 			lang="en"
@@ -45,7 +49,10 @@ export default function RootLayout({
 				 */}
 				<div className="root isolate flex min-h-full flex-col">
 					<AnalyticsRoot>
-						<ManualHelpProvider>
+						<ManualHelpProvider
+							language={manualLanguage}
+							isAdmin={isAdmin}
+						>
 							<Suspense fallback={null}>
 								<PostHogSignOutReset />
 							</Suspense>

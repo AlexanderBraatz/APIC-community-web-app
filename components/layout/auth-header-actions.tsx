@@ -166,14 +166,20 @@ export default function AuthHeaderActions({
 				<>
 					<Link
 						href="/account"
-						className={buttonVariants({ variant: 'outline' })}
+						className={cn(
+							buttonVariants({ variant: 'outline' }),
+							'border-[#805b32] text-[#805b32]'
+						)}
 					>
 						Account
 					</Link>
 					<button
 						type="button"
 						onClick={handleHelpClick}
-						className={buttonVariants({ variant: 'outline' })}
+						className={cn(
+							buttonVariants({ variant: 'outline' }),
+							'border-[#805b32] text-[#805b32]'
+						)}
 					>
 						Help
 					</button>

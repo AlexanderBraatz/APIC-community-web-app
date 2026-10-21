@@ -2,7 +2,7 @@
 
 How to manage recommendations, members, website content, blog posts, and blocks.
 
-## Table of Contents
+## Table of Contents {#table-of-contents}
 
 - **Recommendations**
   - [How to Add a Recommendation](#how-to-add-a-recommendation)
@@ -29,13 +29,13 @@ How to manage recommendations, members, website content, blog posts, and blocks.
 
 ---
 
-## Recommendations
+## Recommendations {#recommendations}
 
-### Overview
+### Overview {#overview}
 
-Add or edit places via the recommendation stepper-form, or remove recommendations you no longer want listed.
+Add or edit places via the recommendation stepper-form, or remove recommendations.
 
-### How to Add a Recommendation
+### How to Add a Recommendation {#how-to-add-a-recommendation}
 
 1. If you are unsure of the name of the business, search for it on Google Maps.
 2. Find the business you want to recommend.
@@ -85,7 +85,7 @@ Add or edit places via the recommendation stepper-form, or remove recommendation
 ![Opening hours and note](screenshots/screenshotsreal/how-to-add-a-recommendation-9.jpg)
 
 1. Add your personal touch by adding a description.
-2. Click to continue.
+2. Click **Next** to continue.
 
 ![Add description](screenshots/screenshotsreal/how-to-add-a-recommendation-10.jpg)
 
@@ -98,20 +98,20 @@ Add or edit places via the recommendation stepper-form, or remove recommendation
 
 ![Suggested keywords](screenshots/screenshotsreal/how-to-add-a-recommendation-12.jpg)
 
-1. Type to search for existing tags.
+1. Type to search for existing keywords.
 2. Click on keywords you would like to add to the recommendation.
 
-![Search existing tags](screenshots/screenshotsreal/how-to-add-a-recommendation-13.jpg)
+![Search existing keywords](screenshots/screenshotsreal/how-to-add-a-recommendation-13.jpg)
 
 1. Type to spell out a new keyword.
 2. Click on the new keywords shown as a green box under the search bar.
 
 ![Create new keyword](screenshots/screenshotsreal/how-to-add-a-recommendation-14.jpg)
 
-1. Check the list of tags to see the ones you have added.
+1. Check the list of keywords to see the ones you have added.
 2. Click **Next** to continue.
 
-![Review tags](screenshots/screenshotsreal/how-to-add-a-recommendation-15.jpg)
+![Review keywords](screenshots/screenshotsreal/how-to-add-a-recommendation-15.jpg)
 
 1. Double-check all the information.
 2. Click on any particular step to go back and change the information.
@@ -119,7 +119,7 @@ Add or edit places via the recommendation stepper-form, or remove recommendation
 
 ![Create recommendation](screenshots/screenshotsreal/how-to-add-a-recommendation-16.jpg)
 
-### How to Delete a Recommendation
+### How to Delete a Recommendation {#how-to-delete-a-recommendation}
 
 1. Click [**Recommendations**](/members/admin/listings).
 
@@ -143,13 +143,13 @@ Add or edit places via the recommendation stepper-form, or remove recommendation
 
 ---
 
-## Members
+## Members {#members}
 
-### Overview
+### Overview {#overview}
 
-Invite new members by email, promote trusted members to admin, or remove members who should no longer have access.
+Invite new members by email, promote members to admin, or remove members.
 
-### How to Add a New Member
+### How to Add a New Member {#how-to-add-a-new-member}
 
 1. Click [**Add Member**](/members/admin/invitations).
 
@@ -160,7 +160,7 @@ Invite new members by email, promote trusted members to admin, or remove members
 
 ![Send invitations](screenshots/screenshotsreal/how-to-add-a-new-member-2.jpg)
 
-### How to Promote a Member to Admin
+### How to Promote a Member to Admin {#how-to-promote-a-member-to-admin}
 
 1. Click [**Members**](/members/admin/users).
 
@@ -178,7 +178,7 @@ Invite new members by email, promote trusted members to admin, or remove members
 
 ![Confirm Promote](screenshots/screenshotsreal/how-to-promote-a-member-to-admin-4.jpg)
 
-### How to Delete a Member
+### How to Delete a Member {#how-to-delete-a-member}
 
 1. Click [**Members**](/members/admin/users).
 
@@ -202,13 +202,13 @@ Invite new members by email, promote trusted members to admin, or remove members
 
 ---
 
-## Website Content
+## Website Content {#website-content}
 
-### Overview
+### Overview {#overview}
 
-Use Content Admin to edit marketing pages the same way you edit blog posts — text, blocks, and images.
+Use Content Admin to edit site pages the same way you edit blog posts — text, blocks, and images.
 
-### How to Edit the Website’s Text and Images
+### How to Edit the Website’s Text and Images {#how-to-edit-the-websites-text-and-images}
 
 1. Click [**Content Admin**](/admin#/~/place).
 
@@ -220,13 +220,13 @@ Use Content Admin to edit marketing pages the same way you edit blog posts — t
 
 ---
 
-## Posts
+## Posts {#posts}
 
-### Overview
+### Overview {#overview}
 
 Create blog posts in TinaCMS, then update images and text on the live preview.
 
-### How to Add a New Blog Post
+### How to Add a New Blog Post {#how-to-add-a-new-blog-post}
 
 1. Click [**Add new blog article**](/admin#/collections/new/blog).
 
@@ -240,7 +240,7 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ![Open new blog post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
 
-### How to Change an Image on a Blog Post
+### How to Change an Image on a Blog Post {#how-to-change-an-image-on-a-blog-post}
 
 1. Click on the image you would like to change.
 
@@ -266,12 +266,12 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ![Click Insert](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-6.jpg)
 
-7. Add a caption, if you would like to.
+7. Add a caption.
 8. Save your changes.
 
 ![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
 
-### How to Edit Text on a Blog Post
+### How to Edit Text on a Blog Post {#how-to-edit-text-on-a-blog-post}
 
 1. Click on any field surrounded by a blue dashed border.
 
@@ -289,13 +289,13 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ---
 
-## Working with Blocks
+## Working with Blocks {#working-with-blocks}
 
-### Overview
+### Overview {#overview}
 
 Blocks are the building pieces of a blog post (and other pages). Add, reorder, or delete them from the TinaCMS sidebar.
 
-### How to Add a New Block
+### How to Add a New Block {#how-to-add-a-new-block}
 
 1. Click on the blog post ID number to navigate to the blog post overview.
 
@@ -313,12 +313,12 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![New block on page](screenshots/screenshotsreal/how-to-add-a-new-block-4.jpg)
 
-5. Update the text or other content of the block as you like. (For details on how to update different blocks, see the [Special Blocks](#special-blocks) section.)
+5. Update the text or other content of the block. (For details on how to update different blocks, see the [Special Blocks](#special-blocks) section.)
 6. Save your changes.
 
 ![Update block and save](screenshots/screenshotsreal/how-to-add-a-new-block-5.jpg)
 
-### How to Move Blocks Around
+### How to Move Blocks Around {#how-to-move-blocks-around}
 
 1. Click and hold the three dots to start dragging the block.
 
@@ -333,7 +333,7 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![Block moved](screenshots/screenshotsreal/how-to-move-blocks-around-3.jpg)
 
-### How to Delete a Blog Post Block
+### How to Delete a Blog Post Block {#how-to-delete-a-blog-post-block}
 
 1. Click on the blog post ID number to navigate to the blog post overview.
 
@@ -350,13 +350,13 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ---
 
-## Special Blocks
+## Special Blocks {#special-blocks}
 
-### Overview
+### Overview {#overview}
 
 Update block-specific content such as maps, CTA emails, galleries, and videos.
 
-### How to Update the Map Block
+### How to Update the Map Block {#how-to-update-the-map-block}
 
 1. Click the **Set Location** button.
 
@@ -378,14 +378,14 @@ Update block-specific content such as maps, CTA emails, galleries, and videos.
 
 ![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
 
-### How to Change the Email Address Connected to a CTA Button
+### How to Change the Email Address Connected to a CTA Button {#how-to-change-the-email-address-connected-to-a-cta-button}
 
 1. Change the email address but keep the `mailto:` prefix.
 2. Save your changes.
 
 ![Change CTA email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
 
-### How to Add an Image to the Image Gallery
+### How to Add an Image to the Image Gallery {#how-to-add-an-image-to-the-image-gallery}
 
 1. Click on one of the images in the image gallery to open that image in the TinaCMS editor.
 2. Click **Image Gallery** to get to the block overview.
@@ -401,7 +401,7 @@ Update block-specific content such as maps, CTA emails, galleries, and videos.
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
 
-### How to change an embedded video
+### How to change an embedded video {#how-to-change-an-embedded-video}
 
 1. Change the link to the link of the video you want to embed.
 2. Save your changes.

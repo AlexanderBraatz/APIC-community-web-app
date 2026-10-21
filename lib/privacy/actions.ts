@@ -63,7 +63,7 @@ export async function saveInvitePrivacyChoices(formData: FormData) {
 
 	const { error: profileError } = await supabase
 		.from('profiles')
-		.update({ onboarding_step: 'name' })
+		.update({ onboarding_step: 'language' })
 		.eq('id', user.id);
 
 	if (profileError) {
@@ -76,7 +76,7 @@ export async function saveInvitePrivacyChoices(formData: FormData) {
 
 	revalidatePath('/', 'layout');
 	revalidatePath('/accept-invite');
-	redirect('/accept-invite?step=name');
+	redirect('/accept-invite?step=language');
 }
 
 /**

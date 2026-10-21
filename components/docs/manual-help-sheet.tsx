@@ -16,6 +16,12 @@ import {
 import { UserManualAccordion } from '@/components/docs/user-manual-accordion';
 import { Button } from '@/components/ui/button';
 import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger
+} from '@/components/ui/accordion';
+import {
 	Sheet,
 	SheetBody,
 	SheetClose,
@@ -23,7 +29,11 @@ import {
 	SheetHeader,
 	SheetTitle
 } from '@/components/ui/sheet';
-import type { ManualHelpTarget } from '@/lib/docs/manual-help-targets';
+import type {
+	ManualHelpTarget,
+	ManualKind
+} from '@/lib/docs/manual-help-targets';
+import { parseUserManual } from '@/lib/docs/parse-user-manual';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_WIDTH = 512;
@@ -55,7 +65,11 @@ type ManualHelpSheetProps = {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	target: ManualHelpTarget | null;
+	isAdmin?: boolean;
+	/** Single-manual markdown (non-admin). */
 	markdown: string | null;
+	adminMarkdown?: string | null;
+	memberMarkdown?: string | null;
 	loading: boolean;
 	error: string | null;
 };
@@ -64,20 +78,32 @@ export function ManualHelpSheet({
 	open,
 	onOpenChange,
 	target,
+	isAdmin = false,
 	markdown,
+	adminMarkdown = null,
+	memberMarkdown = null,
 	loading,
 	error
 }: ManualHelpSheetProps) {
 	const pathname = usePathname();
 	const [width, setWidth] = useState(DEFAULT_WIDTH);
-	const [sectionValue, setSectionValue] = useState<string[]>([]);
-	const [itemValue, setItemValue] = useState<string[]>([]);
+	const [manualValue, setManualValue] = useState<string[]>([]);
+	const [sectionByManual, setSectionByManual] = useState<
+		Record<ManualKind, string[]>
+	>({ admin: [], member: [] });
+	const [itemByManual, setItemByManual] = useState<
+		Record<ManualKind, string[]>
+	>({ admin: [], member: [] });
 	const dragStartXRef = useRef(0);
 	const dragStartWidthRef = useRef(DEFAULT_WIDTH);
 	const bodyRef = useRef<HTMLDivElement>(null);
 	const scrollTopRef = useRef(0);
 	const seededForPathRef = useRef<string | null>(null);
 	const restoringScrollRef = useRef(false);
+
+	const contentReady = isAdmin
+		? Boolean(adminMarkdown && memberMarkdown)
+		: Boolean(markdown);
 
 	useEffect(() => {
 		setWidth(readStoredWidth());
@@ -94,8 +120,9 @@ export function ManualHelpSheet({
 	// Reset session UI when the user navigates to another page.
 	useEffect(() => {
 		seededForPathRef.current = null;
-		setSectionValue([]);
-		setItemValue([]);
+		setManualValue([]);
+		setSectionByManual({ admin: [], member: [] });
+		setItemByManual({ admin: [], member: [] });
 		scrollTopRef.current = 0;
 		if (bodyRef.current) {
 			bodyRef.current.scrollTop = 0;
@@ -107,8 +134,16 @@ export function ManualHelpSheet({
 		if (!open || !target) return;
 		if (seededForPathRef.current === pathname) return;
 		seededForPathRef.current = pathname;
-		setSectionValue(target.section ? [target.section] : []);
-		setItemValue(target.item ? [target.item] : []);
+		setManualValue([target.manual]);
+		setSectionByManual({
+			admin: target.manual === 'admin' && target.section ? [target.section] : [],
+			member:
+				target.manual === 'member' && target.section ? [target.section] : []
+		});
+		setItemByManual({
+			admin: target.manual === 'admin' && target.item ? [target.item] : [],
+			member: target.manual === 'member' && target.item ? [target.item] : []
+		});
 		scrollTopRef.current = 0;
 	}, [open, target, pathname]);
 
@@ -138,6 +173,18 @@ export function ManualHelpSheet({
 		onOpenChange(nextOpen);
 	}
 
+	function setSectionsFor(kind: ManualKind) {
+		return (value: string[]) => {
+			setSectionByManual((prev) => ({ ...prev, [kind]: value }));
+		};
+	}
+
+	function setItemsFor(kind: ManualKind) {
+		return (value: string[]) => {
+			setItemByManual((prev) => ({ ...prev, [kind]: value }));
+		};
+	}
+
 	// FAB `closeHelp` sets `open` without going through handleOpenChange. Prefer
 	// an in-DOM position when still available; never overwrite a saved offset
 	// with 0 after the drawer has already reset scroll.
@@ -155,7 +202,7 @@ export function ManualHelpSheet({
 	// keep re-applying until layout settles. Ignore onScroll while restoring so
 	// a clamped 0 does not wipe the saved position.
 	useEffect(() => {
-		if (!open || loading || !markdown) return;
+		if (!open || loading || !contentReady) return;
 		const targetTop = scrollTopRef.current;
 		if (targetTop <= 0) return;
 
@@ -211,7 +258,7 @@ export function ManualHelpSheet({
 			observer?.disconnect();
 			restoringScrollRef.current = false;
 		};
-	}, [open, loading, markdown]);
+	}, [open, loading, contentReady]);
 
 	function onResizePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
 		event.preventDefault();
@@ -258,6 +305,13 @@ export function ManualHelpSheet({
 			});
 		}
 	}
+
+	const adminTitle = adminMarkdown
+		? parseUserManual(adminMarkdown).title || 'Admin Manual'
+		: 'Admin Manual';
+	const memberTitle = memberMarkdown
+		? parseUserManual(memberMarkdown).title || 'Member Manual'
+		: 'Member Manual';
 
 	return (
 		<Sheet
@@ -314,17 +368,65 @@ export function ManualHelpSheet({
 					{error ? (
 						<p className="text-sm text-red-700">{error}</p>
 					) : null}
-					{!loading && !error && markdown ? (
-						<UserManualAccordion
-							key={target?.manual ?? 'member'}
-							markdown={markdown}
-							sectionValue={sectionValue}
-							onSectionValueChange={setSectionValue}
-							itemValue={itemValue}
-							onItemValueChange={setItemValue}
-							manualKind={target?.manual ?? 'member'}
-							compact
-						/>
+					{!loading && !error && contentReady ? (
+						isAdmin && adminMarkdown && memberMarkdown ? (
+							<Accordion
+								value={manualValue}
+								onValueChange={setManualValue}
+							>
+								<AccordionItem value="admin">
+									<AccordionTrigger className="font-heading text-2xl text-[#805b32] hover:no-underline">
+										{adminTitle}
+									</AccordionTrigger>
+									<AccordionContent>
+										<UserManualAccordion
+											markdown={adminMarkdown}
+											sectionValue={sectionByManual.admin}
+											onSectionValueChange={setSectionsFor('admin')}
+											itemValue={itemByManual.admin}
+											onItemValueChange={setItemsFor('admin')}
+											manualKind="admin"
+											compact
+											hideTitle
+										/>
+									</AccordionContent>
+								</AccordionItem>
+								<AccordionItem value="member">
+									<AccordionTrigger className="font-heading text-2xl text-[#805b32] hover:no-underline">
+										{memberTitle}
+									</AccordionTrigger>
+									<AccordionContent>
+										<UserManualAccordion
+											markdown={memberMarkdown}
+											sectionValue={sectionByManual.member}
+											onSectionValueChange={setSectionsFor('member')}
+											itemValue={itemByManual.member}
+											onItemValueChange={setItemsFor('member')}
+											manualKind="member"
+											compact
+											hideTitle
+										/>
+									</AccordionContent>
+								</AccordionItem>
+							</Accordion>
+						) : markdown ? (
+							<UserManualAccordion
+								key={target?.manual ?? 'member'}
+								markdown={markdown}
+								sectionValue={
+									sectionByManual[target?.manual ?? 'member']
+								}
+								onSectionValueChange={setSectionsFor(
+									target?.manual ?? 'member'
+								)}
+								itemValue={itemByManual[target?.manual ?? 'member']}
+								onItemValueChange={setItemsFor(
+									target?.manual ?? 'member'
+								)}
+								manualKind={target?.manual ?? 'member'}
+								compact
+							/>
+						) : null
 					) : null}
 				</SheetBody>
 			</SheetContent>

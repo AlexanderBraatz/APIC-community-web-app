@@ -14,7 +14,9 @@ import { AcceptInviteRequestForm } from '@/components/auth/accept-invite-request
 import { InviteAttendanceStep } from '@/components/auth/invite-attendance-step';
 import { InviteColourStep } from '@/components/auth/invite-colour-step';
 import { InviteFavoritesStep } from '@/components/auth/invite-favorites-step';
+import { InviteLanguageStep } from '@/components/auth/invite-language-step';
 import { InviteOnboardingProgress } from '@/components/auth/invite-onboarding-progress';
+import { parseManualLanguage } from '@/lib/docs/manual-language';
 
 async function passwordAction(formData: FormData) {
 	'use server';
@@ -69,6 +71,21 @@ export default async function AcceptInvitePage({
 
 	if (activeStep === 'privacy') {
 		return <InvitePrivacyStep error={params.error} />;
+	}
+
+	if (activeStep === 'language') {
+		const { data: profile } = await supabase
+			.from('profiles')
+			.select('language')
+			.eq('id', user.id)
+			.maybeSingle();
+
+		return (
+			<InviteLanguageStep
+				error={params.error}
+				currentLanguage={parseManualLanguage(profile?.language)}
+			/>
+		);
 	}
 
 	if (activeStep === 'name') {

@@ -510,6 +510,7 @@ export type Database = {
           event_bar_color: string | null
           full_name: string
           id: string
+          language: string
           onboarding_step: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
@@ -520,6 +521,7 @@ export type Database = {
           event_bar_color?: string | null
           full_name?: string
           id: string
+          language?: string
           onboarding_step?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
@@ -530,6 +532,7 @@ export type Database = {
           event_bar_color?: string | null
           full_name?: string
           id?: string
+          language?: string
           onboarding_step?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string
@@ -675,6 +678,7 @@ export type Database = {
           event_bar_color: string | null
           full_name: string
           id: string
+          language: string
           onboarding_step: string | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string
