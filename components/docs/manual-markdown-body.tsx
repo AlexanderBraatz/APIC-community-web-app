@@ -1,4 +1,5 @@
 import type { Components } from 'react-markdown';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 
 import type { ManualKind } from '@/lib/docs/manual-help-targets';
@@ -75,17 +76,18 @@ export const manualMarkdownComponents: Components = {
 	img: ({ src, alt }) => {
 		if (typeof src !== 'string' || !src) return null;
 		const resolved = src.startsWith('screenshots/')
-			? `/account/user-manuals/${src}`
+			? `/docs/${src}`
 			: src;
 		const isMobile = isMobileScreenshotSrc(src);
 		return (
-			// Manual screenshots are static PNGs from docs/; next/image not needed.
-			// eslint-disable-next-line @next/next/no-img-element
-			<img
+			<Image
 				src={resolved}
 				alt={alt || ''}
+				width={1600}
+				height={1000}
+				sizes="(max-width: 768px) 100vw, 48rem"
 				{...(isMobile ? { 'data-manual-mobile': '' } : {})}
-				className="mt-4 w-full max-w-3xl rounded-[2px] border border-[#e5e5e5] bg-white shadow-sm"
+				className="mt-4 h-auto w-full max-w-3xl rounded-[2px] border border-[#e5e5e5] bg-white shadow-sm"
 			/>
 		);
 	}

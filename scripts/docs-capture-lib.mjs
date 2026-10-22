@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(__dirname, '..');
-export const SCREENSHOT_DIR = path.join(ROOT, 'docs', 'screenshots');
+export const SCREENSHOT_DIR = path.join(ROOT, 'public', 'docs', 'screenshots');
 export const BASE_URL = process.env.DOCS_BASE_URL || 'http://localhost:3000';
 
 export async function launchBrowser(options = {}) {

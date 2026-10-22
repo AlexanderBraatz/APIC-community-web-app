@@ -16,6 +16,8 @@ import { marked } from 'marked';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const docsDir = path.join(root, 'docs');
 const outDir = path.join(root, 'public', 'docs');
+/** Markdown image hrefs like screenshots/... resolve under public/docs/. */
+const manualAssetsDir = outDir;
 
 const manuals = [
 	{
@@ -164,7 +166,9 @@ async function markdownToPdfHtml(markdown) {
 	const renderer = new marked.Renderer();
 	renderer.image = ({ href, text }) => {
 		if (!href) return '';
-		const abs = path.isAbsolute(href) ? href : path.resolve(docsDir, href);
+		const abs = path.isAbsolute(href)
+			? href
+			: path.resolve(manualAssetsDir, href);
 		const src = pathToFileURL(abs).href;
 		return `<img src="${src}" alt="${escapeHtml(text || '')}" />`;
 	};

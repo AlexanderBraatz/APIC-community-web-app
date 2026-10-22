@@ -14,8 +14,8 @@ Create or extend verified user documentation for the following user stories from
 - US-XX — …
 
 **Append to** [`docs/USER_MANUAL.md`](./USER_MANUAL.md) (do not rewrite unrelated existing sections unless labels/routes changed).  
-**Screenshots go in** [`docs/screenshots/`](./screenshots/).  
-**In-app preview** already exists at `/account/user-manuals` (renders the markdown + images). Keep that working: relative image paths must stay `screenshots/….png`, and new PNGs must live under `docs/screenshots/`.
+**Screenshots go in** [`public/docs/screenshots/`](../public/docs/screenshots/).  
+**In-app preview** already exists at `/account/user-manuals` (renders the markdown + images). Keep that working: relative image paths must stay `screenshots/….jpg` (or `.png`), and new files must live under `public/docs/screenshots/`.
 
 ---
 

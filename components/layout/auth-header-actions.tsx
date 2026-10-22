@@ -146,7 +146,10 @@ export default function AuthHeaderActions({
 				<>
 					<Link
 						href="/account"
-						className="flex w-full items-center justify-center px-4 py-2 text-sm font-medium text-white underline"
+						className={cn(
+							buttonVariants({ variant: 'outline' }),
+							'w-full border-white/40 bg-transparent text-white hover:bg-white/10'
+						)}
 						onClick={onNavigate}
 					>
 						Account
