@@ -28,6 +28,43 @@
 	background: var(--dp-scheduler-cell-business-bg-color, #f2ede5);
 }
 
+/* Slightly darker frozen month/day headers + corner */
+.scheduler-frame .brown_theme_timeheader_scroll,
+.scheduler-frame .brown_theme_timeheadergroup,
+.scheduler-frame .brown_theme_timeheadercol,
+.scheduler-frame .brown_theme_corner {
+	background: color-mix(
+		in srgb,
+		var(--scheme-header-bg, #e4dbcf) 70%,
+		var(--scheme-well, #a89880)
+	);
+}
+
+.scheduler-frame .brown_theme_timeheadergroup_inner,
+.scheduler-frame .brown_theme_timeheadercol_inner {
+	border-right-color: color-mix(
+		in srgb,
+		var(--scheme-border, #d0c4b4) 45%,
+		var(--scheme-well, #a89880)
+	);
+}
+
+.scheduler-frame .brown_theme_timeheadergroup_inner {
+	border-bottom-color: color-mix(
+		in srgb,
+		var(--scheme-border, #d0c4b4) 45%,
+		var(--scheme-well, #a89880)
+	);
+}
+
+/* Always-on depth under frozen month/day header + corner */
+.scheduler-frame .brown_theme_timeheader_scroll,
+.scheduler-frame .brown_theme_corner {
+	position: relative;
+	z-index: 4;
+	box-shadow: 0 5px 12px -3px color-mix(in srgb, #3d3018 30%, transparent);
+}
+
 .scheduler-frame[data-font-size='small']
 	:is(.brown_theme_main, .brown_theme_main:not(.default)) {
 	--dp-scheduler-font-size: 10px;
