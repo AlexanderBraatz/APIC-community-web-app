@@ -87,7 +87,7 @@ const ROW_HEADER_WIDTH_DESKTOP = 180;
 const ROW_HEADER_WIDTH_MOBILE_MIN = 0;
 const ROW_HEADER_WIDTH_MOBILE_MAX = 180;
 const ROW_HEADER_WIDTH_MOBILE_DEFAULT = ROW_HEADER_WIDTH_MOBILE_MAX;
-/** Below this width, show the “Show names” chip instead of the close control. */
+/** Below this width, the header control shows “Show names”; at/above, “Hide names”. */
 const ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW = 40;
 /** Keep the resize handle fully on-screen when the name column is closed. */
 const ROW_HEADER_RESIZE_HANDLE_INSET = 10;
@@ -1102,6 +1102,50 @@ const Scheduler = ({
 				<div className="scheduler-chrome">
 					<div className="scheduler-header-island">
 						<div className="scheduler-ctrl-primary">
+							{isNarrow ? (
+								<Button
+									type="button"
+									size="lg"
+									className="scheduler-manage-btn scheme-primary-btn"
+									aria-label={
+										rowHeaderWidth <
+										ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+											? 'Show resource names'
+											: 'Hide resource names'
+									}
+									aria-pressed={
+										rowHeaderWidth >=
+										ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+									}
+									onClick={() => {
+										setMobileRowHeaderWidth(
+											rowHeaderWidth <
+												ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
+												? ROW_HEADER_WIDTH_MOBILE_MAX
+												: ROW_HEADER_WIDTH_MOBILE_MIN
+										);
+									}}
+								>
+									{rowHeaderWidth <
+									ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW ? (
+										<>
+											<ChevronRight
+												data-icon="inline-start"
+												aria-hidden
+											/>
+											Show names
+										</>
+									) : (
+										<>
+											<ChevronLeft
+												data-icon="inline-start"
+												aria-hidden
+											/>
+											Hide names
+										</>
+									)}
+								</Button>
+							) : null}
 							<Button
 								type="button"
 								size="lg"
@@ -1274,51 +1318,7 @@ const Scheduler = ({
 									onPointerMove={onRowHeaderResizePointerMove}
 									onPointerUp={onRowHeaderResizePointerUp}
 									onPointerCancel={onRowHeaderResizePointerUp}
-								>
-									<button
-										type="button"
-										className={
-											rowHeaderWidth < ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
-												? 'scheduler-rowheader-resize-indicator'
-												: 'scheduler-rowheader-resize-indicator scheduler-rowheader-resize-indicator-expanded'
-										}
-										aria-label={
-											rowHeaderWidth < ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
-												? 'Show resource names'
-												: 'Hide resource names'
-										}
-										aria-pressed={
-											rowHeaderWidth >= ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
-										}
-										onPointerDown={event => event.stopPropagation()}
-										onClick={() => {
-											setMobileRowHeaderWidth(
-												rowHeaderWidth <
-													ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
-													? ROW_HEADER_WIDTH_MOBILE_MAX
-													: ROW_HEADER_WIDTH_MOBILE_MIN
-											);
-										}}
-									>
-										<span className="scheduler-rowheader-resize-indicator-face">
-											{rowHeaderWidth <
-											ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW ? (
-												<>
-													<span>Show names</span>
-													<ChevronRight
-														aria-hidden
-														className="scheduler-rowheader-resize-indicator-chevron"
-													/>
-												</>
-											) : (
-												<ChevronLeft
-													aria-hidden
-													className="scheduler-rowheader-resize-indicator-chevron"
-												/>
-											)}
-										</span>
-									</button>
-								</div>
+								/>
 							) : null}
 							<DayPilotScheduler
 								key={`${schedulerMountKey}-${currentUserId}`}
