@@ -41,14 +41,14 @@ export const manualMarkdownComponents: Components = {
 		<p className="mt-3 text-base leading-relaxed text-[#2a2a2a]">{children}</p>
 	),
 	ul: ({ children }) => (
-		<ul className="mt-3 list-disc space-y-2 pl-5 text-base text-[#2a2a2a]">
+		<ul className="mt-3 list-disc space-y-2 pl-7 text-base text-[#2a2a2a]">
 			{children}
 		</ul>
 	),
 	ol: ({ children, start }) => (
 		<ol
 			start={start}
-			className="mt-3 list-decimal space-y-2 pl-5 text-base text-[#2a2a2a]"
+			className="mt-3 list-decimal space-y-2 pl-7 text-base text-[#2a2a2a]"
 		>
 			{children}
 		</ol>
