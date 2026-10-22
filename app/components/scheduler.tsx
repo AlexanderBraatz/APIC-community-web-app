@@ -259,8 +259,79 @@ const Scheduler = ({
 		startX: number;
 		startWidth: number;
 	} | null>(null);
+	const schedulerFrameRef = useRef<HTMLDivElement | null>(null);
+	const schedulerControlRef = useRef<DayPilot.Scheduler | null>(null);
+	const namesColumnTouchYRef = useRef<number | null>(null);
 	const [fontSizeOverride, setFontSizeOverride] =
 		useState<SchedulerFontSize | null>(null);
+
+	// Forward wheel/touch vertical scroll from the frozen names column onto the
+	// main grid so names stay usable as a scroll surface without desyncing.
+	useEffect(() => {
+		const frame = schedulerFrameRef.current;
+		if (!frame) return;
+
+		const isNamesColumnTarget = (target: EventTarget | null) => {
+			if (!(target instanceof Element)) return false;
+			if (target.closest('.scheduler-rowheader-resize')) return false;
+			const names = target.closest('.brown_theme_rowheader_scroll');
+			return Boolean(names && frame.contains(names));
+		};
+
+		const applyDeltaY = (deltaY: number) => {
+			const control = schedulerControlRef.current;
+			if (!control || !Number.isFinite(deltaY) || deltaY === 0) return;
+			control.setScrollY(control.getScrollY() + deltaY);
+		};
+
+		const onWheel = (event: WheelEvent) => {
+			if (!isNamesColumnTarget(event.target)) return;
+			if (event.deltaY === 0) return;
+			event.preventDefault();
+			applyDeltaY(event.deltaY);
+		};
+
+		const onTouchStart = (event: TouchEvent) => {
+			if (!isNamesColumnTarget(event.target) || event.touches.length !== 1) {
+				namesColumnTouchYRef.current = null;
+				return;
+			}
+			namesColumnTouchYRef.current = event.touches[0].clientY;
+		};
+
+		const onTouchMove = (event: TouchEvent) => {
+			const lastY = namesColumnTouchYRef.current;
+			if (lastY == null || event.touches.length !== 1) return;
+			if (!isNamesColumnTarget(event.target)) {
+				namesColumnTouchYRef.current = null;
+				return;
+			}
+			const nextY = event.touches[0].clientY;
+			const deltaY = lastY - nextY;
+			namesColumnTouchYRef.current = nextY;
+			if (deltaY === 0) return;
+			event.preventDefault();
+			applyDeltaY(deltaY);
+		};
+
+		const onTouchEnd = () => {
+			namesColumnTouchYRef.current = null;
+		};
+
+		frame.addEventListener('wheel', onWheel, { passive: false });
+		frame.addEventListener('touchstart', onTouchStart, { passive: true });
+		frame.addEventListener('touchmove', onTouchMove, { passive: false });
+		frame.addEventListener('touchend', onTouchEnd);
+		frame.addEventListener('touchcancel', onTouchEnd);
+
+		return () => {
+			frame.removeEventListener('wheel', onWheel);
+			frame.removeEventListener('touchstart', onTouchStart);
+			frame.removeEventListener('touchmove', onTouchMove);
+			frame.removeEventListener('touchend', onTouchEnd);
+			frame.removeEventListener('touchcancel', onTouchEnd);
+		};
+	}, [schedulerMountKey]);
 	const fontSize = fontSizeOverride ?? preferences.fontSize;
 	const activeScheme = SCHEDULER_SCHEME;
 
@@ -1180,6 +1251,7 @@ const Scheduler = ({
 
 					<div className="scheduler-shell-well">
 						<div
+							ref={schedulerFrameRef}
 							className="scheduler-frame"
 							data-font-size={fontSize}
 						>
@@ -1250,6 +1322,7 @@ const Scheduler = ({
 							) : null}
 							<DayPilotScheduler
 								key={`${schedulerMountKey}-${currentUserId}`}
+								controlRef={schedulerControlRef}
 								{...config}
 								theme="brown_theme"
 								resources={orderedResources}

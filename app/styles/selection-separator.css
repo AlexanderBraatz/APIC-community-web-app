@@ -16,11 +16,15 @@
 	overscroll-behavior: none;
 }
 
-/* Names column: no independent vertical scroll (DayPilot still syncs scrollTop) */
+/*
+ * Names column: no independent vertical scroll (avoids desync with the grid).
+ * Wheel/touch gestures are forwarded to the main DayPilot scrollport in JS;
+ * DayPilot still syncs scrollTop onto this element when the grid scrolls.
+ */
 .scheduler-frame .brown_theme_rowheader_scroll {
 	overflow-y: hidden !important;
 	overscroll-behavior-y: none;
-	touch-action: manipulation;
+	touch-action: none;
 }
 
 /* Match residual overscroll fill to cream grid cells */
