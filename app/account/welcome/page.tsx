@@ -2,13 +2,12 @@ import Link from 'next/link';
 import { WELCOME_PAGE_COPY } from '@/components/account/welcome-page-copy';
 import { INVITE_LANGUAGE_STEP_COPY } from '@/components/auth/invite-language-step-copy';
 import { buttonVariants } from '@/components/ui/button-variants';
-import { getProfileManualLanguage } from '@/lib/docs/resolve-manual-source';
 import { cn } from '@/lib/utils';
 
 export default async function AccountWelcomePage() {
-	const language = await getProfileManualLanguage();
-	const copy = WELCOME_PAGE_COPY[language];
-	const languageNotices = INVITE_LANGUAGE_STEP_COPY[language];
+	// Always English — official platform language; manuals may differ after this.
+	const copy = WELCOME_PAGE_COPY.en;
+	const languageNotices = INVITE_LANGUAGE_STEP_COPY.en;
 
 	return (
 		<main className="mx-auto w-full max-w-lg min-h-[100vh] px-4 py-12">

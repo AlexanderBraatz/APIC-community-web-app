@@ -1,9 +1,9 @@
 export const INVITE_ONBOARDING_STEPS = [
-	'language',
 	'name',
 	'colour',
 	'attendance',
 	'favorites',
+	'language',
 	'done'
 ] as const;
 
@@ -12,21 +12,21 @@ export type InviteOnboardingStep = (typeof INVITE_ONBOARDING_STEPS)[number];
 export type InviteFlowStep =
 	| 'password'
 	| 'privacy'
-	| 'language'
 	| 'name'
 	| 'colour'
 	| 'attendance'
-	| 'favorites';
+	| 'favorites'
+	| 'language';
 
 /** Ordered invite onboarding screens shown to the user (excludes `done`). */
 export const INVITE_FLOW_STEPS: readonly InviteFlowStep[] = [
 	'password',
 	'privacy',
-	'language',
 	'name',
 	'colour',
 	'attendance',
-	'favorites'
+	'favorites',
+	'language'
 ] as const;
 
 export function inviteFlowStepIndex(step: InviteFlowStep): number {
@@ -45,12 +45,12 @@ export function isInviteOnboardingStep(
 /** Incomplete post-privacy steps that must finish before entering the app. */
 export function isIncompleteInviteOnboardingStep(
 	value: string | null | undefined
-): value is 'language' | 'name' | 'colour' | 'attendance' | 'favorites' {
+): value is 'name' | 'colour' | 'attendance' | 'favorites' | 'language' {
 	return (
-		value === 'language' ||
 		value === 'name' ||
 		value === 'colour' ||
 		value === 'attendance' ||
-		value === 'favorites'
+		value === 'favorites' ||
+		value === 'language'
 	);
 }

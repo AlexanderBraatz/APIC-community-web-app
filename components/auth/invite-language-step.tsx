@@ -24,7 +24,8 @@ export function InviteLanguageStep({
 	const [draft, setDraft] = useState<ManualLanguage | null>(
 		currentLanguage ?? 'en'
 	);
-	const t = INVITE_LANGUAGE_STEP_COPY[draft ?? 'en'];
+	// Step chrome stays English; draft only chooses the saved manual language.
+	const t = INVITE_LANGUAGE_STEP_COPY.en;
 
 	return (
 		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">

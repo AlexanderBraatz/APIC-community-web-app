@@ -799,16 +799,32 @@ export async function setInviteLanguage(formData: FormData): Promise<void> {
 
 	const { error: profileError } = await supabase
 		.from('profiles')
-		.update({ language, onboarding_step: 'name' })
+		.update({ language, onboarding_step: 'done' })
 		.eq('id', user.id);
 
 	if (profileError) {
 		inviteStepRedirect('language', { error: profileError.message });
 	}
 
-	revalidatePath('/', 'layout');
+	try {
+		await markInvitationAccepted(user);
+	} catch (error) {
+		captureServerActionException(error, 'set_invite_language', {
+			step: 'mark_invitation_accepted'
+		});
+		inviteStepRedirect('language', {
+			error:
+				error instanceof Error
+					? error.message
+					: 'Could not finish joining. Try again.'
+		});
+	}
+
 	revalidatePath('/accept-invite');
-	inviteStepRedirect('name');
+	revalidatePath('/members/admin/invitations');
+	revalidatePath('/community-calendar');
+	revalidatePath('/', 'layout');
+	redirect('/account/welcome?welcome=1&invite=1');
 }
 
 export async function setInviteShownName(formData: FormData): Promise<void> {
@@ -971,30 +987,13 @@ async function finishInviteFavorites(
 
 	const { error: profileError } = await supabase
 		.from('profiles')
-		.update({ onboarding_step: 'done' })
+		.update({ onboarding_step: 'language' })
 		.eq('id', user.id);
 
 	if (profileError) {
 		inviteStepRedirect('favorites', { error: profileError.message });
 	}
 
-	try {
-		await markInvitationAccepted(user);
-	} catch (error) {
-		captureServerActionException(error, 'finish_invite_favorites', {
-			step: 'mark_invitation_accepted'
-		});
-		inviteStepRedirect('favorites', {
-			error:
-				error instanceof Error
-					? error.message
-					: 'Could not finish joining. Try again.'
-		});
-	}
-
 	revalidatePath('/accept-invite');
-	revalidatePath('/members/admin/invitations');
-	revalidatePath('/community-calendar');
-	revalidatePath('/', 'layout');
-	redirect('/account/welcome?welcome=1&invite=1');
+	inviteStepRedirect('language');
 }

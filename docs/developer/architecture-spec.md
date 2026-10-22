@@ -61,16 +61,16 @@ It is **not** a property booking or rental-availability product. Domain language
 
 ## 2. Current repo baseline (what already exists)
 
-| Layer         | Today                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------- |
-| Framework     | Next.js 16 App Router, React 19, Tailwind 4, shadcn                                   |
-| CMS           | TinaCMS — pages only; `/admin` rewrite → Tina static admin                            |
+| Layer         | Today                                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------------------- |
+| Framework     | Next.js 16 App Router, React 19, Tailwind 4, shadcn                                                      |
+| CMS           | TinaCMS — pages only; `/admin` rewrite → Tina static admin                                               |
 | Attendance UI | DayPilot Scheduler at `/community-calendar` — Manage attendance form create/edit/delete (immediate save) |
-| Listings UI   | Keyword/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages      |
-| Listings data | `content/data/listings.json` (~75 rows); only a few have `lat`/`lng`                  |
-| Auth          | None (scheduler “Log in as” + “Admin role” are test controls)                         |
-| Supabase      | Not installed                                                                         |
-| Members hub   | `/place` (public Tina page) linking to calendar + dead `/add-attendance`              |
+| Listings UI   | Keyword/fuzzy search + Google Maps via `@vis.gl/react-google-maps` on category pages                     |
+| Listings data | `content/data/listings.json` (~75 rows); only a few have `lat`/`lng`                                     |
+| Auth          | None (scheduler “Log in as” + “Admin role” are test controls)                                            |
+| Supabase      | Not installed                                                                                            |
+| Members hub   | `/place` (public Tina page) linking to calendar + dead `/add-attendance`                                 |
 
 **Implication:** Backend auth, profiles, persisted attendance, member admin console, invitations, and listing CRUD are net-new. The scheduler and locations explorer UIs should be **evolved**, not redesigned from the ChatGPT UI inventory.
 
@@ -87,14 +87,14 @@ Stored on `profiles.role`. Never trust client-provided role for authorization.
 
 ### Member (`user`) may
 
-| Action                                                | Notes                         |
-| ----------------------------------------------------- | ----------------------------- |
-| Sign in / reset / change own password                 | Supabase Auth                 |
-| Read profiles (id, full_name, avatar_url)             | No other emails               |
-| Read attendance bars in the scheduler window          | See §8                        |
-| Create / edit / delete **own** attendance | Via Manage attendance; immediate `saveAttendanceBatch` |
-| Read listings; search; map pins                       | Authenticated (see §5 gating) |
-| Update own `full_name`, `avatar_url`                  | Not `role`                    |
+| Action                                       | Notes                                                  |
+| -------------------------------------------- | ------------------------------------------------------ |
+| Sign in / reset / change own password        | Supabase Auth                                          |
+| Read profiles (id, full_name, avatar_url)    | No other emails                                        |
+| Read attendance bars in the scheduler window | See §8                                                 |
+| Create / edit / delete **own** attendance    | Via Manage attendance; immediate `saveAttendanceBatch` |
+| Read listings; search; map pins              | Authenticated (see §5 gating)                          |
+| Update own `full_name`, `avatar_url`         | Not `role`                                             |
 
 ### Member may **not**
 
@@ -185,8 +185,8 @@ Document the chosen option when implementing §22 Phase 4.
 3. Reject if email already belongs to an auth user or has a `pending` invitation.
 4. Create/send Supabase invite; write `user_invitations` row; write `admin_audit_log`.
 5. Invitee requests OTP on `/accept-invite`, verifies on `/accept-invite/verify` (Auth user + `profiles` row exist).
-6. Join wizard on `/accept-invite`: **password** → **privacy & analytics** → **shown name** (empty; no prefill) → **profile colour** → **attendance** (skippable Manage attendance form, inline) → **favorites** (skippable pinned calendar members) → `/place`.
-7. Password step marks the invitation `accepted`; later steps advance `profiles.onboarding_step` (`name` → `colour` → `attendance` → `favorites` → `done`). Legacy members with privacy prefs and `onboarding_step` null are treated as complete.
+6. Join wizard on `/accept-invite`: **password** → **privacy & analytics** → **shown name** (empty; no prefill) → **profile colour** → **attendance** (skippable Manage attendance form, inline) → **favorites** (skippable pinned calendar members) → **language** → `/place`.
+7. Language step marks the invitation `accepted`; earlier steps advance `profiles.onboarding_step` (`name` → `colour` → `attendance` → `favorites` → `language` → `done`). Legacy members with privacy prefs and `onboarding_step` null are treated as complete.
 
 ### Sign-in
 
@@ -293,10 +293,10 @@ Do not change the modal field labels or user-facing “end date” meaning.
 
 Create, edit, and delete happen in the **Manage attendance** modal and call `saveAttendanceBatch` immediately (no client draft buffer, no floating confirm bar).
 
-| Role    | Save merge semantics                                                          |
-| ------- | ----------------------------------------------------------------------------- |
+| Role    | Save merge semantics                                                           |
+| ------- | ------------------------------------------------------------------------------ |
 | `user`  | Replace **only that user’s** stays in the persisted set with the committed set |
-| `admin` | Persist the full committed event set they edited                              |
+| `admin` | Persist the full committed event set they edited                               |
 
 Implement as:
 
@@ -382,7 +382,7 @@ Search matching today: **name, type, keywords** (accent-insensitive fuzzy). Addr
 ### 9.5 Map stack
 
 - Keep `@vis.gl/react-google-maps` + `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`.
-- Center default: Castel Falfi (`43.5419`, `10.9706`).
+- Center default: Castelfalfi (`43.5419`, `10.9706`).
 - Geocode **writes** (admin) must go through a secure backend; do not expose privileged Geocoding keys if restricted. Browser Maps JS key stays public with HTTP referrer restrictions.
 
 ### 9.6 Tables
@@ -424,9 +424,9 @@ Normalize keywords for admin creatable multi-select; hydrate `tags: string[]` in
 
 ### 9.7 Listing permissions
 
-| Actor  | Read                         | Write                                     |
-| ------ | ---------------------------- | ----------------------------------------- |
-| Member | Yes (all published listings) | No                                        |
+| Actor  | Read                         | Write                                         |
+| ------ | ---------------------------- | --------------------------------------------- |
+| Member | Yes (all published listings) | No                                            |
 | Admin  | Yes                          | Create / update / delete + keyword management |
 
 No member-authored listings in v1.
@@ -447,15 +447,15 @@ Reuse `LocationsMap` patterns for preview; do not invent a second map library.
 
 ### `profiles`
 
-| Column                  | Type                      | Notes               |
-| ----------------------- | ------------------------- | ------------------- |
-| id                      | uuid PK = `auth.users.id` |                     |
-| full_name               | text not null             | Scheduler row label |
-| avatar_url              | text null                 |                     |
-| role                    | `user` \| `admin`         | default `user`      |
-| event_bar_color         | text null                 | Profile / bar colour |
-| onboarding_step         | text null                 | Invite wizard: `name` \| `colour` \| `attendance` \| `favorites` \| `done`; null + privacy prefs = legacy complete |
-| created_at / updated_at | timestamptz               |                     |
+| Column                  | Type                      | Notes                                                                                                                            |
+| ----------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| id                      | uuid PK = `auth.users.id` |                                                                                                                                  |
+| full_name               | text not null             | Scheduler row label                                                                                                              |
+| avatar_url              | text null                 |                                                                                                                                  |
+| role                    | `user` \| `admin`         | default `user`                                                                                                                   |
+| event_bar_color         | text null                 | Profile / bar colour                                                                                                             |
+| onboarding_step         | text null                 | Invite wizard: `name` \| `colour` \| `attendance` \| `favorites` \| `language` \| `done`; null + privacy prefs = legacy complete |
+| created_at / updated_at | timestamptz               |                                                                                                                                  |
 
 Email stays in `auth.users`. Admins resolve email via secure admin API / privileged view — **not** via a profiles column exposed to RLS `select` for members.
 
@@ -496,13 +496,13 @@ Clients: select for admins only; no insert/update/delete from client.
 
 Enable RLS on every app table.
 
-| Table                         | Member                                                          | Admin                                                  |
-| ----------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
-| profiles                      | Select public fields (id, name, avatar); update own name/avatar | Select all needed via policies or admin RPC for emails |
-| attendance                    | Select intersecting window / non-expired; mutate own            | Full mutate                                            |
+| Table                             | Member                                                          | Admin                                                  |
+| --------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------ |
+| profiles                          | Select public fields (id, name, avatar); update own name/avatar | Select all needed via policies or admin RPC for emails |
+| attendance                        | Select intersecting window / non-expired; mutate own            | Full mutate                                            |
 | listings + keywords + assignments | Select                                                          | Full mutate                                            |
-| user_invitations              | None                                                            | Via backend / admin policies carefully                 |
-| admin_audit_log               | None                                                            | Select only                                            |
+| user_invitations                  | None                                                            | Via backend / admin policies carefully                 |
+| admin_audit_log                   | None                                                            | Select only                                            |
 
 Prefer **privileged Edge Functions / Server Actions with service role** for invitations, role change, delete user, geocode, and audit writes — even when table policies exist — so business rules (final admin, duplicate invite) stay in one place.
 
@@ -520,7 +520,7 @@ Prefer **privileged Edge Functions / Server Actions with service role** for invi
 | `delete_user`                                          | Final-admin / self-handoff guard; delete auth user; purge future attendance; keep audit; decide avatar cleanup |
 | `save_attendance_batch`                                | Enforce role merge rules; validate dates; return rows                                                          |
 | `geocode_listing`                                      | Proxy Google Geocoding                                                                                         |
-| `create_listing` / `update_listing` / `delete_listing` | Validate, keywords, coords, audit                                                                                  |
+| `create_listing` / `update_listing` / `delete_listing` | Validate, keywords, coords, audit                                                                              |
 
 Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Server Actions under `app/` with service role. Prefer one pattern and stick to it.
 
@@ -530,15 +530,15 @@ Implementation host: Supabase Edge Functions **or** Next.js Route Handlers / Ser
 
 ### Public / auth
 
-| Route                                     | Purpose                             |
-| ----------------------------------------- | ----------------------------------- |
-| `/sign-in`                                | Email + password (no register link) |
+| Route                                     | Purpose                                                                                        |
+| ----------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `/sign-in`                                | Email + password (no register link)                                                            |
 | `/accept-invite`                          | Invite OTP request + join wizard (password → privacy → name → colour → attendance → favorites) |
-| `/accept-invite/verify`                   | Enter invite OTP                    |
-| `/forgot-password`                        | Request recovery OTP                |
-| `/forgot-password/verify`                 | Enter recovery OTP                  |
-| `/reset-password`                         | Set new password after OTP          |
-| `/`, `/about`, `/events`, category routes | Existing Tina pages                 |
+| `/accept-invite/verify`                   | Enter invite OTP                                                                               |
+| `/forgot-password`                        | Request recovery OTP                                                                           |
+| `/forgot-password/verify`                 | Enter recovery OTP                                                                             |
+| `/reset-password`                         | Set new password after OTP                                                                     |
+| `/`, `/about`, `/events`, category routes | Existing Tina pages                                                                            |
 
 ### Members (authenticated)
 
@@ -572,17 +572,17 @@ Fix or remove dead `/add-attendance` link in `content/pages/place.md` (point to 
 
 ### Keep / evolve
 
-| Component                    | Path                                    | Notes                          |
-| ---------------------------- | --------------------------------------- | ------------------------------ |
-| Scheduler                    | `app/components/scheduler.tsx`          | Wire to Supabase; remove mocks |
-| AttendanceEditor | `app/components/attendance-editor.tsx` | Shared manage-attendance table + form (inline or modal) |
+| Component                    | Path                                    | Notes                                                         |
+| ---------------------------- | --------------------------------------- | ------------------------------------------------------------- |
+| Scheduler                    | `app/components/scheduler.tsx`          | Wire to Supabase; remove mocks                                |
+| AttendanceEditor             | `app/components/attendance-editor.tsx`  | Shared manage-attendance table + form (inline or modal)       |
 | AvailabilityModal / ReadOnly | `app/components/availability-modal.tsx` | Dialog wrapper around AttendanceEditor; admin member retarget |
-| member-search helpers        | `lib/attendance/member-search.ts`       | Shared fuzzy find for people       |
-| MockMap → rename later       | `components/ui/mock-map.tsx`            | Data from Supabase             |
-| LocationsMap                 | `components/ui/locations-map.tsx`       | Keep                           |
-| listings-search helpers      | `lib/listings-search.ts`                | Keep scoring API               |
-| SiteHeader / Footer / Logo   | `components/layout/*`                   | Add auth menu later            |
-| shadcn primitives            | `components/ui/*`                       | Dialogs, tables, forms         |
+| member-search helpers        | `lib/attendance/member-search.ts`       | Shared fuzzy find for people                                  |
+| MockMap → rename later       | `components/ui/mock-map.tsx`            | Data from Supabase                                            |
+| LocationsMap                 | `components/ui/locations-map.tsx`       | Keep                                                          |
+| listings-search helpers      | `lib/listings-search.ts`                | Keep scoring API                                              |
+| SiteHeader / Footer / Logo   | `components/layout/*`                   | Add auth menu later                                           |
+| shadcn primitives            | `components/ui/*`                       | Dialogs, tables, forms                                        |
 
 ### Add (net-new)
 
@@ -609,7 +609,7 @@ The ChatGPT “Main Calendar Components” list (month heading, Today button as 
 | Edit/delete own stays               | Yes        | Yes                             |
 | Manage others’ stays                | No         | Yes                             |
 | View listings / search / map        | Yes\*      | Yes                             |
-| Mutate listings / keywords              | No         | Yes                             |
+| Mutate listings / keywords          | No         | Yes                             |
 | View others’ emails                 | No         | Yes                             |
 | Update own profile / password       | Yes        | Yes                             |
 | Change own role                     | No         | Only via admin action on others |
@@ -742,7 +742,7 @@ docs/developer/architecture-spec.md    # this document
 | Location fields description-only                 | **Replaced** by Listing shape                                                 |
 | `/availability`, `/locations`, `/admin/*` routes | **Replaced** by `/community-calendar`, category/map pages, `/members/admin/*` |
 | Locations page order Map→Search→Register         | **Replaced** by existing MockMap order/behaviour                              |
-| Fuzzy search name/category/address/keywords          | **Partial**: name/type/keywords now; address optional later                       |
+| Fuzzy search name/category/address/keywords      | **Partial**: name/type/keywords now; address optional later                   |
 | Shared generic “component inventory”             | Filtered to keep/evolve vs add                                                |
 
 This document is the single spec to split into implementation tickets.

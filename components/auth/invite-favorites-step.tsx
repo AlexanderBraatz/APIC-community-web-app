@@ -1,5 +1,6 @@
 'use client';
 
+import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
 	saveInviteFavorites,
@@ -86,26 +87,35 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 						placeholder="Search by name"
 						autoComplete="off"
 					/>
-					{suggestions.length > 0 ? (
-						<ul
-							role="listbox"
-							className="max-h-56 overflow-y-auto rounded-[2px] border border-[#e5e5e5] bg-white py-1"
-						>
-							{suggestions.map(member => (
-								<li
-									key={member.id}
-									role="option"
-								>
-									<button
-										type="button"
-										onClick={() => addFavorite(member.id)}
-										className="block w-full px-3 py-2 text-left text-sm text-[#444] hover:bg-[#f5f0e8]"
+					{query.trim() ? (
+						suggestions.length > 0 ? (
+							<ul
+								role="listbox"
+								className="max-h-56 overflow-y-auto rounded-[2px] border border-[#e5e5e5] bg-white py-1"
+							>
+								{suggestions.map(member => (
+									<li
+										key={member.id}
+										role="option"
 									>
-										{member.full_name}
-									</button>
-								</li>
-							))}
-						</ul>
+										<button
+											type="button"
+											onClick={() => addFavorite(member.id)}
+											className="block w-full px-3 py-2 text-left text-sm text-[#444] hover:bg-[#f5f0e8]"
+										>
+											{member.full_name}
+										</button>
+									</li>
+								))}
+							</ul>
+						) : (
+							<p
+								className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900"
+								role="status"
+							>
+								No neighbours found under this name
+							</p>
+						)
 					) : null}
 				</div>
 
@@ -120,9 +130,10 @@ export function InviteFavoritesStep({ error, members, currentUserId }: Props) {
 								<button
 									type="button"
 									onClick={() => removeFavorite(member.id)}
-									className="text-[#805b32] underline"
+									className="inline-flex size-8 shrink-0 items-center justify-center rounded-[2px] text-[#805b32] transition-colors hover:bg-[#efe6da] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#805b32] focus-visible:ring-offset-2"
+									aria-label={`Remove ${member.full_name}`}
 								>
-									Remove
+									<X className="size-4" aria-hidden="true" />
 								</button>
 							</li>
 						))}

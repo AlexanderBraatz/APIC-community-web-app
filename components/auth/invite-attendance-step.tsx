@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DayPilot } from '@daypilot/daypilot-lite-react';
 import {
 	AttendanceEditor,
@@ -43,9 +43,19 @@ export function InviteAttendanceStep({
 	);
 	const [saveError, setSaveError] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
+	const wasFormOpenRef = useRef(formMode != null);
 
 	const formOpen = formMode != null;
 	const showAfterSavePrompt = events.length > 0 && !formOpen && !saving;
+
+	// After save/cancel/delete the form collapses; jump to top so "Add another stay"
+	// stays in view instead of leaving the user mid-page in empty space.
+	useEffect(() => {
+		if (wasFormOpenRef.current && !formOpen) {
+			window.scrollTo({ top: 0, behavior: 'auto' });
+		}
+		wasFormOpenRef.current = formOpen;
+	}, [formOpen]);
 
 	async function persist(
 		nextEvents: DayPilot.EventData[],

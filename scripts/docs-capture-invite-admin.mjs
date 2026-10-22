@@ -74,13 +74,28 @@ async function completeOnboardingIfNeeded(page) {
 				return btn && !btn.disabled && btn.getAttribute('aria-busy') !== 'true';
 			}, null, { timeout: 15000 }).catch(() => {});
 			await Promise.all([
+				page.waitForURL(url => !String(url).includes('step=favorites'), {
+					timeout: 45000
+				}).catch(() => {}),
+				skip.click({ force: true })
+			]);
+			await page.waitForLoadState('domcontentloaded');
+			continue;
+		}
+
+		if (
+			headingLower.includes('manual language') ||
+			headingLower.includes('sprache') ||
+			headingLower.includes('lingua')
+		) {
+			await Promise.all([
 				page.waitForURL(
 					url =>
 						!String(url).includes('/accept-invite') ||
 						String(url).includes('welcome=1'),
 					{ timeout: 45000 }
 				).catch(() => {}),
-				skip.click({ force: true })
+				page.getByRole('button', { name: /^Continue$/i }).click()
 			]);
 			await page.waitForLoadState('domcontentloaded');
 			continue;

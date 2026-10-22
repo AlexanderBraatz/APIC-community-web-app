@@ -13,10 +13,10 @@ export const INVITE_LANGUAGE_STEP_COPY: Record<
 	InviteLanguageStepCopy
 > = {
 	en: {
-		heading: 'Choose your manual language',
+		heading: 'User manual language',
 		noticeOfficial: 'The official language of the APIC platform is English.',
 		noticeHelp:
-			'Help is available in English, German, and Italian. Open it anytime by clicking the question mark button (?) in the bottom right corner.',
+			'Help is available in English, German, and Italian. Open the user manual anytime by clicking the question mark button (?) in the bottom right corner.',
 		continue: 'Continue',
 		languageGroupLabel: 'Language'
 	},
