@@ -74,12 +74,20 @@ function contactDisplay(contact: Listing['contacts'][number]): string {
 	return contact.value;
 }
 
-export default function ListingResultCard({ listing }: { listing: Listing }) {
+export default function ListingResultCard({
+	listing,
+	onShowOnMap
+}: {
+	listing: Listing;
+	/** When set, shows a touch-friendly control that focuses this place on the APIC map. */
+	onShowOnMap?: () => void;
+}) {
 	const { track } = useAnalytics();
 	const hoursLines = formatOpeningHoursLines(listing.openingHours);
 	const contacts = listing.contacts ?? [];
 	const hasContactInfo =
 		Boolean(listing.address) || hoursLines.length > 0 || contacts.length > 0;
+	const showMapActions = Boolean(onShowOnMap) || Boolean(listing.sourceUrl);
 
 	return (
 		<article>
@@ -174,25 +182,46 @@ export default function ListingResultCard({ listing }: { listing: Listing }) {
 					</div>
 				) : null}
 
-				{listing.sourceUrl ? (
-					<p>
-						<a
-							href={listing.sourceUrl}
-							target="_blank"
-							rel="noopener noreferrer"
-							onClick={event => event.stopPropagation()}
-							className={cn(
-								buttonVariants({ variant: 'outline', size: 'sm' }),
-								'gap-2'
-							)}
-						>
-							<MapIcon
-								className="size-4 shrink-0"
-								aria-hidden="true"
-							/>
-							Open in Google Maps
-						</a>
-					</p>
+				{showMapActions ? (
+					<div className="flex flex-wrap items-center gap-2">
+						{listing.sourceUrl ? (
+							<a
+								href={listing.sourceUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								onClick={event => event.stopPropagation()}
+								className={cn(
+									buttonVariants({ variant: 'outline', size: 'sm' }),
+									'gap-2'
+								)}
+							>
+								<MapIcon
+									className="size-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Open in Google Maps
+							</a>
+						) : null}
+						{onShowOnMap ? (
+							<button
+								type="button"
+								onClick={event => {
+									event.stopPropagation();
+									onShowOnMap();
+								}}
+								className={cn(
+									buttonVariants({ variant: 'outline', size: 'sm' }),
+									'gap-2'
+								)}
+							>
+								<MapPin
+									className="size-4 shrink-0"
+									aria-hidden="true"
+								/>
+								Show on APIC Map
+							</button>
+						) : null}
+					</div>
 				) : null}
 			</div>
 		</article>

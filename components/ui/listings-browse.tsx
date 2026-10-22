@@ -798,7 +798,10 @@ export default function ListingsBrowse(props: {
 											}
 										}}
 									>
-										<ListingResultCard listing={listing} />
+										<ListingResultCard
+											listing={listing}
+											onShowOnMap={() => selectPlace(listing)}
+										/>
 									</div>
 									{index < results.length - 1 ? (
 										<hr className="border-[#b8a99a]" />
