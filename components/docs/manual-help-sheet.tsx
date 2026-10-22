@@ -341,6 +341,7 @@ export function ManualHelpSheet({
 					aria-valuemax={maxSheetWidth()}
 					aria-valuenow={width}
 					tabIndex={0}
+					data-base-ui-swipe-ignore=""
 					className={cn(
 						'group absolute top-0 left-0 z-10 flex h-full w-3 -translate-x-1/2 cursor-ew-resize touch-none items-center justify-center',
 						'outline-none focus-visible:ring-2 focus-visible:ring-[#805b32] focus-visible:ring-offset-2'
