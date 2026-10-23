@@ -6,7 +6,7 @@ So nutzen Sie die Karte, den Kalender und angeheftete Mitglieder.
 
 - **Karte**
   - [Empfehlungen finden](#find-recommendations)
-  - [Zur Übersicht aller Empfehlungen zurückkehren](#go-back-to-overview-of-all-recommendations)
+  - [In Google Maps öffnen oder Zurück zur Übersicht](#go-back-to-overview-of-all-recommendations)
 - **Kalender**
   - [Anwesenheitsdaten hinzufügen, ändern oder löschen](#how-to-add-change-or-delete-your-attendance-dates)
   - [Mitglieder anheften, um Anwesenheiten zu vergleichen](#how-to-pin-members-for-easy-attendance-comparison)
@@ -29,10 +29,10 @@ Durchsuchen Sie die APIC-Empfehlungen auf der Karte, öffnen Sie einen empfohlen
 
 ![Find recommendations (mobile)](screenshots/screenshotsreal/find-recommendations-1-mobile.jpg)
 
-### Zur Übersicht aller Empfehlungen zurückkehren {#go-back-to-overview-of-all-recommendations}
+### In Google Maps öffnen oder<br>Zurück zur Übersicht {#go-back-to-overview-of-all-recommendations}
 
-1. Öffnen Sie die Empfehlung in Google Maps.
-2. Kehren Sie zur Übersicht aller Empfehlungen zurück.
+1. In Google Maps öffnen.
+2. Zurück zur Übersicht.
 
 ![Go back to overview](screenshots/screenshotsreal/go-back-to-overview-of-all-recommendation-1.jpg)
 

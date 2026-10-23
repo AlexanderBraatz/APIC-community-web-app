@@ -6,7 +6,7 @@ Come utilizzare la mappa, il calendario e i membri fissati in alto.
 
 - **Mappa**
   - [Trovare i consigli](#find-recommendations)
-  - [Tornare alla panoramica di tutti i consigli](#go-back-to-overview-of-all-recommendations)
+  - [Apri in Google Maps o Torna alla panoramica](#go-back-to-overview-of-all-recommendations)
 - **Calendario**
   - [Aggiungere, modificare o eliminare le date di presenza](#how-to-add-change-or-delete-your-attendance-dates)
   - [Fissare i membri per confrontare facilmente le presenze](#how-to-pin-members-for-easy-attendance-comparison)
@@ -29,10 +29,10 @@ Consulta sulla mappa i consigli APIC, apri un luogo e poi torna alla panoramica 
 
 ![Find recommendations (mobile)](screenshots/screenshotsreal/find-recommendations-1-mobile.jpg)
 
-### Tornare alla panoramica di tutti i consigli {#go-back-to-overview-of-all-recommendations}
+### Apri in Google Maps o<br>Torna alla panoramica {#go-back-to-overview-of-all-recommendations}
 
-1. Apri il luogo consigliato in Google Maps.
-2. Torna alla panoramica di tutti i consigli.
+1. Apri in Google Maps.
+2. Torna alla panoramica.
 
 ![Go back to overview](screenshots/screenshotsreal/go-back-to-overview-of-all-recommendation-1.jpg)
 

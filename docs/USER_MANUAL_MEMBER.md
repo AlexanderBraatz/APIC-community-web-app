@@ -6,7 +6,7 @@ How to use the map, calendar, and pinned members.
 
 - **Map**
   - [Find Recommendations](#find-recommendations)
-  - [Go back to overview of all recommendations](#go-back-to-overview-of-all-recommendations)
+  - [Open in Google Maps or Go back to Overview](#go-back-to-overview-of-all-recommendations)
 - **Calendar**
   - [How to Add, change or delete your attendance dates](#how-to-add-change-or-delete-your-attendance-dates)
   - [How to Pin Members for Easy Attendance Comparison](#how-to-pin-members-for-easy-attendance-comparison)
@@ -29,10 +29,10 @@ Browse APIC recommendations on the map, open a place, then return to the full ov
 
 ![Find recommendations (mobile)](screenshots/screenshotsreal/find-recommendations-1-mobile.jpg)
 
-### Go back to overview of all recommendations {#go-back-to-overview-of-all-recommendations}
+### Open in Google Maps or<br>Go back to Overview {#go-back-to-overview-of-all-recommendations}
 
-1. Open the recommendation in Google Maps.
-2. Return to the overview of all recommendations.
+1. Open in Google Maps.
+2. Go back to Overview.
 
 ![Go back to overview](screenshots/screenshotsreal/go-back-to-overview-of-all-recommendation-1.jpg)
 

@@ -231,7 +231,28 @@ export function UserManualAccordion({
 													className="px-3 transition-colors data-open:bg-[#e8e4dc]"
 												>
 													<AccordionTrigger className="py-3 text-lg font-medium text-[#444] hover:text-[#805b32] hover:no-underline">
-														{item.title}
+														<span className="text-left">
+															{item.title
+																.split(
+																	/<br\s*\/?>/i
+																)
+																.map(
+																	(
+																		part,
+																		index
+																	) => (
+																		<span
+																			key={`${itemSlug}-${index}`}
+																		>
+																			{index >
+																			0 ? (
+																				<br />
+																			) : null}
+																			{part}
+																		</span>
+																	)
+																)}
+														</span>
 													</AccordionTrigger>
 													<AccordionContent>
 														<ManualMarkdownBody

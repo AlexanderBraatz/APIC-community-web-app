@@ -14,10 +14,11 @@ Find Recommendations
 
 Image1 and mobile image1
 
-Go back to overview of all recommendation
+Open in Google Maps or
+Go back to Overview
 
-1. Open recommendation in Google Maps
-2. Return to overview of all recommendations
+1. Open in Google Maps
+2. Go back to Overview
 
 Image2 and mobile image2
 
