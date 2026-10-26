@@ -22,17 +22,25 @@ type TinaForm = {
 	getState?: () => { values?: Record<string, unknown> };
 };
 
+const STARTER_TITLE = 'Neuer Artikel';
+const LEGACY_STARTER_TITLE = 'New blog post';
+
 function isStarterTitle(title: unknown): boolean {
 	if (typeof title !== 'string') return true;
 	const trimmed = title.trim();
 	if (!trimmed) return true;
-	if (trimmed === 'New blog post') return true;
-	// e.g. "1 — New blog post" or "21 - New blog post"
-	return /^\d+\s*[—–-]\s*New blog post$/i.test(trimmed);
+	if (trimmed === STARTER_TITLE || trimmed === LEGACY_STARTER_TITLE) {
+		return true;
+	}
+	// e.g. "1 — Neuer Artikel" or legacy "21 - New blog post"
+	return (
+		new RegExp(`^\\d+\\s*[—–-]\\s*${STARTER_TITLE}$`, 'i').test(trimmed) ||
+		new RegExp(`^\\d+\\s*[—–-]\\s*${LEGACY_STARTER_TITLE}$`, 'i').test(trimmed)
+	);
 }
 
 function starterTitleForId(id: string | number) {
-	return `${id} — New blog post`;
+	return `${id} — ${STARTER_TITLE}`;
 }
 
 /** Auto-assigns postId; UI is hidden unless assignment is pending or failed. */

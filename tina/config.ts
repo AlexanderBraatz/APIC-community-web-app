@@ -12,8 +12,8 @@ import {
 import { isNumericPostId, resolveBlogPostId } from './blog-post-id';
 
 const BLOG_STARTER_IMAGE = '/images/Il-Borgo-Garden-View-scaled.jpg';
-const BLOG_STARTER_HEADING = 'Click to replace this heading';
-const BLOG_STARTER_CAPTION = 'Click to replace this caption';
+const BLOG_STARTER_HEADING = 'Hier klicken, um diese Überschrift zu ersetzen';
+const BLOG_STARTER_CAPTION = 'Hier klicken, um diese Bildunterschrift zu ersetzen';
 const BLOG_STARTER_GALLERY_IMAGES = [
 	{ image: '/images/Il-Borgo-Garden-View-scaled.jpg' },
 	{ image: '/images/apic-event.webp' },
@@ -34,14 +34,14 @@ function richTextBody(...paragraphs: string[]) {
 }
 
 const BLOG_STARTER_BODY = richTextBody(
-	'Click here to replace this text with your article.'
+	'Hier klicken, um diesen Text durch Ihren Artikel zu ersetzen.'
 );
 const BLOG_STARTER_INTRO_BODY = richTextBody(
-	'Click here to replace this introduction. Use this Rich Text block for the main story of your article.',
-	'You can add more paragraphs, headings, and links. Everything in this example post is placeholder content meant to be replaced.'
+	'Hier klicken, um diese Einleitung zu ersetzen. Nutzen Sie diesen Text-Block für die Hauptgeschichte Ihres Artikels.',
+	'Sie können weitere Absätze, Überschriften und Links hinzufügen. Alles in diesem Beispielbeitrag ist Platzhalterinhalt und soll ersetzt werden.'
 );
 const BLOG_STARTER_FOLLOW_UP_BODY = richTextBody(
-	'Click here to continue your article after the gallery. Add details, quotes from members, or next steps for readers.'
+	'Hier klicken, um Ihren Artikel nach der Galerie fortzusetzen. Ergänzen Sie Details, Zitate von Mitgliedern oder nächste Schritte für die Leser.'
 );
 
 const PAGE_STARTER_IMAGE = BLOG_STARTER_IMAGE;
@@ -541,7 +541,7 @@ export default defineConfig({
 						ui: {
 							component: 'textarea',
 							description:
-								'Use a line break where the heading should wrap (for example after “News &”).'
+								'Use a line break where the heading should wrap (for example after “News,”).'
 						}
 					},
 					{
@@ -615,31 +615,24 @@ export default defineConfig({
 					// Seed all required fields so GraphQL never sees null on a half-created post.
 					...({
 						defaultItem: () => ({
-							// Replaced with "{postId} — New blog post" once Post ID is assigned.
-							title: 'New blog post',
+							// Replaced with "{postId} — Neuer Artikel" once Post ID is assigned.
+							title: 'Neuer Artikel',
 							author: 'APIC',
 							publishedAt: new Date().toISOString(),
 							shortDescription:
-								'Click to replace this short description. It appears on the blog index card.',
+								'Hier klicken, um diese Kurzbeschreibung zu ersetzen. Sie erscheint auf der Übersicht auf News, Events & Activities.',
 							blocks: [
 								{
 									_template: 'image',
 									image: BLOG_STARTER_IMAGE,
 									caption: BLOG_STARTER_CAPTION
 								},
-								{ _template: 'divider', style: 'star' },
 								{
 									_template: 'richText',
-									heading: 'Click to replace this introduction heading',
+									heading:
+										'Hier klicken, um diese Einleitungsüberschrift zu ersetzen',
 									body: BLOG_STARTER_INTRO_BODY
 								},
-								{
-									_template: 'pullQuote',
-									quote:
-										'Click to replace this pull quote.\nAdd a memorable line from your article here.',
-									attribution: 'Click to replace attribution'
-								},
-								{ _template: 'divider', style: 'line' },
 								{
 									_template: 'imageGallery',
 									images: BLOG_STARTER_GALLERY_IMAGES.map(item => ({
@@ -648,22 +641,9 @@ export default defineConfig({
 								},
 								{
 									_template: 'richText',
-									heading: 'Click to replace this section heading',
+									heading:
+										'Hier klicken, um diese Abschnittsüberschrift zu ersetzen',
 									body: BLOG_STARTER_FOLLOW_UP_BODY
-								},
-								{
-									_template: 'embed',
-									url: BLOG_STARTER_VIDEO_URL,
-									caption: 'Click to replace this video caption'
-								},
-								{ _template: 'divider', style: 'star' },
-								{
-									_template: 'cta',
-									title: 'Click to replace this call to action',
-									description:
-										'Click to replace this CTA description. Invite readers to get in touch or take the next step.',
-									buttonLabel: 'Click to replace button',
-									buttonLink: 'mailto:info.apic@aol.com'
 								},
 								{
 									_template: 'map',
@@ -745,7 +725,7 @@ export default defineConfig({
 						templates: [
 							{
 								name: 'richText',
-								label: 'Rich Text',
+								label: 'Text',
 								ui: {
 									previewSrc: '/images/blocks/rich-text.svg',
 									defaultItem: {
@@ -801,13 +781,14 @@ export default defineConfig({
 							},
 							{
 								name: 'pullQuote',
-								label: 'Pull Quote',
+								label: 'Quote',
 								ui: {
 									previewSrc: '/images/blocks/pull-quote.svg',
 									defaultItem: {
 										quote:
-											'Click to replace this pull quote.\nAdd a memorable line from your article here.',
-										attribution: 'Click to replace attribution'
+											'Hier klicken, um dieses Zitat zu ersetzen.\nFügen Sie hier eine einprägsame Zeile aus Ihrem Artikel ein.',
+										attribution:
+											'Hier klicken, um die Quellenangabe zu ersetzen'
 									}
 								},
 								fields: [
@@ -823,12 +804,13 @@ export default defineConfig({
 							},
 							{
 								name: 'embed',
-								label: 'Embed',
+								label: 'Video',
 								ui: {
 									previewSrc: '/images/blocks/embed.svg',
 									defaultItem: {
 										url: BLOG_STARTER_VIDEO_URL,
-										caption: 'Click to replace this video caption'
+										caption:
+											'Hier klicken, um diese Videobeschriftung zu ersetzen'
 									}
 								},
 								fields: [
@@ -865,14 +847,14 @@ export default defineConfig({
 							},
 							{
 								name: 'cta',
-								label: 'Call to Action',
+								label: 'Email Button',
 								ui: {
 									previewSrc: '/images/blocks/cta.svg',
 									defaultItem: {
-										title: 'Click to replace this call to action',
+										title: 'Hier klicken, um diesen Aufruf zu ersetzen',
 										description:
-											'Click to replace this CTA description. Invite readers to get in touch or take the next step.',
-										buttonLabel: 'Click to replace button',
+											'Hier klicken, um diese Beschreibung zu ersetzen. Laden Sie Leser ein, Kontakt aufzunehmen oder den nächsten Schritt zu gehen.',
+										buttonLabel: 'Hier klicken, um den Button zu ersetzen',
 										buttonLink: 'mailto:info.apic@aol.com'
 									}
 								},

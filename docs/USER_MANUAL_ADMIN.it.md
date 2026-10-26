@@ -23,9 +23,9 @@ Come gestire consigli, membri, contenuti del sito, post del blog e blocchi.
   - [Eliminare un blocco da un post del blog](#how-to-delete-a-blog-post-block)
 - **Blocchi speciali**
   - [Aggiornare il blocco mappa](#how-to-update-the-map-block)
-  - [Cambiare l’indirizzo email associato a un pulsante CTA](#how-to-change-the-email-address-connected-to-a-cta-button)
+  - [Cambiare l’indirizzo email associato a un pulsante Email](#how-to-change-the-email-address-connected-to-an-email-button)
   - [Aggiungere un’immagine alla galleria](#how-to-add-an-image-to-the-image-gallery)
-  - [Cambiare un video incorporato](#how-to-change-an-embedded-video)
+  - [Cambiare un video](#how-to-change-a-video)
 
 ---
 
@@ -305,7 +305,7 @@ I blocchi sono gli elementi che compongono un post del blog e le altre pagine de
 
 ![Open blocks menu](screenshots/screenshotsreal/how-to-add-a-new-block-2.jpg)
 
-3. Seleziona il blocco desiderato (ad es. Rich Text).
+3. Seleziona il blocco desiderato (ad es. Text).
 
 ![Select a block](screenshots/screenshotsreal/how-to-add-a-new-block-3.jpg)
 
@@ -354,7 +354,7 @@ I blocchi sono gli elementi che compongono un post del blog e le altre pagine de
 
 ### Panoramica {#overview}
 
-Modifica i contenuti specifici dei diversi blocchi, come mappe, indirizzi email dei pulsanti CTA, gallerie di immagini e video incorporati.
+Modifica i contenuti specifici dei diversi blocchi, come mappe, indirizzi email dei pulsanti Email, gallerie di immagini e video.
 
 ### Aggiornare il blocco mappa {#how-to-update-the-map-block}
 
@@ -378,12 +378,12 @@ Modifica i contenuti specifici dei diversi blocchi, come mappe, indirizzi email 
 
 ![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
 
-### Cambiare l’indirizzo email associato a un pulsante CTA {#how-to-change-the-email-address-connected-to-a-cta-button}
+### Cambiare l’indirizzo email associato a un pulsante Email {#how-to-change-the-email-address-connected-to-an-email-button}
 
 1. Modifica l’indirizzo email, lasciando invariato il prefisso `mailto:`.
 2. Salva le modifiche.
 
-![Change CTA email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
+![Change Email Button email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
 
 ### Aggiungere un’immagine alla galleria {#how-to-add-an-image-to-the-image-gallery}
 
@@ -401,9 +401,9 @@ Modifica i contenuti specifici dei diversi blocchi, come mappe, indirizzi email 
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
 
-### Cambiare un video incorporato {#how-to-change-an-embedded-video}
+### Cambiare un video {#how-to-change-a-video}
 
-1. Sostituisci il link esistente con quello del video che vuoi incorporare.
+1. Sostituisci il link esistente con quello del video che vuoi mostrare.
 2. Salva le modifiche.
 
-![Change embedded video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)
+![Change video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)

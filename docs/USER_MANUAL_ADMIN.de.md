@@ -23,9 +23,9 @@ So verwalten Sie Empfehlungen, Mitglieder, Website-Inhalte, Blogbeiträge und Bl
   - [Block aus einem Blogbeitrag löschen](#how-to-delete-a-blog-post-block)
 - **Spezielle Blöcke**
   - [Karten-Block aktualisieren](#how-to-update-the-map-block)
-  - [E-Mail-Adresse einer CTA-Schaltfläche ändern](#how-to-change-the-email-address-connected-to-a-cta-button)
+  - [E-Mail-Adresse einer E-Mail-Schaltfläche ändern](#how-to-change-the-email-address-connected-to-an-email-button)
   - [Bild zur Bildergalerie hinzufügen](#how-to-add-an-image-to-the-image-gallery)
-  - [Eingebettetes Video ändern](#how-to-change-an-embedded-video)
+  - [Video ändern](#how-to-change-a-video)
 
 ---
 
@@ -305,7 +305,7 @@ Blöcke sind die einzelnen Bausteine eines Blogbeitrags und anderer Seiten. Übe
 
 ![Open blocks menu](screenshots/screenshotsreal/how-to-add-a-new-block-2.jpg)
 
-3. Wählen Sie den gewünschten Block aus (z. B. Rich Text).
+3. Wählen Sie den gewünschten Block aus (z. B. Text).
 
 ![Select a block](screenshots/screenshotsreal/how-to-add-a-new-block-3.jpg)
 
@@ -354,7 +354,7 @@ Blöcke sind die einzelnen Bausteine eines Blogbeitrags und anderer Seiten. Übe
 
 ### Übersicht {#overview}
 
-Bearbeiten Sie blockspezifische Inhalte wie Karten, CTA-E-Mail-Adressen, Bildergalerien und eingebettete Videos.
+Bearbeiten Sie blockspezifische Inhalte wie Karten, E-Mail-Adressen der E-Mail-Schaltfläche, Bildergalerien und Videos.
 
 ### Karten-Block aktualisieren {#how-to-update-the-map-block}
 
@@ -378,12 +378,12 @@ Bearbeiten Sie blockspezifische Inhalte wie Karten, CTA-E-Mail-Adressen, Bilderg
 
 ![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
 
-### E-Mail-Adresse einer CTA-Schaltfläche ändern {#how-to-change-the-email-address-connected-to-a-cta-button}
+### E-Mail-Adresse einer E-Mail-Schaltfläche ändern {#how-to-change-the-email-address-connected-to-an-email-button}
 
 1. Ändern Sie die E-Mail-Adresse, lassen Sie dabei jedoch das Präfix `mailto:` unverändert.
 2. Speichern Sie Ihre Änderungen.
 
-![Change CTA email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
+![Change Email Button email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
 
 ### Bild zur Bildergalerie hinzufügen {#how-to-add-an-image-to-the-image-gallery}
 
@@ -401,9 +401,9 @@ Bearbeiten Sie blockspezifische Inhalte wie Karten, CTA-E-Mail-Adressen, Bilderg
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
 
-### Eingebettetes Video ändern {#how-to-change-an-embedded-video}
+### Video ändern {#how-to-change-a-video}
 
-1. Ersetzen Sie den vorhandenen Link durch den Link des Videos, das Sie einbetten möchten.
+1. Ersetzen Sie den vorhandenen Link durch den Link des Videos, das Sie anzeigen möchten.
 2. Speichern Sie Ihre Änderungen.
 
-![Change embedded video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)
+![Change video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)

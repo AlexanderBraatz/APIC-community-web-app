@@ -201,7 +201,7 @@ Image4
 
 Image5
 
-- How to Change the Email Address Connected to a CTA Button
+- How to Change the Email Address Connected to an Email Button
 
 1. Change the email address but keep the “mailto:”
 2. Save your changes
@@ -226,9 +226,9 @@ Image2
 
 image3
 
-- How to change a embedded video
+- How to change a video
 
-1. Change the Link to the Link of the video you want to embed.
+1. Change the Link to the Link of the video you want to show.
 2. Save your changes
 
 Image 1

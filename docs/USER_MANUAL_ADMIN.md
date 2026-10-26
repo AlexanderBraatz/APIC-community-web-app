@@ -23,9 +23,9 @@ How to manage recommendations, members, website content, blog posts, and blocks.
   - [How to Delete a Blog Post Block](#how-to-delete-a-blog-post-block)
 - **Special Blocks**
   - [How to Update the Map Block](#how-to-update-the-map-block)
-  - [How to Change the Email Address Connected to a CTA Button](#how-to-change-the-email-address-connected-to-a-cta-button)
+  - [How to Change the Email Address Connected to an Email Button](#how-to-change-the-email-address-connected-to-an-email-button)
   - [How to Add an Image to the Image Gallery](#how-to-add-an-image-to-the-image-gallery)
-  - [How to change an embedded video](#how-to-change-an-embedded-video)
+  - [How to change a video](#how-to-change-a-video)
 
 ---
 
@@ -305,7 +305,7 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![Open blocks menu](screenshots/screenshotsreal/how-to-add-a-new-block-2.jpg)
 
-3. Select your choice of block (e.g. Rich Text).
+3. Select your choice of block (e.g. Text).
 
 ![Select a block](screenshots/screenshotsreal/how-to-add-a-new-block-3.jpg)
 
@@ -354,7 +354,7 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ### Overview {#overview}
 
-Update block-specific content such as maps, CTA emails, galleries, and videos.
+Update block-specific content such as maps, Email Button addresses, galleries, and videos.
 
 ### How to Update the Map Block {#how-to-update-the-map-block}
 
@@ -378,12 +378,12 @@ Update block-specific content such as maps, CTA emails, galleries, and videos.
 
 ![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
 
-### How to Change the Email Address Connected to a CTA Button {#how-to-change-the-email-address-connected-to-a-cta-button}
+### How to Change the Email Address Connected to an Email Button {#how-to-change-the-email-address-connected-to-an-email-button}
 
 1. Change the email address but keep the `mailto:` prefix.
 2. Save your changes.
 
-![Change CTA email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
+![Change Email Button email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
 
 ### How to Add an Image to the Image Gallery {#how-to-add-an-image-to-the-image-gallery}
 
@@ -401,9 +401,9 @@ Update block-specific content such as maps, CTA emails, galleries, and videos.
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
 
-### How to change an embedded video {#how-to-change-an-embedded-video}
+### How to change a video {#how-to-change-a-video}
 
-1. Change the link to the link of the video you want to embed.
+1. Change the link to the link of the video you want to show.
 2. Save your changes.
 
-![Change embedded video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)
+![Change video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)

@@ -17,7 +17,7 @@ Public-site workflows for visitors, invited owners, and returning members.
 
 As a visitor (not signed in), browse the public marketing site to learn what APIC is, explore category pages, and find how to get in touch or sign in. There is no public self-registration.
 
-**Note:** Category pages such as **Food & Dining** and **Services & Maintenance** are public. **About Us** and **News & Events** currently require sign-in; choosing them while signed out opens the **Sign in** page.
+**Note:** Category pages such as **Food & Dining** and **Services & Maintenance** are public. **About Us** and **News, Events & Activities** currently require sign-in; choosing them while signed out opens the **Sign in** page.
 
 ### Steps
 
@@ -48,7 +48,7 @@ As a visitor (not signed in), browse the public marketing site to learn what API
 
 - Return to the home page.
 - Click **About Us** in the navigation bar.
-- You should be redirected to **Sign in** (with a return path to About). Use **News & Events** the same way — it also requires an account when you are signed out.
+- You should be redirected to **Sign in** (with a return path to About). Use **News, Events & Activities** the same way — it also requires an account when you are signed out.
 
 ![Step 4](screenshots/us01-04-about-gated.png)
 
