@@ -14,6 +14,7 @@ import {
 	LOCATION_SUB_STEPS,
 	normalizeBlogBody,
 	STEP_BODY,
+	STEP_FEATURED_IMAGE,
 	STEP_HEADER,
 	STEP_LOCATION,
 	STEP_PREVIEW
@@ -23,10 +24,12 @@ import {
 	toDatetimeLocalValue
 } from '@/components/admin/blog-form/datetime-local';
 import BodyStep from '@/components/admin/blog-form/steps/body-step';
+import FeaturedImageStep from '@/components/admin/blog-form/steps/featured-image-step';
 import HeaderStep from '@/components/admin/blog-form/steps/header-step';
 import PreviewStep from '@/components/admin/blog-form/steps/preview-step';
 import { Button } from '@/components/ui/button';
 import {
+	clearBlogThumbnail,
 	createDraft,
 	publish,
 	updateDraft,
@@ -127,9 +130,7 @@ export default function BlogFormStepper({
 		post?.thumbnail_path ?? null
 	);
 	const [thumbnailUploading, setThumbnailUploading] = useState(false);
-	const [pendingThumbnailFile, setPendingThumbnailFile] = useState<File | null>(
-		null
-	);
+	const thumbnailUploadGenRef = useRef(0);
 	const [body, setBody] = useState<Json>(() => normalizeBlogBody(post?.body));
 
 	const [address, setAddress] = useState(mapLocation?.address ?? '');
@@ -174,13 +175,17 @@ export default function BlogFormStepper({
 				}
 			: null;
 
-	function draftSnapshot(publishedAtIso: string, nextBody: Json = body) {
+	function draftSnapshot(
+		publishedAtIso: string,
+		nextBody: Json = body,
+		nextThumbnailPath: string | null = thumbnailPath
+	) {
 		return JSON.stringify({
 			title: title.trim(),
 			author: author.trim(),
 			publishedAt: publishedAtIso,
 			shortDescription: shortDescription.trim(),
-			thumbnailPath,
+			thumbnailPath: nextThumbnailPath,
 			body: nextBody
 		});
 	}
@@ -274,10 +279,6 @@ export default function BlogFormStepper({
 		setSaveStatus('saved');
 		setMessage('Draft created.');
 
-		if (pendingThumbnailFile) {
-			await uploadThumbnailForPost(result.id, pendingThumbnailFile);
-		}
-
 		return result.id;
 	}
 
@@ -329,14 +330,17 @@ export default function BlogFormStepper({
 		return true;
 	}
 
-	async function uploadThumbnailForPost(id: string, file: File) {
+	async function uploadThumbnailForPost(
+		id: string,
+		file: File,
+		uploadGen: number
+	): Promise<boolean> {
 		setThumbnailUploading(true);
-		setPendingThumbnailFile(null);
 		try {
 			const compressed = await compressBlogImage(file);
 			if (isBlogImageTooLarge(compressed)) {
 				setError(BLOG_IMAGE_TOO_LARGE_MESSAGE);
-				return;
+				return false;
 			}
 			const formData = new FormData();
 			formData.set('postId', id);
@@ -345,45 +349,80 @@ export default function BlogFormStepper({
 			const uploaded = await uploadBlogImage(formData);
 			if (!uploaded.ok) {
 				setError(friendlyBlogImageUploadError(uploaded.error));
-				return;
+				return false;
+			}
+			if (uploadGen !== thumbnailUploadGenRef.current) {
+				return false;
 			}
 			const updated = await updateDraft(id, {
 				thumbnailPath: uploaded.path
 			});
 			if (!updated.ok) {
 				setError(updated.error);
-				return;
+				return false;
+			}
+			if (uploadGen !== thumbnailUploadGenRef.current) {
+				return false;
 			}
 			setThumbnailPath(updated.post.thumbnail_path);
 			lastSavedSnapshotRef.current = draftSnapshot(
-				updated.post.published_at
+				updated.post.published_at,
+				body,
+				updated.post.thumbnail_path
 			);
 			setMessage('Featured image uploaded.');
+			return true;
 		} catch (error) {
 			const message =
 				error instanceof Error ? error.message : String(error);
 			setError(friendlyBlogImageUploadError(message));
+			return false;
 		} finally {
 			setThumbnailUploading(false);
 		}
 	}
 
-	async function handleThumbnailFile(file: File | null) {
-		if (!file) return;
+	async function handleThumbnailFile(file: File): Promise<boolean> {
 		setError(null);
-		if (!postId) {
-			const compressed = await compressBlogImage(file);
-			if (isBlogImageTooLarge(compressed)) {
-				setError(BLOG_IMAGE_TOO_LARGE_MESSAGE);
-				return;
-			}
-			setPendingThumbnailFile(compressed);
-			setMessage(
-				'Image selected — it will upload after the draft is created.'
-			);
+		setMessage(null);
+		const uploadGen = ++thumbnailUploadGenRef.current;
+		const id = postId ?? (await ensureDraftId());
+		if (!id) return false;
+		if (uploadGen !== thumbnailUploadGenRef.current) return false;
+		return uploadThumbnailForPost(id, file, uploadGen);
+	}
+
+	async function handleClearThumbnail() {
+		thumbnailUploadGenRef.current += 1;
+		setError(null);
+		setMessage(null);
+		if (!thumbnailPath) {
+			setThumbnailPath(null);
 			return;
 		}
-		await uploadThumbnailForPost(postId, file);
+		const id = postId;
+		if (!id) {
+			setThumbnailPath(null);
+			return;
+		}
+		setThumbnailUploading(true);
+		try {
+			const cleared = await clearBlogThumbnail(id);
+			if (!cleared.ok) {
+				setError(cleared.error);
+				return;
+			}
+			setThumbnailPath(null);
+			lastSavedSnapshotRef.current = draftSnapshot(
+				fromDatetimeLocalValue(publishedAtLocal) ??
+					new Date().toISOString(),
+				body,
+				null
+			);
+			setMessage('Featured image removed.');
+		} finally {
+			setThumbnailUploading(false);
+		}
 	}
 
 	async function persistLocation(id: string): Promise<boolean> {
@@ -463,6 +502,12 @@ export default function BlogFormStepper({
 				if (!id) return;
 				const ok = await persistDraft(id);
 				if (!ok) return;
+				setCurrentStep(STEP_FEATURED_IMAGE);
+				return;
+			}
+
+			if (currentStep === STEP_FEATURED_IMAGE) {
+				if (thumbnailUploading || !thumbnailPath) return;
 				setCurrentStep(STEP_LOCATION);
 				return;
 			}
@@ -604,6 +649,9 @@ export default function BlogFormStepper({
 			if (isLastStep) return 'Publishing…';
 			return 'Next';
 		}
+		if (currentStep === STEP_FEATURED_IMAGE) {
+			return 'Next';
+		}
 		if (currentStep === STEP_LOCATION && locationSubStep === LOCATION_SUB_FIND) {
 			return 'Continue to pin';
 		}
@@ -714,15 +762,22 @@ export default function BlogFormStepper({
 							author={author}
 							publishedAtLocal={publishedAtLocal}
 							shortDescription={shortDescription}
-							thumbnailPath={thumbnailPath}
-							thumbnailUploading={thumbnailUploading}
-							canUploadThumbnail={Boolean(postId)}
 							onTitleChange={setTitle}
 							onAuthorChange={setAuthor}
 							onPublishedAtLocalChange={setPublishedAtLocal}
 							onShortDescriptionChange={setShortDescription}
-							onThumbnailFile={file => {
-								void handleThumbnailFile(file);
+						/>
+					) : null}
+
+					{currentStep === STEP_FEATURED_IMAGE ? (
+						<FeaturedImageStep
+							thumbnailPath={thumbnailPath}
+							thumbnailUploading={thumbnailUploading}
+							onThumbnailFile={handleThumbnailFile}
+							onClear={handleClearThumbnail}
+							onReject={message => {
+								setError(message);
+								setMessage(null);
 							}}
 						/>
 					) : null}
@@ -832,6 +887,11 @@ export default function BlogFormStepper({
 						<Button
 							type="button"
 							loading={pending}
+							disabled={
+								pending ||
+								(currentStep === STEP_FEATURED_IMAGE &&
+									(thumbnailUploading || !thumbnailPath))
+							}
 							onClick={goNext}
 							className={
 								isLastStep

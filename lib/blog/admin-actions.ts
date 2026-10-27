@@ -506,6 +506,51 @@ export async function softDelete(
 }
 
 /**
+ * Remove the featured image from storage (when present) and null `thumbnail_path`.
+ */
+export async function clearBlogThumbnail(
+	id: string
+): Promise<BlogActionResult<{ id: string }>> {
+	try {
+		const { supabase, user } = await requireAdmin();
+		const postId = id?.trim();
+		if (!postId) return { ok: false, error: 'Post id is required.' };
+
+		const existing = await loadVisiblePost(supabase, postId);
+		if (!existing) {
+			return { ok: false, error: 'Post not found or deleted.' };
+		}
+
+		const path = existing.thumbnail_path?.trim();
+		if (path) {
+			const { error: removeError } = await supabase.storage
+				.from(BLOG_IMAGES_BUCKET)
+				.remove([path]);
+			if (removeError) {
+				return { ok: false, error: removeError.message };
+			}
+		}
+
+		const { error } = await supabase
+			.from('blog_posts')
+			.update({
+				thumbnail_path: null,
+				updated_by: user.id
+			})
+			.eq('id', postId);
+
+		if (error) {
+			return { ok: false, error: error.message };
+		}
+
+		revalidateBlogPaths(existing.slug);
+		return { ok: true, id: postId };
+	} catch (error) {
+		return fail(error, 'Could not clear featured image.');
+	}
+}
+
+/**
  * Upload an image into `blog-images` at `{postId}/thumbnail|body/{filename}`.
  * Prefer FormData from the client: `postId`, `kind` (`thumbnail`|`body`), `file`.
  * Does not update `thumbnail_path` — caller should pass the returned `path` to

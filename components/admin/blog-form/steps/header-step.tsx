@@ -1,30 +1,18 @@
 'use client';
 
-import { useRef } from 'react';
-import Image from 'next/image';
-import { Upload } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-	BLOG_THUMBNAIL_PLACEHOLDER,
-	getBlogThumbnailUrl
-} from '@/lib/blog/thumbnail';
 
 type HeaderStepProps = {
 	title: string;
 	author: string;
 	publishedAtLocal: string;
 	shortDescription: string;
-	thumbnailPath: string | null;
-	thumbnailUploading: boolean;
-	canUploadThumbnail: boolean;
 	onTitleChange: (value: string) => void;
 	onAuthorChange: (value: string) => void;
 	onPublishedAtLocalChange: (value: string) => void;
 	onShortDescriptionChange: (value: string) => void;
-	onThumbnailFile: (file: File | null) => void;
 };
 
 export default function HeaderStep({
@@ -32,26 +20,17 @@ export default function HeaderStep({
 	author,
 	publishedAtLocal,
 	shortDescription,
-	thumbnailPath,
-	thumbnailUploading,
-	canUploadThumbnail,
 	onTitleChange,
 	onAuthorChange,
 	onPublishedAtLocalChange,
-	onShortDescriptionChange,
-	onThumbnailFile
+	onShortDescriptionChange
 }: HeaderStepProps) {
-	const fileInputRef = useRef<HTMLInputElement>(null);
-	const previewSrc =
-		getBlogThumbnailUrl(thumbnailPath) ?? BLOG_THUMBNAIL_PLACEHOLDER;
-
 	return (
 		<section className="space-y-8">
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Article header</h3>
 				<p className="mt-1 text-xs text-[#888]">
 					Title, byline, date, and intro as they appear on the public article.
-					Featured image is optional.
 				</p>
 			</div>
 
@@ -100,50 +79,6 @@ export default function HeaderStep({
 						placeholder="Lead paragraph shown under the byline…"
 						className="min-h-28 resize-y whitespace-pre-line font-sans text-base leading-relaxed text-[#555555] sm:text-lg"
 					/>
-				</div>
-
-				<div className="space-y-3">
-					<div>
-						<Label htmlFor="blog-thumbnail">Featured image (optional)</Label>
-						<p className="mt-1 text-xs text-[#888]">
-							JPEG, PNG, WebP, or GIF up to 10 MiB.
-							{!canUploadThumbnail
-								? ' Image uploads after the draft is created.'
-								: null}
-						</p>
-					</div>
-					<input
-						ref={fileInputRef}
-						id="blog-thumbnail"
-						type="file"
-						accept="image/jpeg,image/png,image/webp,image/gif"
-						className="sr-only"
-						tabIndex={-1}
-						onChange={e => {
-							const file = e.target.files?.[0] ?? null;
-							onThumbnailFile(file);
-							e.target.value = '';
-						}}
-					/>
-					<Button
-						type="button"
-						variant="secondary"
-						loading={thumbnailUploading}
-						disabled={thumbnailUploading}
-						onClick={() => fileInputRef.current?.click()}
-					>
-						<Upload data-icon="inline-start" />
-						Upload
-					</Button>
-					<div className="relative mt-2 aspect-4/3 w-full max-w-md overflow-hidden bg-[#e8e4dc]">
-						<Image
-							src={previewSrc}
-							alt=""
-							fill
-							className="object-cover"
-							sizes="(min-width: 640px) 28rem, 100vw"
-						/>
-					</div>
 				</div>
 			</div>
 		</section>

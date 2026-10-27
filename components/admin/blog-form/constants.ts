@@ -2,12 +2,14 @@ import type { StepperStep } from '@/components/admin/listing-form/stepper-nav';
 import type { Json } from '@/lib/supabase/database.types';
 
 export const STEP_HEADER = 0;
-export const STEP_LOCATION = 1;
-export const STEP_BODY = 2;
-export const STEP_PREVIEW = 3;
+export const STEP_FEATURED_IMAGE = 1;
+export const STEP_LOCATION = 2;
+export const STEP_BODY = 3;
+export const STEP_PREVIEW = 4;
 
 export const BLOG_FORM_STEPS: StepperStep[] = [
 	{ id: 'header', label: 'Header' },
+	{ id: 'featured-image', label: 'Featured image' },
 	{ id: 'location', label: 'Location' },
 	{ id: 'body', label: 'Body' },
 	{ id: 'preview', label: 'Preview' }
