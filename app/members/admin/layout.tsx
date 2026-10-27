@@ -51,12 +51,12 @@ export default async function MembersAdminLayout({
 					>
 						Keywords
 					</Link>
-					<a
-						href="/admin#/collections/blog/~"
+					<Link
+						href="/members/admin/blog/new"
 						className="text-[#805b32] underline"
 					>
-						Blog admin
-					</a>
+						Blog
+					</Link>
 					<a href="/admin#/~/place" className="text-[#805b32] underline">
 						Content admin
 					</a>

@@ -148,6 +148,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "blog_map_locations_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: true
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "blog_map_locations_updated_by_fkey"
             columns: ["updated_by"]
             isOneToOne: false

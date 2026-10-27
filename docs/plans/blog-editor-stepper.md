@@ -22,7 +22,7 @@ todos:
     status: completed
   - id: stage-7-migrate-cutover
     content: "Stage 7: migrate golf post (your content review) then remove Tina blog entirely"
-    status: pending
+    status: completed
 isProject: false
 ---
 

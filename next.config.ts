@@ -56,15 +56,12 @@ const nextConfig: NextConfig = {
 		]
 	},
 	async redirects() {
+		// `/blog/1` → title slug via `blog_slug_redirects` (Stage 7).
+		// Title slug is the canonical public URL.
 		return [
 			{
 				source: '/events',
 				destination: '/blog',
-				permanent: true
-			},
-			{
-				source: '/blog/castelfalfi-owners-friends-golf-tournament',
-				destination: '/blog/1',
 				permanent: true
 			}
 		];

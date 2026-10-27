@@ -4,10 +4,7 @@ import { requireAdmin } from '@/lib/admin/require-admin';
 import { isBlogMapPostId } from '@/lib/blog/map-post-id';
 import { createClient } from '@/lib/supabase/server';
 
-// `blog_map_locations.post_id` remains text so Tina numeric ids (`1`) keep
-// working. UUID strings from `blog_posts.id` are already valid. Stage 7 will
-// migrate the golf post and convert this column to a uuid FK → blog_posts.id.
-// Do not change the schema here.
+// `blog_map_locations.post_id` is uuid FK → blog_posts(id) (Stage 7).
 
 export type BlogMapLocation = {
 	postId: string;
