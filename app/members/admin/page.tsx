@@ -18,7 +18,7 @@ const quickActions = [
 	},
 	{
 		label: 'Add Blog article',
-		href: '/admin#/collections/new/blog'
+		href: '/members/admin/blog/new'
 	}
 ] as const;
 

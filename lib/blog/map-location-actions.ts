@@ -121,3 +121,32 @@ export async function upsertBlogMapLocation(
 
 	return mapRow(data);
 }
+
+/** Remove a map pin for a post. No-op if none exists. */
+export async function deleteBlogMapLocation(
+	postId: string
+): Promise<{ ok: true } | { ok: false; error: string }> {
+	try {
+		const { supabase } = await requireAdmin();
+		const id = normalizePostId(postId);
+		if (!id) {
+			return { ok: false, error: 'Invalid post ID' };
+		}
+
+		const { error } = await supabase
+			.from('blog_map_locations')
+			.delete()
+			.eq('post_id', id);
+
+		if (error) {
+			return { ok: false, error: error.message };
+		}
+
+		return { ok: true };
+	} catch (error) {
+		return {
+			ok: false,
+			error: error instanceof Error ? error.message : 'Delete failed.'
+		};
+	}
+}

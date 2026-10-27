@@ -1,4 +1,5 @@
 import { isAdmin } from '@/lib/admin/is-admin';
+import { requireAdmin } from '@/lib/admin/require-admin';
 import { createClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/supabase/database.types';
 import type {
@@ -123,4 +124,29 @@ export async function getBlogPostBySlug(
 	}
 
 	return { kind: 'redirect', slug: target.slug, isAdmin: admin };
+}
+
+/**
+ * Admin edit loader: published or draft by UUID. Soft-deleted / missing → null.
+ * RLS already hides deleted rows from admins.
+ */
+export async function getBlogPostForAdmin(
+	id: string
+): Promise<BlogPost | null> {
+	const postId = id?.trim();
+	if (!postId) return null;
+
+	const { supabase } = await requireAdmin();
+	const { data, error } = await supabase
+		.from('blog_posts')
+		.select(LIST_SELECT)
+		.eq('id', postId)
+		.in('status', ['published', 'draft'])
+		.maybeSingle();
+
+	if (error) {
+		throw new Error(error.message);
+	}
+	if (!data) return null;
+	return mapPost(data);
 }

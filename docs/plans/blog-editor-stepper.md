@@ -13,7 +13,7 @@ todos:
     status: completed
   - id: stage-4-header-location
     content: "Stage 4: BlogFormStepper steps 1–2 (header + location) with draft create/autosave; admin create/edit routes"
-    status: pending
+    status: completed
   - id: stage-5-tiptap-preview
     content: "Stage 5: TipTap body step + preview/publish step; next/image body rendering"
     status: pending
