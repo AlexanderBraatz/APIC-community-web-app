@@ -26,7 +26,7 @@ type FeaturedImageStepProps = {
 	thumbnailPath: string | null;
 	thumbnailUploading: boolean;
 	onThumbnailFile: (file: File) => Promise<boolean>;
-	onSelectPrevious: (path: string) => Promise<boolean>;
+	onSelectPrevious: (assetId: string) => Promise<boolean>;
 	onClear: () => void | Promise<void>;
 	onReject: (message: string) => void;
 };
@@ -120,10 +120,10 @@ export default function FeaturedImageStep({
 		await onClear();
 	}
 
-	async function handleSelectPrevious(path: string) {
+	async function handleSelectPrevious(assetId: string) {
 		if (thumbnailUploading) return;
 		setFiles([]);
-		await onSelectPrevious(path);
+		await onSelectPrevious(assetId);
 	}
 
 	return (
@@ -274,13 +274,13 @@ export default function FeaturedImageStep({
 					) : (
 						<ul className="grid w-full grid-cols-2 gap-2 xl:grid-cols-4 xl:gap-3">
 							{galleryItems.map(item => (
-								<li key={item.path} className="min-w-0 overflow-hidden">
+								<li key={item.assetId} className="min-w-0 overflow-hidden">
 									<button
 										type="button"
 										disabled={thumbnailUploading}
 										aria-label="Use this featured image"
 										onClick={() => {
-											void handleSelectPrevious(item.path);
+											void handleSelectPrevious(item.assetId);
 										}}
 										className="relative block aspect-4/3 w-full overflow-hidden rounded-[2px] border border-[#b8a99a]/40 bg-[#e8e4dc] outline-none transition hover:border-[#805b32]/60 focus-visible:ring-2 focus-visible:ring-[#805b32]/40 disabled:opacity-50"
 									>

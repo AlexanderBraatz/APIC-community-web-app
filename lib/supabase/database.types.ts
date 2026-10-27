@@ -175,6 +175,7 @@ export type Database = {
           short_description: string
           slug: string
           status: string
+          thumbnail_asset_id: string | null
           thumbnail_path: string | null
           title: string
           updated_at: string
@@ -191,6 +192,7 @@ export type Database = {
           short_description: string
           slug: string
           status?: string
+          thumbnail_asset_id?: string | null
           thumbnail_path?: string | null
           title: string
           updated_at?: string
@@ -207,6 +209,7 @@ export type Database = {
           short_description?: string
           slug?: string
           status?: string
+          thumbnail_asset_id?: string | null
           thumbnail_path?: string | null
           title?: string
           updated_at?: string
@@ -218,6 +221,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_thumbnail_asset_id_fkey"
+            columns: ["thumbnail_asset_id"]
+            isOneToOne: false
+            referencedRelation: "blog_thumbnail_assets"
             referencedColumns: ["id"]
           },
           {
@@ -254,6 +264,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      blog_thumbnail_assets: {
+        Row: {
+          content_sha256: string
+          created_at: string
+          id: string
+          last_used_at: string
+          storage_path: string
+        }
+        Insert: {
+          content_sha256: string
+          created_at?: string
+          id?: string
+          last_used_at?: string
+          storage_path: string
+        }
+        Update: {
+          content_sha256?: string
+          created_at?: string
+          id?: string
+          last_used_at?: string
+          storage_path?: string
+        }
+        Relationships: []
       }
       listing_tag_assignments: {
         Row: {

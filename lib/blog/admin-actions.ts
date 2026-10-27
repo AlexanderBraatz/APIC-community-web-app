@@ -1,6 +1,6 @@
 'use server';
 
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import {
@@ -40,6 +40,7 @@ export type UpdateDraftInput = {
 	publishedAt?: string;
 	shortDescription?: string;
 	thumbnailPath?: string | null;
+	thumbnailAssetId?: string | null;
 	body?: Json;
 };
 
@@ -52,7 +53,7 @@ const ALLOWED_IMAGE_MIME = new Set([
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MiB (bucket limit)
 
 const POST_SELECT =
-	'id, slug, title, author, published_at, short_description, thumbnail_path, body, status' as const;
+	'id, slug, title, author, published_at, short_description, thumbnail_path, thumbnail_asset_id, body, status' as const;
 
 type PostRow = {
 	id: string;
@@ -62,9 +63,19 @@ type PostRow = {
 	published_at: string;
 	short_description: string;
 	thumbnail_path: string | null;
+	thumbnail_asset_id: string | null;
 	body: Json;
 	status: string;
 };
+
+type ThumbnailAssetRow = {
+	id: string;
+	storage_path: string;
+	content_sha256: string;
+	last_used_at: string;
+};
+
+type AdminSupabase = Awaited<ReturnType<typeof requireAdmin>>['supabase'];
 
 function mapPost(row: PostRow): BlogPost {
 	return {
@@ -78,6 +89,10 @@ function mapPost(row: PostRow): BlogPost {
 		body: row.body,
 		status: row.status as BlogPostStatus
 	};
+}
+
+function sha256Hex(buffer: Buffer): string {
+	return createHash('sha256').update(buffer).digest('hex');
 }
 
 function fail(error: unknown, fallback: string): BlogActionErr {
@@ -178,7 +193,7 @@ function revalidateBlogPaths(...slugs: Array<string | null | undefined>) {
 }
 
 async function loadVisiblePost(
-	supabase: Awaited<ReturnType<typeof requireAdmin>>['supabase'],
+	supabase: AdminSupabase,
 	id: string
 ): Promise<PostRow | null> {
 	const { data, error } = await supabase
@@ -192,6 +207,128 @@ async function loadVisiblePost(
 	}
 	// Soft-deleted rows are invisible under RLS → null (treat as not found).
 	return data;
+}
+
+async function loadThumbnailAsset(
+	supabase: AdminSupabase,
+	assetId: string
+): Promise<ThumbnailAssetRow | null> {
+	const { data, error } = await supabase
+		.from('blog_thumbnail_assets')
+		.select('id, storage_path, content_sha256, last_used_at')
+		.eq('id', assetId)
+		.maybeSingle();
+	if (error) throw new Error(error.message);
+	return data;
+}
+
+async function findThumbnailAssetByHash(
+	supabase: AdminSupabase,
+	contentSha256: string
+): Promise<ThumbnailAssetRow | null> {
+	const { data, error } = await supabase
+		.from('blog_thumbnail_assets')
+		.select('id, storage_path, content_sha256, last_used_at')
+		.eq('content_sha256', contentSha256)
+		.maybeSingle();
+	if (error) throw new Error(error.message);
+	return data;
+}
+
+async function countThumbnailAssetRefs(
+	supabase: AdminSupabase,
+	assetId: string,
+	excludePostId?: string
+): Promise<number> {
+	let query = supabase
+		.from('blog_posts')
+		.select('id', { count: 'exact', head: true })
+		.eq('thumbnail_asset_id', assetId);
+	if (excludePostId) {
+		query = query.neq('id', excludePostId);
+	}
+	const { count, error } = await query;
+	if (error) throw new Error(error.message);
+	return count ?? 0;
+}
+
+/** Delete asset row + storage object when no posts reference it. */
+async function maybeGcThumbnailAsset(
+	supabase: AdminSupabase,
+	assetId: string | null | undefined,
+	excludePostId?: string
+): Promise<void> {
+	const id = assetId?.trim();
+	if (!id) return;
+
+	const refs = await countThumbnailAssetRefs(supabase, id, excludePostId);
+	if (refs > 0) return;
+
+	const asset = await loadThumbnailAsset(supabase, id);
+	if (!asset) return;
+
+	await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([asset.storage_path]);
+	await supabase.from('blog_thumbnail_assets').delete().eq('id', id);
+}
+
+async function setPostThumbnailAsset(
+	supabase: AdminSupabase,
+	input: {
+		postId: string;
+		userId: string;
+		asset: ThumbnailAssetRow;
+		previousAssetId: string | null;
+		slug: string;
+	}
+): Promise<BlogActionResult<{ path: string; publicUrl: string; assetId: string }>> {
+	const now = new Date().toISOString();
+	const { error: bumpError } = await supabase
+		.from('blog_thumbnail_assets')
+		.update({ last_used_at: now })
+		.eq('id', input.asset.id);
+	if (bumpError) {
+		return { ok: false, error: bumpError.message };
+	}
+
+	const { error: updateError } = await supabase
+		.from('blog_posts')
+		.update({
+			thumbnail_path: input.asset.storage_path,
+			thumbnail_asset_id: input.asset.id,
+			updated_by: input.userId
+		})
+		.eq('id', input.postId);
+
+	if (updateError) {
+		return { ok: false, error: updateError.message };
+	}
+
+	if (
+		input.previousAssetId &&
+		input.previousAssetId !== input.asset.id
+	) {
+		await maybeGcThumbnailAsset(
+			supabase,
+			input.previousAssetId,
+			input.postId
+		);
+	}
+
+	const publicUrl = getBlogThumbnailUrl(input.asset.storage_path);
+	if (!publicUrl) {
+		return {
+			ok: false,
+			error: 'Could not build public URL for featured image.'
+		};
+	}
+
+	revalidateBlogPaths(input.slug);
+	return {
+		ok: true,
+		path: input.asset.storage_path,
+		publicUrl,
+		assetId: input.asset.id
+	};
 }
 
 function sanitizeUploadFilename(name: string): string {
@@ -293,6 +430,7 @@ export async function updateDraft(
 			published_at?: string;
 			short_description?: string;
 			thumbnail_path?: string | null;
+			thumbnail_asset_id?: string | null;
 			body?: Json;
 			slug?: string;
 			updated_by: string;
@@ -325,14 +463,32 @@ export async function updateDraft(
 		if (partial.thumbnailPath !== undefined) {
 			if (partial.thumbnailPath === null) {
 				patch.thumbnail_path = null;
+				patch.thumbnail_asset_id = null;
 			} else if (typeof partial.thumbnailPath === 'string') {
 				const trimmed = partial.thumbnailPath.trim();
 				if (trimmed.length > 1000) {
 					return { ok: false, error: 'Thumbnail path is too long.' };
 				}
 				patch.thumbnail_path = trimmed || null;
+				if (!trimmed) {
+					patch.thumbnail_asset_id = null;
+				}
 			} else {
 				return { ok: false, error: 'Thumbnail path is invalid.' };
+			}
+		}
+		if (partial.thumbnailAssetId !== undefined) {
+			if (partial.thumbnailAssetId === null) {
+				patch.thumbnail_asset_id = null;
+			} else if (typeof partial.thumbnailAssetId === 'string') {
+				const trimmed = partial.thumbnailAssetId.trim();
+				if (!trimmed) {
+					patch.thumbnail_asset_id = null;
+				} else {
+					patch.thumbnail_asset_id = trimmed;
+				}
+			} else {
+				return { ok: false, error: 'Thumbnail asset id is invalid.' };
 			}
 		}
 		if (partial.body !== undefined) {
@@ -521,7 +677,8 @@ export async function softDelete(
 }
 
 /**
- * Remove the featured image from storage (when present) and null `thumbnail_path`.
+ * Detach this post’s featured image. Deletes the shared asset (+ storage)
+ * only when no other posts still reference it.
  */
 export async function clearBlogThumbnail(
 	id: string
@@ -536,20 +693,13 @@ export async function clearBlogThumbnail(
 			return { ok: false, error: 'Post not found or deleted.' };
 		}
 
-		const path = existing.thumbnail_path?.trim();
-		if (path) {
-			const { error: removeError } = await supabase.storage
-				.from(BLOG_IMAGES_BUCKET)
-				.remove([path]);
-			if (removeError) {
-				return { ok: false, error: removeError.message };
-			}
-		}
+		const previousAssetId = existing.thumbnail_asset_id;
 
 		const { error } = await supabase
 			.from('blog_posts')
 			.update({
 				thumbnail_path: null,
+				thumbnail_asset_id: null,
 				updated_by: user.id
 			})
 			.eq('id', postId);
@@ -557,6 +707,8 @@ export async function clearBlogThumbnail(
 		if (error) {
 			return { ok: false, error: error.message };
 		}
+
+		await maybeGcThumbnailAsset(supabase, previousAssetId, postId);
 
 		revalidateBlogPaths(existing.slug);
 		return { ok: true, id: postId };
@@ -566,15 +718,18 @@ export async function clearBlogThumbnail(
 }
 
 /**
- * Upload an image into `blog-images` at `{postId}/thumbnail|body/{filename}`.
+ * Upload an image into `blog-images`.
  * Prefer FormData from the client: `postId`, `kind` (`thumbnail`|`body`), `file`.
- * Does not update `thumbnail_path` — caller should pass the returned `path` to
- * `updateDraft` when setting a featured image.
+ *
+ * - `body`: writes `{postId}/body/{filename}` (unchanged).
+ * - `thumbnail`: SHA-256 dedupe against `blog_thumbnail_assets`; reuses or
+ *   creates under `thumbnails/{assetId}/...`. Does not update the post —
+ *   caller should pass returned `path` + `assetId` to `updateDraft`.
  */
 export async function uploadBlogImage(
 	formData: FormData
 ): Promise<
-	BlogActionResult<{ path: string; publicUrl: string }>
+	BlogActionResult<{ path: string; publicUrl: string; assetId?: string }>
 > {
 	try {
 		const { supabase } = await requireAdmin();
@@ -609,22 +764,103 @@ export async function uploadBlogImage(
 			return { ok: false, error: 'Post not found or deleted.' };
 		}
 
-		const filename = sanitizeUploadFilename(file.name || 'image.jpg');
-		const path = `${postId}/${kindRaw}/${filename}`;
-
 		const buffer = Buffer.from(await file.arrayBuffer());
+		const filename = sanitizeUploadFilename(file.name || 'image.jpg');
+
+		if (kindRaw === 'body') {
+			const path = `${postId}/body/${filename}`;
+			const { error: uploadError } = await supabase.storage
+				.from(BLOG_IMAGES_BUCKET)
+				.upload(path, buffer, {
+					contentType: file.type,
+					upsert: true
+				});
+
+			if (uploadError) {
+				return { ok: false, error: uploadError.message };
+			}
+
+			const publicUrl = getBlogThumbnailUrl(path);
+			if (!publicUrl) {
+				return {
+					ok: false,
+					error: 'Upload succeeded but public URL could not be built.'
+				};
+			}
+
+			return { ok: true, path, publicUrl };
+		}
+
+		const contentSha256 = sha256Hex(buffer);
+		const reused = await findThumbnailAssetByHash(supabase, contentSha256);
+		if (reused) {
+			const publicUrl = getBlogThumbnailUrl(reused.storage_path);
+			if (!publicUrl) {
+				return {
+					ok: false,
+					error: 'Could not build public URL for featured image.'
+				};
+			}
+			return {
+				ok: true,
+				path: reused.storage_path,
+				publicUrl,
+				assetId: reused.id
+			};
+		}
+
+		const assetId = randomUUID();
+		const path = `thumbnails/${assetId}/${filename}`;
 		const { error: uploadError } = await supabase.storage
 			.from(BLOG_IMAGES_BUCKET)
 			.upload(path, buffer, {
 				contentType: file.type,
-				upsert: true
+				upsert: false
 			});
 
 		if (uploadError) {
 			return { ok: false, error: uploadError.message };
 		}
 
-		const publicUrl = getBlogThumbnailUrl(path);
+		const { data: inserted, error: insertError } = await supabase
+			.from('blog_thumbnail_assets')
+			.insert({
+				id: assetId,
+				storage_path: path,
+				content_sha256: contentSha256
+			})
+			.select('id, storage_path, content_sha256, last_used_at')
+			.single();
+
+		if (insertError || !inserted) {
+			await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([path]);
+			// Race: another upload won the unique hash — reuse that asset.
+			const raced = await findThumbnailAssetByHash(
+				supabase,
+				contentSha256
+			);
+			if (raced) {
+				const publicUrl = getBlogThumbnailUrl(raced.storage_path);
+				if (!publicUrl) {
+					return {
+						ok: false,
+						error: 'Could not build public URL for featured image.'
+					};
+				}
+				return {
+					ok: true,
+					path: raced.storage_path,
+					publicUrl,
+					assetId: raced.id
+				};
+			}
+			return {
+				ok: false,
+				error: insertError?.message ?? 'Could not register featured image.'
+			};
+		}
+
+		const publicUrl = getBlogThumbnailUrl(inserted.storage_path);
 		if (!publicUrl) {
 			return {
 				ok: false,
@@ -632,42 +868,28 @@ export async function uploadBlogImage(
 			};
 		}
 
-		return { ok: true, path, publicUrl };
+		return {
+			ok: true,
+			path: inserted.storage_path,
+			publicUrl,
+			assetId: inserted.id
+		};
 	} catch (error) {
 		return fail(error, 'Upload failed.');
 	}
 }
 
 export type PreviousBlogThumbnail = {
+	assetId: string;
 	path: string;
 	publicUrl: string;
 };
 
 const PREVIOUS_THUMBNAIL_LIMIT = 36;
-/** Fetch extra path candidates so content-hash dedupe can still fill the grid. */
-const PREVIOUS_THUMBNAIL_CANDIDATE_LIMIT = 200;
-const PREVIOUS_THUMBNAIL_HASH_CONCURRENCY = 6;
-
-type AdminSupabase = Awaited<ReturnType<typeof requireAdmin>>['supabase'];
-
-async function hashBlogImageBytes(
-	supabase: AdminSupabase,
-	path: string
-): Promise<string | null> {
-	const { data, error } = await supabase.storage
-		.from(BLOG_IMAGES_BUCKET)
-		.download(path);
-	if (error || !data) return null;
-	const buffer = Buffer.from(await data.arrayBuffer());
-	if (buffer.length === 0) return null;
-	return createHash('sha256').update(buffer).digest('hex');
-}
 
 /**
- * Past featured images for the gallery (newest first).
- * Copy-on-select creates distinct storage paths for the same bytes, so we
- * dedupe by content hash and keep only the most recent use of each image.
- * Includes drafts and soft-deleted posts; files usually remain.
+ * Past featured images for the gallery (most recently used first).
+ * Shared assets — no per-request content hashing.
  */
 export async function listPreviousBlogThumbnails(): Promise<
 	BlogActionResult<{ items: PreviousBlogThumbnail[] }>
@@ -676,51 +898,24 @@ export async function listPreviousBlogThumbnails(): Promise<
 		const { supabase } = await requireAdmin();
 
 		const { data, error } = await supabase
-			.from('blog_posts')
-			.select('thumbnail_path, updated_at, published_at')
-			.not('thumbnail_path', 'is', null)
-			.order('updated_at', { ascending: false })
-			.limit(PREVIOUS_THUMBNAIL_CANDIDATE_LIMIT);
+			.from('blog_thumbnail_assets')
+			.select('id, storage_path')
+			.order('last_used_at', { ascending: false })
+			.limit(PREVIOUS_THUMBNAIL_LIMIT);
 
 		if (error) {
 			return { ok: false, error: error.message };
 		}
 
-		const candidatePaths: string[] = [];
-		const seenPaths = new Set<string>();
-		for (const row of data ?? []) {
-			const path = row.thumbnail_path?.trim();
-			if (!path || seenPaths.has(path)) continue;
-			seenPaths.add(path);
-			candidatePaths.push(path);
-		}
-
-		const seenHashes = new Set<string>();
 		const items: PreviousBlogThumbnail[] = [];
-
-		for (
-			let i = 0;
-			i < candidatePaths.length && items.length < PREVIOUS_THUMBNAIL_LIMIT;
-			i += PREVIOUS_THUMBNAIL_HASH_CONCURRENCY
-		) {
-			const batch = candidatePaths.slice(
-				i,
-				i + PREVIOUS_THUMBNAIL_HASH_CONCURRENCY
-			);
-			const hashes = await Promise.all(
-				batch.map(path => hashBlogImageBytes(supabase, path))
-			);
-
-			for (let j = 0; j < batch.length; j++) {
-				if (items.length >= PREVIOUS_THUMBNAIL_LIMIT) break;
-				const path = batch[j]!;
-				const hash = hashes[j];
-				if (!hash || seenHashes.has(hash)) continue;
-				const publicUrl = getBlogThumbnailUrl(path);
-				if (!publicUrl) continue;
-				seenHashes.add(hash);
-				items.push({ path, publicUrl });
-			}
+		for (const row of data ?? []) {
+			const publicUrl = getBlogThumbnailUrl(row.storage_path);
+			if (!publicUrl) continue;
+			items.push({
+				assetId: row.id,
+				path: row.storage_path,
+				publicUrl
+			});
 		}
 
 		return { ok: true, items };
@@ -729,77 +924,23 @@ export async function listPreviousBlogThumbnails(): Promise<
 	}
 }
 
-function thumbnailBasename(path: string): string {
-	return sanitizeUploadFilename(path.split('/').pop() || 'image.jpg');
-}
-
-function withUniqueSuffix(filename: string): string {
-	const suffix = Math.random().toString(36).slice(2, 8);
-	const dot = filename.lastIndexOf('.');
-	if (dot <= 0) return `${filename}-${suffix}`;
-	return `${filename.slice(0, dot)}-${suffix}${filename.slice(dot)}`;
-}
-
-async function copyStorageObject(
-	supabase: Awaited<ReturnType<typeof requireAdmin>>['supabase'],
-	sourcePath: string,
-	destPath: string
-): Promise<string | null> {
-	const { error: copyError } = await supabase.storage
-		.from(BLOG_IMAGES_BUCKET)
-		.copy(sourcePath, destPath);
-
-	if (!copyError) return null;
-
-	const { data: blob, error: downloadError } = await supabase.storage
-		.from(BLOG_IMAGES_BUCKET)
-		.download(sourcePath);
-
-	if (downloadError || !blob) {
-		return (
-			downloadError?.message ||
-			copyError.message ||
-			'Could not copy featured image.'
-		);
-	}
-
-	const buffer = Buffer.from(await blob.arrayBuffer());
-	const contentType =
-		blob.type && blob.type.startsWith('image/')
-			? blob.type
-			: 'image/jpeg';
-
-	const { error: uploadError } = await supabase.storage
-		.from(BLOG_IMAGES_BUCKET)
-		.upload(destPath, buffer, {
-			contentType,
-			upsert: false
-		});
-
-	if (uploadError) {
-		return uploadError.message;
-	}
-
-	return null;
-}
-
 /**
- * Copy a previous featured image into `{postId}/thumbnail/...` and set
- * `thumbnail_path`. Does not delete the source object. Removes this post’s
- * previous thumbnail object when replacing.
+ * Point this post at an existing shared featured-image asset (no storage copy).
  */
-export async function copyBlogThumbnail(input: {
+export async function attachBlogThumbnailAsset(input: {
 	postId: string;
-	sourcePath: string;
-}): Promise<BlogActionResult<{ path: string; publicUrl: string }>> {
+	assetId: string;
+}): Promise<
+	BlogActionResult<{ path: string; publicUrl: string; assetId: string }>
+> {
 	try {
 		const { supabase, user } = await requireAdmin();
 		const postId = input.postId?.trim();
-		const sourcePath = input.sourcePath?.trim();
+		const assetId = input.assetId?.trim();
 
 		if (!postId) return { ok: false, error: 'Post id is required.' };
-		if (!sourcePath) {
-			return { ok: false, error: 'Source image path is required.' };
+		if (!assetId) {
+			return { ok: false, error: 'Featured image asset is required.' };
 		}
 
 		const existing = await loadVisiblePost(supabase, postId);
@@ -807,104 +948,216 @@ export async function copyBlogThumbnail(input: {
 			return { ok: false, error: 'Post not found or deleted.' };
 		}
 
-		if (existing.thumbnail_path?.trim() === sourcePath) {
-			const publicUrl = getBlogThumbnailUrl(sourcePath);
-			if (!publicUrl) {
-				return {
-					ok: false,
-					error: 'Could not build public URL for featured image.'
-				};
-			}
-			return { ok: true, path: sourcePath, publicUrl };
-		}
-
-		const { data: sourceRows, error: sourceError } = await supabase
-			.from('blog_posts')
-			.select('id')
-			.eq('thumbnail_path', sourcePath)
-			.limit(1);
-
-		if (sourceError) {
-			return { ok: false, error: sourceError.message };
-		}
-		if (!sourceRows?.length) {
+		const asset = await loadThumbnailAsset(supabase, assetId);
+		if (!asset) {
 			return {
 				ok: false,
 				error: 'That image is not available to reuse.'
 			};
 		}
 
-		const basename = thumbnailBasename(sourcePath);
-		let destPath = `${postId}/thumbnail/${basename}`;
-
-		// File already lives under this post — just point at it.
-		if (destPath === sourcePath) {
-			const oldPath = existing.thumbnail_path?.trim() || null;
-			const { error: updateError } = await supabase
-				.from('blog_posts')
-				.update({
-					thumbnail_path: destPath,
-					updated_by: user.id
-				})
-				.eq('id', postId);
-
-			if (updateError) {
-				return { ok: false, error: updateError.message };
-			}
-
-			if (oldPath && oldPath !== destPath) {
-				await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([oldPath]);
-			}
-
-			const publicUrl = getBlogThumbnailUrl(destPath);
+		if (existing.thumbnail_asset_id === asset.id) {
+			const publicUrl = getBlogThumbnailUrl(asset.storage_path);
 			if (!publicUrl) {
 				return {
 					ok: false,
 					error: 'Could not build public URL for featured image.'
 				};
 			}
-			revalidateBlogPaths(existing.slug);
-			return { ok: true, path: destPath, publicUrl };
-		}
-
-		let copyErr = await copyStorageObject(supabase, sourcePath, destPath);
-		if (copyErr) {
-			destPath = `${postId}/thumbnail/${withUniqueSuffix(basename)}`;
-			copyErr = await copyStorageObject(supabase, sourcePath, destPath);
-		}
-		if (copyErr) {
-			return { ok: false, error: copyErr };
-		}
-
-		const oldPath = existing.thumbnail_path?.trim() || null;
-		const { error: updateError } = await supabase
-			.from('blog_posts')
-			.update({
-				thumbnail_path: destPath,
-				updated_by: user.id
-			})
-			.eq('id', postId);
-
-		if (updateError) {
-			await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([destPath]);
-			return { ok: false, error: updateError.message };
-		}
-
-		if (oldPath && oldPath !== destPath) {
-			await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([oldPath]);
-		}
-
-		const publicUrl = getBlogThumbnailUrl(destPath);
-		if (!publicUrl) {
 			return {
-				ok: false,
-				error: 'Could not build public URL for featured image.'
+				ok: true,
+				path: asset.storage_path,
+				publicUrl,
+				assetId: asset.id
 			};
 		}
 
-		revalidateBlogPaths(existing.slug);
-		return { ok: true, path: destPath, publicUrl };
+		return setPostThumbnailAsset(supabase, {
+			postId,
+			userId: user.id,
+			asset,
+			previousAssetId: existing.thumbnail_asset_id,
+			slug: existing.slug
+		});
 	} catch (error) {
-		return fail(error, 'Could not copy featured image.');
+		return fail(error, 'Could not attach featured image.');
+	}
+}
+
+const COLLAPSE_HASH_CONCURRENCY = 6;
+
+/**
+ * Idempotent one-shot: hash existing `thumbnail_path` objects, collapse
+ * duplicates into `blog_thumbnail_assets`, rewrite FKs/paths, delete orphan
+ * storage objects that were superseded.
+ *
+ * Safe to re-run. Prefer the ops script with the service role for full GC
+ * across soft-deleted posts if admin RLS ever hides them.
+ */
+export async function migrateCollapseBlogThumbnailAssets(): Promise<
+	BlogActionResult<{
+		assetsCreated: number;
+		postsUpdated: number;
+		orphansRemoved: number;
+		skipped: number;
+	}>
+> {
+	try {
+		const { supabase } = await requireAdmin();
+
+		const { data: posts, error: postsError } = await supabase
+			.from('blog_posts')
+			.select('id, thumbnail_path, thumbnail_asset_id')
+			.not('thumbnail_path', 'is', null);
+
+		if (postsError) {
+			return { ok: false, error: postsError.message };
+		}
+
+		const pathToPosts = new Map<string, string[]>();
+		for (const row of posts ?? []) {
+			const path = row.thumbnail_path?.trim();
+			if (!path) continue;
+			const list = pathToPosts.get(path) ?? [];
+			list.push(row.id);
+			pathToPosts.set(path, list);
+		}
+
+		const distinctPaths = [...pathToPosts.keys()];
+		const pathHash = new Map<string, string>();
+		let skipped = 0;
+
+		for (let i = 0; i < distinctPaths.length; i += COLLAPSE_HASH_CONCURRENCY) {
+			const batch = distinctPaths.slice(i, i + COLLAPSE_HASH_CONCURRENCY);
+			const hashes = await Promise.all(
+				batch.map(async path => {
+					const { data, error } = await supabase.storage
+						.from(BLOG_IMAGES_BUCKET)
+						.download(path);
+					if (error || !data) return null;
+					const buffer = Buffer.from(await data.arrayBuffer());
+					if (buffer.length === 0) return null;
+					return sha256Hex(buffer);
+				})
+			);
+			for (let j = 0; j < batch.length; j++) {
+				const hash = hashes[j];
+				if (!hash) {
+					skipped += pathToPosts.get(batch[j]!)?.length ?? 0;
+					continue;
+				}
+				pathHash.set(batch[j]!, hash);
+			}
+		}
+
+		const hashCanonical = new Map<
+			string,
+			{ assetId: string; storagePath: string }
+		>();
+		let assetsCreated = 0;
+		let postsUpdated = 0;
+		const supersededPaths = new Set<string>();
+
+		for (const [path, hash] of pathHash) {
+			let canonical = hashCanonical.get(hash);
+			if (!canonical) {
+				const existingAsset = await findThumbnailAssetByHash(
+					supabase,
+					hash
+				);
+				if (existingAsset) {
+					canonical = {
+						assetId: existingAsset.id,
+						storagePath: existingAsset.storage_path
+					};
+				} else {
+					const { data: inserted, error: insertError } = await supabase
+						.from('blog_thumbnail_assets')
+						.insert({
+							storage_path: path,
+							content_sha256: hash
+						})
+						.select('id, storage_path')
+						.single();
+
+					if (insertError || !inserted) {
+						const raced = await findThumbnailAssetByHash(
+							supabase,
+							hash
+						);
+						if (!raced) {
+							return {
+								ok: false,
+								error:
+									insertError?.message ??
+									`Could not create asset for ${path}.`
+							};
+						}
+						canonical = {
+							assetId: raced.id,
+							storagePath: raced.storage_path
+						};
+					} else {
+						canonical = {
+							assetId: inserted.id,
+							storagePath: inserted.storage_path
+						};
+						assetsCreated += 1;
+					}
+				}
+				hashCanonical.set(hash, canonical);
+			}
+
+			if (path !== canonical.storagePath) {
+				supersededPaths.add(path);
+			}
+
+			const postIds = pathToPosts.get(path) ?? [];
+			for (const postId of postIds) {
+				const row = (posts ?? []).find(p => p.id === postId);
+				if (
+					row?.thumbnail_asset_id === canonical.assetId &&
+					row.thumbnail_path === canonical.storagePath
+				) {
+					continue;
+				}
+				const { error: updateError } = await supabase
+					.from('blog_posts')
+					.update({
+						thumbnail_asset_id: canonical.assetId,
+						thumbnail_path: canonical.storagePath
+					})
+					.eq('id', postId);
+				if (updateError) {
+					return { ok: false, error: updateError.message };
+				}
+				postsUpdated += 1;
+			}
+		}
+
+		let orphansRemoved = 0;
+		for (const path of supersededPaths) {
+			const { data: assetOnPath } = await supabase
+				.from('blog_thumbnail_assets')
+				.select('id')
+				.eq('storage_path', path)
+				.maybeSingle();
+			if (assetOnPath) continue;
+
+			const { error: removeError } = await supabase.storage
+				.from(BLOG_IMAGES_BUCKET)
+				.remove([path]);
+			if (!removeError) orphansRemoved += 1;
+		}
+
+		return {
+			ok: true,
+			assetsCreated,
+			postsUpdated,
+			orphansRemoved,
+			skipped
+		};
+	} catch (error) {
+		return fail(error, 'Could not collapse featured-image assets.');
 	}
 }

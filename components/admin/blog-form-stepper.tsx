@@ -39,8 +39,8 @@ import {
 	DialogTitle
 } from '@/components/ui/dialog';
 import {
+	attachBlogThumbnailAsset,
 	clearBlogThumbnail,
-	copyBlogThumbnail,
 	createDraft,
 	publish,
 	turnBackToDraft,
@@ -381,21 +381,27 @@ export default function BlogFormStepper({
 			if (uploadGen !== thumbnailUploadGenRef.current) {
 				return false;
 			}
-			const updated = await updateDraft(id, {
-				thumbnailPath: uploaded.path
+			if (!uploaded.assetId) {
+				setError('Upload succeeded but featured image asset was missing.');
+				return false;
+			}
+			const attached = await attachBlogThumbnailAsset({
+				postId: id,
+				assetId: uploaded.assetId
 			});
-			if (!updated.ok) {
-				setError(updated.error);
+			if (!attached.ok) {
+				setError(attached.error);
 				return false;
 			}
 			if (uploadGen !== thumbnailUploadGenRef.current) {
 				return false;
 			}
-			setThumbnailPath(updated.post.thumbnail_path);
+			setThumbnailPath(attached.path);
 			lastSavedSnapshotRef.current = draftSnapshot(
-				updated.post.published_at,
+				fromDateInputValue(publishedAtLocal) ??
+					new Date().toISOString(),
 				body,
-				updated.post.thumbnail_path
+				attached.path
 			);
 			setMessage('Featured image uploaded.');
 			return true;
@@ -420,7 +426,7 @@ export default function BlogFormStepper({
 	}
 
 	async function handleSelectPreviousThumbnail(
-		sourcePath: string
+		assetId: string
 	): Promise<boolean> {
 		setError(null);
 		setMessage(null);
@@ -431,23 +437,23 @@ export default function BlogFormStepper({
 
 		setThumbnailUploading(true);
 		try {
-			const copied = await copyBlogThumbnail({
+			const attached = await attachBlogThumbnailAsset({
 				postId: id,
-				sourcePath
+				assetId
 			});
-			if (!copied.ok) {
-				setError(copied.error);
+			if (!attached.ok) {
+				setError(attached.error);
 				return false;
 			}
 			if (uploadGen !== thumbnailUploadGenRef.current) {
 				return false;
 			}
-			setThumbnailPath(copied.path);
+			setThumbnailPath(attached.path);
 			lastSavedSnapshotRef.current = draftSnapshot(
 				fromDateInputValue(publishedAtLocal) ??
 					new Date().toISOString(),
 				body,
-				copied.path
+				attached.path
 			);
 			setMessage('Featured image selected.');
 			return true;
