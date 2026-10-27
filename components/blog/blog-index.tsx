@@ -1,22 +1,20 @@
 'use client';
 
-import { BlogIndexQuery } from '@/tina/__generated__/types';
 import { ArrowRight, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { useTina } from 'tinacms/react';
-import { tinaField } from 'tinacms/tina-field';
 import { buttonVariants } from '@/components/ui/button';
+import {
+	BLOG_THUMBNAIL_PLACEHOLDER,
+	getBlogThumbnailUrl
+} from '@/lib/blog/thumbnail';
+import type { BlogPost } from '@/lib/blog/types';
 import { cn } from '@/lib/utils';
 
-export type BlogIndexItem = {
-	slug: string;
+export type BlogIndexCopy = {
 	title: string;
-	shortDescription?: string | null;
-	author?: string | null;
-	publishedAt?: string | null;
-	image?: string | null;
+	description?: string | null;
 };
 
 function formatPublishedAt(value?: string | null) {
@@ -32,15 +30,13 @@ function formatPublishedAt(value?: string | null) {
 
 export default function BlogIndex({
 	posts,
-	...tinaProps
+	copy,
+	isAdmin = false
 }: {
-	posts: BlogIndexItem[];
-	data: BlogIndexQuery;
-	variables: { relativePath: string };
-	query: string;
+	posts: BlogPost[];
+	copy: BlogIndexCopy;
+	isAdmin?: boolean;
 }) {
-	const { data } = useTina(tinaProps);
-	const page = data.blogIndex;
 	const [query, setQuery] = useState('');
 
 	const filtered = useMemo(() => {
@@ -48,7 +44,7 @@ export default function BlogIndex({
 		if (!q) return posts;
 		return posts.filter(post => {
 			const title = post.title?.toLowerCase() ?? '';
-			const description = post.shortDescription?.toLowerCase() ?? '';
+			const description = post.short_description?.toLowerCase() ?? '';
 			return title.includes(q) || description.includes(q);
 		});
 	}, [posts, query]);
@@ -56,18 +52,12 @@ export default function BlogIndex({
 	return (
 		<main className="bg-white px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
 			<div className="mx-auto max-w-3xl">
-				<h1
-					data-tina-field={tinaField(page, 'title')}
-					className="font-heading whitespace-pre-line text-4xl font-normal leading-[120%] text-[#333333] sm:text-5xl"
-				>
-					{page.title}
+				<h1 className="font-heading whitespace-pre-line text-4xl font-normal leading-[120%] text-[#333333] sm:text-5xl">
+					{copy.title}
 				</h1>
-				{page.description ? (
-					<p
-						data-tina-field={tinaField(page, 'description')}
-						className="mt-5 max-w-2xl font-sans text-base leading-relaxed text-[#555555] sm:text-lg"
-					>
-						{page.description}
+				{copy.description ? (
+					<p className="mt-5 max-w-2xl font-sans text-base leading-relaxed text-[#555555] sm:text-lg">
+						{copy.description}
 					</p>
 				) : null}
 
@@ -86,7 +76,11 @@ export default function BlogIndex({
 					/>
 				</label>
 
-				{filtered.length === 0 ? (
+				{posts.length === 0 ? (
+					<p className="mt-12 font-sans text-lg text-[#666666]">
+						No articles yet. Check back soon.
+					</p>
+				) : filtered.length === 0 ? (
 					<p className="mt-12 font-sans text-lg text-[#666666]">
 						No posts match your search.
 					</p>
@@ -95,41 +89,49 @@ export default function BlogIndex({
 						{filtered.map(post => {
 							const meta = [
 								post.author,
-								formatPublishedAt(post.publishedAt)
+								formatPublishedAt(post.published_at)
 							].filter(Boolean);
+							const imageSrc =
+								getBlogThumbnailUrl(post.thumbnail_path) ??
+								BLOG_THUMBNAIL_PLACEHOLDER;
 
 							return (
 								<li
-									key={post.slug}
+									key={post.id}
 									className="py-8 first:pt-0"
 								>
 									<Link
 										href={`/blog/${post.slug}`}
 										className="group block"
 									>
-										<h2 className="font-heading text-2xl font-normal text-[#333333] transition-colors group-hover:text-[#5D4325] sm:text-3xl">
-											{post.title}
-										</h2>
+										<div className="flex flex-wrap items-center gap-2">
+											<h2 className="font-heading text-2xl font-normal text-[#333333] transition-colors group-hover:text-[#5D4325] sm:text-3xl">
+												{post.title}
+											</h2>
+											{isAdmin && post.status === 'draft' ? (
+												<span className="rounded border border-[#c4a574] bg-[#f7f0e4] px-2 py-0.5 font-sans text-xs font-medium uppercase tracking-wide text-[#7A5A32]">
+													Draft
+												</span>
+											) : null}
+										</div>
 										{meta.length > 0 ? (
 											<p className="mt-2 text-sm text-[#888888]">
 												{meta.join(' · ')}
 											</p>
 										) : null}
-										{post.shortDescription ? (
+										{post.short_description ? (
 											<p className="mt-3 font-sans text-base leading-relaxed text-[#555555]">
-												{post.shortDescription}
+												{post.short_description}
 											</p>
 										) : null}
-										{post.image ? (
-											<Image
-												src={post.image}
-												alt="Blog image"
-												className="mt-5 w-full object-cover"
-												width={768}
-												height={576}
-												sizes="(min-width: 860px) 769px, 92.78vw"
-											/>
-										) : null}
+										<Image
+											src={imageSrc}
+											alt=""
+											className="mt-5 w-full object-cover"
+											width={768}
+											height={576}
+											sizes="(min-width: 860px) 769px, 92.78vw"
+										/>
 										<span className="mt-5 flex justify-end">
 											<span
 												className={cn(

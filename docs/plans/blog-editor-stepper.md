@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: stage-2-read-api
     content: "Stage 2: read helpers + rewrite public /blog and /blog/[slug] from Supabase (empty/seed-safe); keep Tina write path temporarily"
-    status: pending
+    status: completed
   - id: stage-3-crud
     content: "Stage 3: server actions for draft/publish/unpublish/soft-delete, slug sync, image upload"
     status: pending

@@ -12,8 +12,7 @@ import {
 } from '@/lib/blog/map-location-actions';
 import type { Listing } from '@/lib/listings-search';
 import { createClient } from '@/lib/supabase/client';
-import { isNumericPostId } from '@/tina/blog-post-id';
-import type { BlogBlocksMap } from '@/tina/__generated__/types';
+import { isBlogMapPostId } from '@/lib/blog/map-post-id';
 
 function googleMapsHref(location: BlogMapLocation): string {
 	if (location.sourceUrl?.trim()) return location.sourceUrl.trim();
@@ -42,9 +41,9 @@ function toMapListing(location: BlogMapLocation): Listing {
 	};
 }
 
-export default function BlogMap(props: BlogBlocksMap) {
+export default function BlogMap(props: { postId?: string | null }) {
 	const postId =
-		typeof props.postId === 'string' && isNumericPostId(props.postId)
+		typeof props.postId === 'string' && isBlogMapPostId(props.postId)
 			? props.postId.trim()
 			: null;
 

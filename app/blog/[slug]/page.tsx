@@ -1,24 +1,6 @@
 import BlogPost from '@/components/blog/blog-post';
-import client from '@/tina/__generated__/client';
-import { notFound } from 'next/navigation';
-
-function sortByPublishedDesc<
-	T extends { publishedAt?: string | null; slug: string }
->(posts: T[]) {
-	return [...posts].sort((a, b) => {
-		const aTime = a.publishedAt ? Date.parse(a.publishedAt) : 0;
-		const bTime = b.publishedAt ? Date.parse(b.publishedAt) : 0;
-		return bTime - aTime;
-	});
-}
-
-export async function generateStaticParams() {
-	const result = await client.queries.blogConnection();
-	return (result.data.blogConnection.edges ?? [])
-		.map(edge => edge?.node?._sys.filename)
-		.filter((slug): slug is string => Boolean(slug))
-		.map(slug => ({ slug }));
-}
+import { getBlogPostBySlug, listBlogPosts } from '@/lib/blog/queries';
+import { notFound, redirect } from 'next/navigation';
 
 export default async function BlogPostPage({
 	params
@@ -26,38 +8,33 @@ export default async function BlogPostPage({
 	params: Promise<{ slug: string }>;
 }) {
 	const { slug } = await params;
+	const result = await getBlogPostBySlug(slug);
 
-	try {
-		const [result, postsResult] = await Promise.all([
-			client.queries.blog({
-				relativePath: `${slug}.md`
-			}),
-			client.queries.blogConnection()
-		]);
-
-		const posts = sortByPublishedDesc(
-			(postsResult.data.blogConnection.edges ?? [])
-				.map(edge => edge?.node)
-				.filter((node): node is NonNullable<typeof node> => Boolean(node))
-				.map(node => ({
-					slug: node._sys.filename,
-					title: node.title,
-					publishedAt: node.publishedAt
-				}))
-		);
-
-		const index = posts.findIndex(post => post.slug === slug);
-		const newer = index > 0 ? posts[index - 1] : null;
-		const older = index >= 0 && index < posts.length - 1 ? posts[index + 1] : null;
-
-		return (
-			<BlogPost
-				{...result}
-				previousPost={newer}
-				nextPost={older}
-			/>
-		);
-	} catch {
+	if (result.kind === 'not_found') {
 		notFound();
 	}
+
+	if (result.kind === 'redirect') {
+		redirect(`/blog/${result.slug}`);
+	}
+
+	const { posts } = await listBlogPosts();
+	const index = posts.findIndex(post => post.slug === result.post.slug);
+	const previousPost =
+		index > 0
+			? { slug: posts[index - 1].slug, title: posts[index - 1].title }
+			: null;
+	const nextPost =
+		index >= 0 && index < posts.length - 1
+			? { slug: posts[index + 1].slug, title: posts[index + 1].title }
+			: null;
+
+	return (
+		<BlogPost
+			post={result.post}
+			previousPost={previousPost}
+			nextPost={nextPost}
+			isAdmin={result.isAdmin}
+		/>
+	);
 }

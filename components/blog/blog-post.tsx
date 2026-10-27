@@ -1,30 +1,22 @@
 'use client';
 
-import BlogCta from '@/components/blog/blocks/cta';
-import BlogDivider from '@/components/blog/blocks/divider';
-import BlogEmbed from '@/components/blog/blocks/embed';
-import BlogImage from '@/components/blog/blocks/image';
-import BlogImageGallery from '@/components/blog/blocks/image-gallery';
+import BlogBody from '@/components/blog/blog-body';
 import BlogMap from '@/components/blog/blocks/map';
-import BlogPullQuote from '@/components/blog/blocks/pull-quote';
-import BlogRichText from '@/components/blog/blocks/rich-text';
-import { BlogQuery } from '@/tina/__generated__/types';
-import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { tinaField } from 'tinacms/tina-field';
-import { useTina } from 'tinacms/react';
-import { useEffect } from 'react';
 import {
 	AnalyticsEvents,
 	useAnalytics
 } from '@/components/analytics/posthog-provider';
 import { buttonVariants } from '@/components/ui/button';
+import {
+	BLOG_THUMBNAIL_PLACEHOLDER,
+	getBlogThumbnailUrl
+} from '@/lib/blog/thumbnail';
+import type { BlogNeighbor, BlogPost as BlogPostData } from '@/lib/blog/types';
 import { cn } from '@/lib/utils';
-
-export type BlogNeighbor = {
-	slug: string;
-	title: string;
-};
+import { ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect } from 'react';
 
 function formatPublishedAt(value?: string | null) {
 	if (!value) return null;
@@ -44,27 +36,28 @@ const lightButtonDisabledClassName = cn(
 );
 
 export default function BlogPost({
+	post,
 	previousPost,
 	nextPost,
-	...tinaProps
+	isAdmin = false
 }: {
+	post: BlogPostData;
 	previousPost?: BlogNeighbor | null;
 	nextPost?: BlogNeighbor | null;
-	data: BlogQuery;
-	variables: { relativePath: string };
-	query: string;
+	isAdmin?: boolean;
 }) {
-	const { data } = useTina(tinaProps);
-	const post = data.blog;
 	const { track } = useAnalytics();
-
-	useEffect(() => {
-		const slug = post._sys?.filename;
-		if (slug) track(AnalyticsEvents.EVENT_OPENED, { content_id: slug });
-	}, [post._sys?.filename, track]);
-	const metaBits = [post.author, formatPublishedAt(post.publishedAt)].filter(
+	const thumbnailSrc =
+		getBlogThumbnailUrl(post.thumbnail_path) ?? BLOG_THUMBNAIL_PLACEHOLDER;
+	const metaBits = [post.author, formatPublishedAt(post.published_at)].filter(
 		Boolean
 	);
+
+	useEffect(() => {
+		if (post.slug) {
+			track(AnalyticsEvents.EVENT_OPENED, { content_id: post.slug });
+		}
+	}, [post.slug, track]);
 
 	return (
 		<article>
@@ -130,106 +123,50 @@ export default function BlogPost({
 							)}
 						</div>
 					</nav>
-					<h1
-						data-tina-field={tinaField(post, 'title')}
-						className="font-heading text-4xl font-normal text-[#333333] sm:text-5xl"
-					>
-						{post.title}
-					</h1>
+					<div className="flex flex-wrap items-center gap-3">
+						<h1 className="font-heading text-4xl font-normal text-[#333333] sm:text-5xl">
+							{post.title}
+						</h1>
+						{isAdmin && post.status === 'draft' ? (
+							<span className="rounded border border-[#c4a574] bg-[#f7f0e4] px-2 py-0.5 font-sans text-xs font-medium uppercase tracking-wide text-[#7A5A32]">
+								Draft
+							</span>
+						) : null}
+					</div>
 					{metaBits.length > 0 ? (
 						<p className="mt-3 text-sm text-[#888888]">
-							{post.author ? (
-								<span data-tina-field={tinaField(post, 'author')}>
-									{post.author}
-								</span>
-							) : null}
-							{post.author && post.publishedAt ? (
+							{post.author ? <span>{post.author}</span> : null}
+							{post.author && post.published_at ? (
 								<span aria-hidden="true"> · </span>
 							) : null}
-							{post.publishedAt ? (
-								<time
-									dateTime={post.publishedAt}
-									data-tina-field={tinaField(post, 'publishedAt')}
-								>
-									{formatPublishedAt(post.publishedAt)}
+							{post.published_at ? (
+								<time dateTime={post.published_at}>
+									{formatPublishedAt(post.published_at)}
 								</time>
 							) : null}
 						</p>
 					) : null}
-					{post.shortDescription ? (
-						<p
-							data-tina-field={tinaField(post, 'shortDescription')}
-							className="mt-6 whitespace-pre-line font-sans text-lg leading-relaxed text-[#555555]"
-						>
-							{post.shortDescription}
+					{post.short_description ? (
+						<p className="mt-6 whitespace-pre-line font-sans text-lg leading-relaxed text-[#555555]">
+							{post.short_description}
 						</p>
 					) : null}
+					<Image
+						src={thumbnailSrc}
+						alt=""
+						className="mt-8 w-full object-cover"
+						width={768}
+						height={576}
+						sizes="(min-width: 860px) 769px, 92.78vw"
+						priority
+					/>
 				</div>
 			</header>
 
-			{post.blocks?.map((block, i) => {
-				switch (block?.__typename) {
-					case 'BlogBlocksRichText':
-						return (
-							<BlogRichText
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksImage':
-						return (
-							<BlogImage
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksImageGallery':
-						return (
-							<BlogImageGallery
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksPullQuote':
-						return (
-							<BlogPullQuote
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksEmbed':
-						return (
-							<BlogEmbed
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksDivider':
-						return (
-							<BlogDivider
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksCta':
-						return (
-							<BlogCta
-								key={i}
-								{...block}
-							/>
-						);
-					case 'BlogBlocksMap':
-						return (
-							<BlogMap
-								key={i}
-								{...block}
-								postId={block.postId || post.postId}
-							/>
-						);
-					default:
-						return null;
-				}
-			})}
+			{/* Map keyed by stable post uuid (Tina numeric ids until Stage 7 migration). */}
+			<BlogMap postId={post.id} />
+
+			<BlogBody body={post.body} />
 		</article>
 	);
 }

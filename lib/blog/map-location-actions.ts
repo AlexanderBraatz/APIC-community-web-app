@@ -1,8 +1,8 @@
 'use server';
 
 import { requireAdmin } from '@/lib/admin/require-admin';
+import { isBlogMapPostId } from '@/lib/blog/map-post-id';
 import { createClient } from '@/lib/supabase/server';
-import { isNumericPostId } from '@/tina/blog-post-id';
 
 export type BlogMapLocation = {
 	postId: string;
@@ -22,7 +22,7 @@ export type UpsertBlogMapLocationInput = {
 
 function normalizePostId(postId: string): string | null {
 	const trimmed = postId.trim();
-	if (!isNumericPostId(trimmed)) return null;
+	if (!isBlogMapPostId(trimmed)) return null;
 	return trimmed;
 }
 
