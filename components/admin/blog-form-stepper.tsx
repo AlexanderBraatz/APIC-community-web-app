@@ -5,12 +5,14 @@ import Link from 'next/link';
 import GoogleStep from '@/components/admin/listing-form/steps/google-step';
 import LocationStep from '@/components/admin/listing-form/steps/location-step';
 import StepperNav from '@/components/admin/listing-form/stepper-nav';
+import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import {
 	AUTOSAVE_DEBOUNCE_MS,
 	BLOG_FORM_STEPS,
 	LOCATION_SUB_DETAILS,
 	LOCATION_SUB_FIND,
 	LOCATION_SUB_STEPS,
+	normalizeBlogBody,
 	STEP_BODY,
 	STEP_HEADER,
 	STEP_LOCATION,
@@ -20,8 +22,9 @@ import {
 	fromDatetimeLocalValue,
 	toDatetimeLocalValue
 } from '@/components/admin/blog-form/datetime-local';
-import ComingSoonStep from '@/components/admin/blog-form/steps/coming-soon-step';
+import BodyStep from '@/components/admin/blog-form/steps/body-step';
 import HeaderStep from '@/components/admin/blog-form/steps/header-step';
+import PreviewStep from '@/components/admin/blog-form/steps/preview-step';
 import { Button } from '@/components/ui/button';
 import {
 	createDraft,
@@ -36,6 +39,7 @@ import {
 } from '@/lib/blog/map-location-actions';
 import type { BlogPost } from '@/lib/blog/types';
 import type { PlaceAutofill } from '@/lib/listings/types';
+import type { Json } from '@/lib/supabase/database.types';
 
 type BlogFormStepperProps = {
 	mode: 'create' | 'edit';
@@ -89,9 +93,12 @@ export default function BlogFormStepper({
 	const [saveStatus, setSaveStatus] = useState<
 		'idle' | 'saving' | 'saved' | 'error'
 	>('idle');
+	const [successTitle, setSuccessTitle] = useState<string | null>(null);
+	const [successHref, setSuccessHref] = useState('/blog');
 
-	// Stage 4: create and edit both start on Header (Stage 5 will open edit on Body).
-	const [currentStep, setCurrentStep] = useState(STEP_HEADER);
+	const [currentStep, setCurrentStep] = useState(
+		mode === 'edit' ? STEP_BODY : STEP_HEADER
+	);
 	const [locationSubStep, setLocationSubStep] = useState(
 		mapLocation ? LOCATION_SUB_DETAILS : LOCATION_SUB_FIND
 	);
@@ -117,6 +124,7 @@ export default function BlogFormStepper({
 	const [pendingThumbnailFile, setPendingThumbnailFile] = useState<File | null>(
 		null
 	);
+	const [body, setBody] = useState<Json>(() => normalizeBlogBody(post?.body));
 
 	const [address, setAddress] = useState(mapLocation?.address ?? '');
 	const [sourceUrl, setSourceUrl] = useState(mapLocation?.sourceUrl ?? '');
@@ -140,7 +148,8 @@ export default function BlogFormStepper({
 					author: post.author,
 					publishedAt: post.published_at,
 					shortDescription: post.short_description,
-					thumbnailPath: post.thumbnail_path
+					thumbnailPath: post.thumbnail_path,
+					body: normalizeBlogBody(post.body)
 				})
 			: null
 	);
@@ -148,13 +157,25 @@ export default function BlogFormStepper({
 	const lastStep = STEP_PREVIEW;
 	const isLastStep = currentStep === lastStep;
 
-	function headerSnapshot(publishedAtIso: string) {
+	const previewMapLocation: BlogMapLocation | null =
+		postId && lat !== null && lng !== null
+			? {
+					postId,
+					address: address.trim() || null,
+					sourceUrl: sourceUrl.trim() || null,
+					lat,
+					lng
+				}
+			: null;
+
+	function draftSnapshot(publishedAtIso: string, nextBody: Json = body) {
 		return JSON.stringify({
 			title: title.trim(),
 			author: author.trim(),
 			publishedAt: publishedAtIso,
 			shortDescription: shortDescription.trim(),
-			thumbnailPath
+			thumbnailPath,
+			body: nextBody
 		});
 	}
 
@@ -240,7 +261,10 @@ export default function BlogFormStepper({
 		setPostId(result.id);
 		setSlug(result.slug);
 		setStatus(result.post.status);
-		lastSavedSnapshotRef.current = headerSnapshot(result.post.published_at);
+		lastSavedSnapshotRef.current = draftSnapshot(
+			result.post.published_at,
+			normalizeBlogBody(result.post.body)
+		);
 		setSaveStatus('saved');
 		setMessage('Draft created.');
 
@@ -251,7 +275,7 @@ export default function BlogFormStepper({
 		return result.id;
 	}
 
-	async function persistHeader(id: string): Promise<boolean> {
+	async function persistDraft(id: string): Promise<boolean> {
 		const validationError = validateHeaderFields({
 			title,
 			author,
@@ -265,7 +289,7 @@ export default function BlogFormStepper({
 		}
 
 		const publishedAt = fromDatetimeLocalValue(publishedAtLocal)!;
-		const snapshot = headerSnapshot(publishedAt);
+		const snapshot = draftSnapshot(publishedAt);
 		if (snapshot === lastSavedSnapshotRef.current) {
 			setSaveStatus('saved');
 			return true;
@@ -277,7 +301,8 @@ export default function BlogFormStepper({
 			author: author.trim(),
 			publishedAt,
 			shortDescription: shortDescription.trim(),
-			thumbnailPath
+			thumbnailPath,
+			body
 		});
 
 		if (!result.ok) {
@@ -289,7 +314,11 @@ export default function BlogFormStepper({
 		setSlug(result.post.slug);
 		setStatus(result.post.status);
 		setThumbnailPath(result.post.thumbnail_path);
-		lastSavedSnapshotRef.current = headerSnapshot(result.post.published_at);
+		// Keep client body as source of truth so TipTap does not reset mid-edit.
+		lastSavedSnapshotRef.current = draftSnapshot(
+			result.post.published_at,
+			body
+		);
 		setSaveStatus('saved');
 		return true;
 	}
@@ -315,7 +344,7 @@ export default function BlogFormStepper({
 				return;
 			}
 			setThumbnailPath(updated.post.thumbnail_path);
-			lastSavedSnapshotRef.current = headerSnapshot(
+			lastSavedSnapshotRef.current = draftSnapshot(
 				updated.post.published_at
 			);
 			setMessage('Featured image uploaded.');
@@ -389,7 +418,7 @@ export default function BlogFormStepper({
 			setMessage(null);
 			const id = await ensureDraftId();
 			if (!id) return;
-			const ok = await persistHeader(id);
+			const ok = await persistDraft(id);
 			if (ok) setMessage('Draft saved.');
 		});
 	}
@@ -412,7 +441,7 @@ export default function BlogFormStepper({
 				}
 				const id = await ensureDraftId();
 				if (!id) return;
-				const ok = await persistHeader(id);
+				const ok = await persistDraft(id);
 				if (!ok) return;
 				setCurrentStep(STEP_LOCATION);
 				return;
@@ -431,8 +460,17 @@ export default function BlogFormStepper({
 				return;
 			}
 
-			if (currentStep < lastStep) {
-				setCurrentStep(prev => Math.min(prev + 1, lastStep));
+			if (currentStep === STEP_BODY) {
+				const id = postId ?? (await ensureDraftId());
+				if (!id) return;
+				const ok = await persistDraft(id);
+				if (!ok) return;
+				setCurrentStep(STEP_PREVIEW);
+				return;
+			}
+
+			if (isLastStep) {
+				await runPublish();
 			}
 		});
 	}
@@ -450,29 +488,36 @@ export default function BlogFormStepper({
 		setCurrentStep(prev => Math.max(prev - 1, 0));
 	}
 
+	async function runPublish() {
+		const id = postId ?? (await ensureDraftId());
+		if (!id) return;
+		const draftOk = await persistDraft(id);
+		if (!draftOk) return;
+		await persistLocation(id);
+		const result = await publish(id);
+		if (!result.ok) {
+			setError(result.error);
+			return;
+		}
+		setStatus(result.post.status);
+		setSlug(result.post.slug);
+		setSuccessHref(`/blog/${result.post.slug}`);
+		setSuccessTitle(
+			result.post.status === 'published'
+				? 'Article published'
+				: 'Article updated'
+		);
+	}
+
 	function handlePublish() {
 		startTransition(async () => {
 			setError(null);
 			setMessage(null);
-			const id = postId ?? (await ensureDraftId());
-			if (!id) return;
-			const headerOk = await persistHeader(id);
-			if (!headerOk) return;
-			await persistLocation(id);
-			const result = await publish(id);
-			if (!result.ok) {
-				setError(result.error);
-				return;
-			}
-			setStatus(result.post.status);
-			setSlug(result.post.slug);
-			setMessage(
-				`Published. View at /blog/${result.post.slug}`
-			);
+			await runPublish();
 		});
 	}
 
-	// Debounced autosave once a draft id exists.
+	// Debounced autosave once a draft id exists (header fields + body).
 	useEffect(() => {
 		if (!postId) return;
 		if (skipAutosaveRef.current) {
@@ -491,7 +536,7 @@ export default function BlogFormStepper({
 		const publishedAt = fromDatetimeLocalValue(publishedAtLocal);
 		if (!publishedAt) return;
 
-		const snapshot = headerSnapshot(publishedAt);
+		const snapshot = draftSnapshot(publishedAt);
 		if (snapshot === lastSavedSnapshotRef.current) return;
 
 		if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
@@ -503,15 +548,17 @@ export default function BlogFormStepper({
 					author: author.trim(),
 					publishedAt,
 					shortDescription: shortDescription.trim(),
-					thumbnailPath
+					thumbnailPath,
+					body
 				});
 				if (!result.ok) {
 					setSaveStatus('error');
 					return;
 				}
 				setSlug(result.post.slug);
-				lastSavedSnapshotRef.current = headerSnapshot(
-					result.post.published_at
+				lastSavedSnapshotRef.current = draftSnapshot(
+					result.post.published_at,
+					body
 				);
 				setSaveStatus('saved');
 			})();
@@ -521,12 +568,20 @@ export default function BlogFormStepper({
 			if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps -- intentional field deps
-	}, [title, author, publishedAtLocal, shortDescription, thumbnailPath, postId]);
+	}, [
+		title,
+		author,
+		publishedAtLocal,
+		shortDescription,
+		thumbnailPath,
+		body,
+		postId
+	]);
 
 	const nextLabel = (() => {
 		if (pending) {
 			if (currentStep === STEP_HEADER) return 'Saving…';
-			if (currentStep === STEP_LOCATION) return 'Next';
+			if (isLastStep) return 'Publishing…';
 			return 'Next';
 		}
 		if (currentStep === STEP_LOCATION && locationSubStep === LOCATION_SUB_FIND) {
@@ -535,9 +590,14 @@ export default function BlogFormStepper({
 		if (currentStep === STEP_LOCATION) {
 			return lat === null || lng === null ? 'Skip location' : 'Next';
 		}
-		if (isLastStep) return 'Done';
+		if (isLastStep) {
+			return status === 'published' ? 'Re-publish' : 'Publish';
+		}
 		return 'Next';
 	})();
+
+	const publishedAtIso =
+		fromDatetimeLocalValue(publishedAtLocal) ?? new Date().toISOString();
 
 	return (
 		<div className="space-y-6">
@@ -689,39 +749,40 @@ export default function BlogFormStepper({
 						</section>
 					) : null}
 
-					{currentStep === STEP_BODY ? (
-						<ComingSoonStep
-							title="Body editor"
-							description="TipTap rich text (paragraphs, headings, lists, links, and images) will live here in Stage 5. You can still publish a header-only article from the Preview step to verify the map."
+					{currentStep === STEP_BODY && postId ? (
+						<BodyStep
+							postId={postId}
+							body={body}
+							onBodyChange={setBody}
+							onError={setError}
 						/>
 					) : null}
 
-					{currentStep === STEP_PREVIEW ? (
-						<section className="space-y-6">
-							<ComingSoonStep
-								title="Preview & publish"
-								description="Full WYSIWYG preview arrives in Stage 5. Use Publish below to put this draft live so you can check the public page and map."
-							/>
-							<div className="flex flex-wrap items-center gap-3">
-								<Button
-									type="button"
-									onClick={handlePublish}
-									loading={pending}
-									disabled={!postId && pending}
-									className="border-emerald-800 bg-emerald-700 text-white hover:border-emerald-900 hover:bg-emerald-800"
-								>
-									{status === 'published' ? 'Re-publish' : 'Publish'}
-								</Button>
-								{status === 'published' && slug ? (
-									<Link
-										href={`/blog/${slug}`}
-										className="text-sm text-[#805b32] underline"
-									>
-										View public article
-									</Link>
-								) : null}
-							</div>
-						</section>
+					{currentStep === STEP_BODY && !postId ? (
+						<p className="text-sm text-[#666]">
+							Complete the Header step first so a draft exists before editing
+							the body.
+						</p>
+					) : null}
+
+					{currentStep === STEP_PREVIEW && postId ? (
+						<PreviewStep
+							post={{
+								id: postId,
+								slug: slug ?? '',
+								title,
+								author,
+								published_at: publishedAtIso,
+								short_description: shortDescription,
+								thumbnail_path: thumbnailPath,
+								body,
+								status
+							}}
+							mapLocation={previewMapLocation}
+							pending={pending}
+							onSaveDraft={saveDraftExplicit}
+							onPublish={handlePublish}
+						/>
 					) : null}
 				</div>
 			</div>
@@ -748,31 +809,28 @@ export default function BlogFormStepper({
 						>
 							Back
 						</Button>
-						{isLastStep ? (
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => {
-									setMessage(
-										'You can leave anytime — the draft stays in the database.'
-									);
-								}}
-								disabled={pending}
-							>
-								Done
-							</Button>
-						) : (
-							<Button
-								type="button"
-								loading={pending}
-								onClick={goNext}
-							>
-								{nextLabel}
-							</Button>
-						)}
+						<Button
+							type="button"
+							loading={pending}
+							onClick={goNext}
+							className={
+								isLastStep
+									? 'border-emerald-800 bg-emerald-700 text-white hover:border-emerald-900 hover:bg-emerald-800'
+									: undefined
+							}
+						>
+							{nextLabel}
+						</Button>
 					</div>
 				</div>
 			</div>
+
+			<RedirectSuccessDialog
+				open={successTitle !== null}
+				title={successTitle ?? ''}
+				href={successHref}
+				description="You are being redirected to the published article…"
+			/>
 		</div>
 	);
 }

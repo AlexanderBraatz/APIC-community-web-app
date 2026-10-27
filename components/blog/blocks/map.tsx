@@ -1,45 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Map as MapIcon, Pencil } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Pencil } from 'lucide-react';
 import MapLocationModal from '@/components/blog/blocks/map-location-modal';
+import BlogMapDisplay from '@/components/blog/blog-map-display';
 import { buttonVariants } from '@/components/ui/button';
-import LocationsMap from '@/components/ui/locations-map';
 import { cn } from '@/lib/utils';
 import {
 	getBlogMapLocation,
 	type BlogMapLocation
 } from '@/lib/blog/map-location-actions';
-import type { Listing } from '@/lib/listings-search';
 import { createClient } from '@/lib/supabase/client';
 import { isBlogMapPostId } from '@/lib/blog/map-post-id';
-
-function googleMapsHref(location: BlogMapLocation): string {
-	if (location.sourceUrl?.trim()) return location.sourceUrl.trim();
-	return `https://www.google.com/maps?q=${location.lat},${location.lng}`;
-}
-
-function legendText(location: BlogMapLocation): string {
-	const address = location.address?.trim();
-	if (address) return address;
-	return `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`;
-}
-
-function toMapListing(location: BlogMapLocation): Listing {
-	return {
-		name: location.address?.trim() || 'Location',
-		type: null,
-		address: location.address,
-		contacts: [],
-		notes: null,
-		openingHours: null,
-		category: 'blog',
-		sourceUrl: location.sourceUrl ?? '',
-		tags: [],
-		lat: location.lat,
-		lng: location.lng
-	};
-}
 
 export default function BlogMap(props: { postId?: string | null }) {
 	const postId =
@@ -129,11 +101,6 @@ export default function BlogMap(props: { postId?: string | null }) {
 		};
 	}, [postId]);
 
-	const mapListings = useMemo(
-		() => (location ? [toMapListing(location)] : []),
-		[location]
-	);
-
 	if (!postId) {
 		return null;
 	}
@@ -159,51 +126,27 @@ export default function BlogMap(props: { postId?: string | null }) {
 		<section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-3xl">
 				{location ? (
-					<div className="overflow-hidden rounded-3xl border border-[#968778]">
-						<LocationsMap
-							locations={mapListings}
-							showTooltipsByDefault
-							className="aspect-[1.618/1] rounded-none border-0 lg:aspect-[1.618/1] lg:h-auto"
-						/>
-						<footer className="flex flex-col gap-3 border-t border-[#968778] bg-[#fffdfa] px-2 py-4 sm:flex-row sm:items-center sm:justify-between">
-							<p className="font-sans text-sm leading-relaxed text-[#555555]">
-								{legendText(location)}
-							</p>
-							<div className="flex flex-wrap items-center gap-2">
-								<a
-									href={googleMapsHref(location)}
-									target="_blank"
-									rel="noopener noreferrer"
+					<BlogMapDisplay
+						location={location}
+						footerExtra={
+							isAdmin ? (
+								<button
+									type="button"
+									onClick={() => setModalOpen(true)}
 									className={cn(
-										buttonVariants({ variant: 'default', size: 'sm' }),
-										'gap-2'
+										buttonVariants({ variant: 'secondary', size: 'sm' }),
+										'gap-1.5'
 									)}
 								>
-									<MapIcon
-										className="size-4 shrink-0"
+									<Pencil
+										className="size-3.5"
 										aria-hidden="true"
 									/>
-									Open in Google Maps
-								</a>
-								{isAdmin ? (
-									<button
-										type="button"
-										onClick={() => setModalOpen(true)}
-										className={cn(
-											buttonVariants({ variant: 'secondary', size: 'sm' }),
-											'gap-1.5'
-										)}
-									>
-										<Pencil
-											className="size-3.5"
-											aria-hidden="true"
-										/>
-										Edit as Admin
-									</button>
-								) : null}
-							</div>
-						</footer>
-					</div>
+									Edit as Admin
+								</button>
+							) : null
+						}
+					/>
 				) : (
 					<div className="relative aspect-[1.618/1] w-full overflow-hidden rounded-3xl border border-[#b8a99a]/40 bg-[#e8e4dc]">
 						<div

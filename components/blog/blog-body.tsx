@@ -1,10 +1,17 @@
 import type { ReactNode } from 'react';
+import Image from 'next/image';
 import type { Json } from '@/lib/supabase/database.types';
+
+type TipTapMark = {
+	type?: string;
+	attrs?: Record<string, unknown>;
+};
 
 type TipTapNode = {
 	type?: string;
 	text?: string;
 	content?: TipTapNode[];
+	marks?: TipTapMark[];
 	attrs?: Record<string, unknown>;
 };
 
@@ -23,26 +30,82 @@ function isEmptyBody(body: Json): boolean {
 	if (doc.type === 'doc') {
 		const content = doc.content;
 		if (!content || content.length === 0) return true;
+		const onlyEmptyParagraph =
+			content.length === 1 &&
+			content[0]?.type === 'paragraph' &&
+			(!content[0].content || content[0].content.length === 0);
+		if (onlyEmptyParagraph) return true;
 	}
 	return false;
 }
 
-function collectText(node: TipTapNode | null): string {
-	if (!node) return '';
-	if (typeof node.text === 'string') return node.text;
-	if (!node.content?.length) return '';
-	return node.content.map(collectText).join('');
+function sanitizeHref(href: unknown): string | null {
+	if (typeof href !== 'string') return null;
+	const trimmed = href.trim();
+	if (!trimmed) return null;
+	const lower = trimmed.toLowerCase();
+	if (
+		lower.startsWith('https://') ||
+		lower.startsWith('http://') ||
+		lower.startsWith('mailto:')
+	) {
+		return trimmed;
+	}
+	return null;
+}
+
+function applyMarks(text: string, marks: TipTapMark[] | undefined, key: string): ReactNode {
+	let node: ReactNode = text;
+	if (!marks?.length) {
+		return <span key={key}>{node}</span>;
+	}
+
+	for (const mark of marks) {
+		switch (mark.type) {
+			case 'bold':
+				node = <strong key={`${key}-bold`}>{node}</strong>;
+				break;
+			case 'italic':
+				node = <em key={`${key}-italic`}>{node}</em>;
+				break;
+			case 'link': {
+				const href = sanitizeHref(mark.attrs?.href);
+				if (!href) break;
+				node = (
+					<a
+						key={`${key}-link`}
+						href={href}
+						className="text-[#805b32] underline underline-offset-2 hover:text-[#6a4a28]"
+						rel="noopener noreferrer"
+						target={href.startsWith('mailto:') ? undefined : '_blank'}
+					>
+						{node}
+					</a>
+				);
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
+	return <span key={key}>{node}</span>;
 }
 
 function renderNode(node: TipTapNode, key: string): ReactNode {
-	const children = (node.content ?? []).map((child, i) =>
-		renderNode(child, `${key}-${i}`)
-	);
-
 	switch (node.type) {
 		case 'doc':
-			return <div key={key}>{children}</div>;
-		case 'paragraph':
+			return (
+				<div key={key}>
+					{(node.content ?? []).map((child, i) =>
+						renderNode(child, `${key}-${i}`)
+					)}
+				</div>
+			);
+		case 'paragraph': {
+			const children = (node.content ?? []).map((child, i) =>
+				renderNode(child, `${key}-${i}`)
+			);
 			return (
 				<p
 					key={key}
@@ -51,16 +114,17 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
 					{children.length > 0 ? children : '\u00A0'}
 				</p>
 			);
+		}
 		case 'heading': {
 			const level = Number(node.attrs?.level ?? 2);
-			const className =
-				'mb-4 font-heading font-normal text-[#333333] ' +
-				(level >= 3 ? 'text-2xl' : 'text-3xl');
+			const children = (node.content ?? []).map((child, i) =>
+				renderNode(child, `${key}-${i}`)
+			);
 			if (level >= 3) {
 				return (
 					<h3
 						key={key}
-						className={className}
+						className="mb-4 font-heading text-2xl font-normal text-[#333333]"
 					>
 						{children}
 					</h3>
@@ -69,7 +133,7 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
 			return (
 				<h2
 					key={key}
-					className={className}
+					className="mb-4 font-heading text-3xl font-normal text-[#333333]"
 				>
 					{children}
 				</h2>
@@ -81,7 +145,9 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
 					key={key}
 					className="mb-4 list-disc space-y-1 pl-6 font-sans text-base text-[#555555]"
 				>
-					{children}
+					{(node.content ?? []).map((child, i) =>
+						renderNode(child, `${key}-${i}`)
+					)}
 				</ul>
 			);
 		case 'orderedList':
@@ -90,33 +156,54 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
 					key={key}
 					className="mb-4 list-decimal space-y-1 pl-6 font-sans text-base text-[#555555]"
 				>
-					{children}
+					{(node.content ?? []).map((child, i) =>
+						renderNode(child, `${key}-${i}`)
+					)}
 				</ol>
 			);
 		case 'listItem':
-			return <li key={key}>{children}</li>;
-		case 'text':
-			return <span key={key}>{node.text ?? ''}</span>;
-		case 'hardBreak':
-			return <br key={key} />;
-		default: {
-			const text = collectText(node).trim();
-			if (!text) return null;
 			return (
-				<p
+				<li key={key}>
+					{(node.content ?? []).map((child, i) =>
+						renderNode(child, `${key}-${i}`)
+					)}
+				</li>
+			);
+		case 'image': {
+			const src =
+				typeof node.attrs?.src === 'string' ? node.attrs.src.trim() : '';
+			if (!src) return null;
+			const alt =
+				typeof node.attrs?.alt === 'string' ? node.attrs.alt : '';
+			return (
+				<figure
 					key={key}
-					className="mb-4 font-sans text-base leading-relaxed text-[#555555]"
+					className="my-6"
 				>
-					{text}
-				</p>
+					<Image
+						src={src}
+						alt={alt}
+						width={768}
+						height={512}
+						className="h-auto w-full object-cover"
+						sizes="(min-width: 860px) 769px, 92.78vw"
+					/>
+				</figure>
 			);
 		}
+		case 'text':
+			return applyMarks(node.text ?? '', node.marks, key);
+		case 'hardBreak':
+			return <br key={key} />;
+		default:
+			// Ignore unknown node types (and their children).
+			return null;
 	}
 }
 
 /**
- * Minimal TipTap-JSON walker for Stage 2.
- * Full renderer lands in Stage 5; empty bodies show a placeholder.
+ * TipTap-JSON walker for public articles and the admin preview.
+ * Only known nodes/marks are rendered; links restricted to http(s)/mailto.
  */
 export default function BlogBody({ body }: { body: Json }) {
 	if (isEmptyBody(body)) {

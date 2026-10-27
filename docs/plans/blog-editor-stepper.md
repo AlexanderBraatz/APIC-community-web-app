@@ -16,7 +16,7 @@ todos:
     status: completed
   - id: stage-5-tiptap-preview
     content: "Stage 5: TipTap body step + preview/publish step; next/image body rendering"
-    status: pending
+    status: completed
   - id: stage-6-admin-chrome
     content: "Stage 6: dashboard/overview/post admin actions (add/edit/delete/turn-to-draft) + confirm modal + draft badges"
     status: pending
