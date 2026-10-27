@@ -9,15 +9,14 @@ import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import {
 	AUTOSAVE_DEBOUNCE_MS,
 	BLOG_FORM_STEPS,
-	LOCATION_SUB_DETAILS,
-	LOCATION_SUB_FIND,
-	LOCATION_SUB_STEPS,
 	normalizeBlogBody,
 	STEP_BODY,
 	STEP_FEATURED_IMAGE,
+	STEP_FIND_LOCATION,
 	STEP_HEADER,
 	STEP_LOCATION,
-	STEP_PREVIEW
+	STEP_PREVIEW,
+	STEP_VERIFY_LOCATION
 } from '@/components/admin/blog-form/constants';
 import {
 	fromDatetimeLocalValue,
@@ -26,6 +25,7 @@ import {
 import BodyStep from '@/components/admin/blog-form/steps/body-step';
 import FeaturedImageStep from '@/components/admin/blog-form/steps/featured-image-step';
 import HeaderStep from '@/components/admin/blog-form/steps/header-step';
+import LocationIntroStep from '@/components/admin/blog-form/steps/location-intro-step';
 import PreviewStep from '@/components/admin/blog-form/steps/preview-step';
 import { Button } from '@/components/ui/button';
 import {
@@ -108,9 +108,7 @@ export default function BlogFormStepper({
 	const [currentStep, setCurrentStep] = useState(
 		mode === 'edit' ? STEP_BODY : STEP_HEADER
 	);
-	const [locationSubStep, setLocationSubStep] = useState(
-		mapLocation ? LOCATION_SUB_DETAILS : LOCATION_SUB_FIND
-	);
+	const [locationSkipped, setLocationSkipped] = useState(false);
 
 	const [postId, setPostId] = useState<string | null>(post?.id ?? null);
 	const [slug, setSlug] = useState<string | null>(post?.slug ?? null);
@@ -163,6 +161,12 @@ export default function BlogFormStepper({
 
 	const lastStep = STEP_PREVIEW;
 	const isLastStep = currentStep === lastStep;
+	const isLocationGate = currentStep === STEP_LOCATION;
+	const hasSelectedLocation =
+		(lat !== null && lng !== null) || hasMapRow;
+	const skippedStepIndexes = locationSkipped
+		? [STEP_FIND_LOCATION, STEP_VERIFY_LOCATION]
+		: undefined;
 
 	const previewMapLocation: BlogMapLocation | null =
 		postId && lat !== null && lng !== null
@@ -202,6 +206,8 @@ export default function BlogFormStepper({
 		setLng(null);
 		setLatInput('');
 		setLngInput('');
+		setAddress('');
+		setSourceUrl('');
 	}
 
 	function handleLatInputChange(value: string) {
@@ -228,7 +234,8 @@ export default function BlogFormStepper({
 		if (place.lat !== null && place.lng !== null) {
 			setPin(place.lat, place.lng);
 		}
-		setLocationSubStep(LOCATION_SUB_DETAILS);
+		setLocationSkipped(false);
+		setCurrentStep(STEP_VERIFY_LOCATION);
 		setError(null);
 		setMessage(null);
 	}
@@ -425,8 +432,12 @@ export default function BlogFormStepper({
 		}
 	}
 
-	async function persistLocation(id: string): Promise<boolean> {
-		if (lat === null || lng === null) {
+	async function persistLocation(
+		id: string,
+		options?: { forceClear?: boolean }
+	): Promise<boolean> {
+		const forceClear = options?.forceClear === true;
+		if (forceClear || lat === null || lng === null) {
 			if (hasMapRow) {
 				const cleared = await deleteBlogMapLocation(id);
 				if (!cleared.ok) {
@@ -482,6 +493,27 @@ export default function BlogFormStepper({
 		});
 	}
 
+	function addLocation() {
+		setError(null);
+		setMessage(null);
+		setLocationSkipped(false);
+		setCurrentStep(STEP_FIND_LOCATION);
+	}
+
+	function skipLocation() {
+		startTransition(async () => {
+			setError(null);
+			setMessage(null);
+			setLocationSkipped(true);
+			clearPinLocal();
+			const id = postId ?? (await ensureDraftId());
+			if (!id) return;
+			const ok = await persistLocation(id, { forceClear: true });
+			if (!ok) return;
+			setCurrentStep(STEP_BODY);
+		});
+	}
+
 	function goNext() {
 		startTransition(async () => {
 			setError(null);
@@ -512,15 +544,18 @@ export default function BlogFormStepper({
 				return;
 			}
 
-			if (currentStep === STEP_LOCATION) {
-				if (locationSubStep === LOCATION_SUB_FIND) {
-					setLocationSubStep(LOCATION_SUB_DETAILS);
-					return;
-				}
+			if (currentStep === STEP_FIND_LOCATION) {
+				setLocationSkipped(false);
+				setCurrentStep(STEP_VERIFY_LOCATION);
+				return;
+			}
+
+			if (currentStep === STEP_VERIFY_LOCATION) {
 				const id = postId ?? (await ensureDraftId());
 				if (!id) return;
 				const ok = await persistLocation(id);
 				if (!ok) return;
+				setLocationSkipped(false);
 				setCurrentStep(STEP_BODY);
 				return;
 			}
@@ -541,12 +576,6 @@ export default function BlogFormStepper({
 	}
 
 	function goBack() {
-		if (currentStep === STEP_LOCATION && locationSubStep === LOCATION_SUB_DETAILS) {
-			setLocationSubStep(LOCATION_SUB_FIND);
-			setError(null);
-			setMessage(null);
-			return;
-		}
 		if (currentStep === 0) return;
 		setError(null);
 		setMessage(null);
@@ -649,14 +678,8 @@ export default function BlogFormStepper({
 			if (isLastStep) return 'Publishing…';
 			return 'Next';
 		}
-		if (currentStep === STEP_FEATURED_IMAGE) {
-			return 'Next';
-		}
-		if (currentStep === STEP_LOCATION && locationSubStep === LOCATION_SUB_FIND) {
-			return 'Continue to pin';
-		}
-		if (currentStep === STEP_LOCATION) {
-			return lat === null || lng === null ? 'Skip location' : 'Next';
+		if (currentStep === STEP_FIND_LOCATION) {
+			return 'Continue';
 		}
 		if (isLastStep) {
 			return status === 'published' ? 'Re-publish' : 'Publish';
@@ -735,6 +758,7 @@ export default function BlogFormStepper({
 				<StepperNav
 					steps={[...BLOG_FORM_STEPS]}
 					currentStep={currentStep}
+					skippedSteps={skippedStepIndexes}
 					onStepSelect={index => {
 						startTransition(async () => {
 							setError(null);
@@ -743,12 +767,11 @@ export default function BlogFormStepper({
 								const id = await ensureDraftId();
 								if (!id) return;
 							}
-							if (index === STEP_LOCATION) {
-								setLocationSubStep(
-									lat !== null && lng !== null
-										? LOCATION_SUB_DETAILS
-										: LOCATION_SUB_FIND
-								);
+							if (
+								index === STEP_FIND_LOCATION ||
+								index === STEP_VERIFY_LOCATION
+							) {
+								setLocationSkipped(false);
 							}
 							setCurrentStep(index);
 						});
@@ -783,45 +806,41 @@ export default function BlogFormStepper({
 					) : null}
 
 					{currentStep === STEP_LOCATION ? (
-						<section className="space-y-6">
-							<div>
-								<h3 className="text-sm font-medium text-[#444]">
-									Article location
-								</h3>
-								<p className="mt-1 text-xs text-[#888]">
-									Optional. Skip if this article has no map. You can add,
-									change, or clear a pin anytime.
-								</p>
-							</div>
-							<StepperNav
-								steps={[...LOCATION_SUB_STEPS]}
-								currentStep={locationSubStep}
-								onStepSelect={setLocationSubStep}
-							/>
-							{locationSubStep === LOCATION_SUB_FIND ? (
-								<GoogleStep
-									onPlaceSelected={applyPlaceAutofill}
-									onSkip={() => setLocationSubStep(LOCATION_SUB_DETAILS)}
-								/>
-							) : (
-								<LocationStep
-									address={address}
-									sourceUrl={sourceUrl}
-									lat={lat}
-									lng={lng}
-									latInput={latInput}
-									lngInput={lngInput}
-									onAddressChange={setAddress}
-									onSourceUrlChange={setSourceUrl}
-									onLatInputChange={handleLatInputChange}
-									onLngInputChange={handleLngInputChange}
-									onClearPin={() => {
-										void handleClearPin();
-									}}
-									onPinChange={coords => setPin(coords.lat, coords.lng)}
-								/>
-							)}
-						</section>
+						<LocationIntroStep
+							hasLocation={hasSelectedLocation}
+							onAddOrChange={addLocation}
+							onRemoveAndSkip={skipLocation}
+							disabled={pending}
+						/>
+					) : null}
+
+					{currentStep === STEP_FIND_LOCATION ? (
+						<GoogleStep
+							onPlaceSelected={applyPlaceAutofill}
+							onSkip={() => {
+								setLocationSkipped(false);
+								setCurrentStep(STEP_VERIFY_LOCATION);
+							}}
+						/>
+					) : null}
+
+					{currentStep === STEP_VERIFY_LOCATION ? (
+						<LocationStep
+							address={address}
+							sourceUrl={sourceUrl}
+							lat={lat}
+							lng={lng}
+							latInput={latInput}
+							lngInput={lngInput}
+							onAddressChange={setAddress}
+							onSourceUrlChange={setSourceUrl}
+							onLatInputChange={handleLatInputChange}
+							onLngInputChange={handleLngInputChange}
+							onClearPin={() => {
+								void handleClearPin();
+							}}
+							onPinChange={coords => setPin(coords.lat, coords.lng)}
+						/>
 					) : null}
 
 					{currentStep === STEP_BODY && postId ? (
@@ -884,23 +903,49 @@ export default function BlogFormStepper({
 						>
 							Back
 						</Button>
-						<Button
-							type="button"
-							loading={pending}
-							disabled={
-								pending ||
-								(currentStep === STEP_FEATURED_IMAGE &&
-									(thumbnailUploading || !thumbnailPath))
-							}
-							onClick={goNext}
-							className={
-								isLastStep
-									? 'border-emerald-800 bg-emerald-700 text-white hover:border-emerald-900 hover:bg-emerald-800'
-									: undefined
-							}
-						>
-							{nextLabel}
-						</Button>
+						{isLocationGate ? (
+							<div className="grid w-full max-w-sm grid-cols-2 gap-2 sm:w-auto sm:min-w-[20rem]">
+								<Button
+									type="button"
+									onClick={addLocation}
+									disabled={pending}
+									className="w-full"
+								>
+									{hasSelectedLocation
+										? 'Change location'
+										: 'Add Location'}
+								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									onClick={skipLocation}
+									disabled={pending}
+									className="w-full"
+								>
+									{hasSelectedLocation
+										? 'Remove and skip'
+										: 'Skip Location'}
+								</Button>
+							</div>
+						) : (
+							<Button
+								type="button"
+								loading={pending}
+								disabled={
+									pending ||
+									(currentStep === STEP_FEATURED_IMAGE &&
+										(thumbnailUploading || !thumbnailPath))
+								}
+								onClick={goNext}
+								className={
+									isLastStep
+										? 'border-emerald-800 bg-emerald-700 text-white hover:border-emerald-900 hover:bg-emerald-800'
+										: undefined
+								}
+							>
+								{nextLabel}
+							</Button>
+						)}
 					</div>
 				</div>
 			</div>

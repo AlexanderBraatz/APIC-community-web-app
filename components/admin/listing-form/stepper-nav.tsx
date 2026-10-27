@@ -13,6 +13,8 @@ type StepperNavProps = {
 	steps: StepperStep[];
 	currentStep: number;
 	onStepSelect: (index: number) => void;
+	/** Step indexes that were skipped — muted, not shown as completed. Still clickable. */
+	skippedSteps?: number[];
 };
 
 const LG_MIN_WIDTH = '(min-width: 1024px)';
@@ -20,10 +22,12 @@ const LG_MIN_WIDTH = '(min-width: 1024px)';
 export default function StepperNav({
 	steps,
 	currentStep,
-	onStepSelect
+	onStepSelect,
+	skippedSteps
 }: StepperNavProps) {
 	const listRef = useRef<HTMLOListElement>(null);
 	const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
+	const skipped = new Set(skippedSteps ?? []);
 
 	useEffect(() => {
 		if (typeof window === 'undefined') return;
@@ -51,7 +55,8 @@ export default function StepperNav({
 			>
 				{steps.map((step, index) => {
 					const isActive = index === currentStep;
-					const isCompleted = index < currentStep;
+					const isSkipped = skipped.has(index);
+					const isCompleted = !isSkipped && index < currentStep;
 					const isLast = index === steps.length - 1;
 
 					return (
@@ -69,16 +74,24 @@ export default function StepperNav({
 								className={cn(
 									'flex w-full gap-3 text-left transition-colors',
 									'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#805b32]/40',
-									isActive ? 'text-[#444]' : 'text-[#666]'
+									isActive
+										? 'text-[#444]'
+										: isSkipped
+											? 'text-[#b0a89e]'
+											: 'text-[#666]'
 								)}
 							>
 								<span className="flex w-8 shrink-0 flex-col items-center">
 									<span
 										className={cn(
 											'relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-medium transition-colors',
-											isActive || isCompleted
+											isActive
 												? 'border-[#805b32] bg-[#805b32] text-white'
-												: 'border-[#b8a99a] bg-background text-[#666]'
+												: isCompleted
+													? 'border-[#805b32] bg-[#805b32] text-white'
+													: isSkipped
+														? 'border-[#d4cbc0] bg-[#f0ebe4] text-[#b0a89e]'
+														: 'border-[#b8a99a] bg-background text-[#666]'
 										)}
 									>
 										{isCompleted ? (
@@ -93,7 +106,12 @@ export default function StepperNav({
 									{!isLast ? (
 										<span
 											aria-hidden="true"
-											className="hidden w-px min-h-4 flex-1 bg-[#b8a99a]/50 lg:block"
+											className={cn(
+												'hidden w-px min-h-4 flex-1 lg:block',
+												isSkipped
+													? 'bg-[#d4cbc0]/70'
+													: 'bg-[#b8a99a]/50'
+											)}
 										/>
 									) : null}
 								</span>
