@@ -4,6 +4,10 @@ import { createHash } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import {
+	blogPublishBlockersMessage,
+	getBlogPublishBlockers
+} from '@/lib/blog/body';
+import {
 	BLOG_IMAGES_BUCKET,
 	getBlogThumbnailUrl
 } from '@/lib/blog/thumbnail';
@@ -421,6 +425,14 @@ export async function publish(
 		const existing = await loadVisiblePost(supabase, postId);
 		if (!existing) {
 			return { ok: false, error: 'Post not found or deleted.' };
+		}
+
+		const blockers = getBlogPublishBlockers({
+			thumbnailPath: existing.thumbnail_path,
+			body: existing.body
+		});
+		if (blockers.length > 0) {
+			return { ok: false, error: blogPublishBlockersMessage(blockers) };
 		}
 
 		const { data, error } = await supabase

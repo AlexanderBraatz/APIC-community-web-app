@@ -20,7 +20,7 @@ type PreviewStepProps = {
 	};
 	mapLocation: BlogMapLocation | null;
 	pending: boolean;
-	onSaveDraft: () => void;
+	onSave: () => void;
 	onPublish: () => void;
 };
 
@@ -28,27 +28,29 @@ export default function PreviewStep({
 	post,
 	mapLocation,
 	pending,
-	onSaveDraft,
+	onSave,
 	onPublish
 }: PreviewStepProps) {
+	const isLive = post.status === 'published';
 	return (
 		<section className="space-y-6">
 			<div className="flex flex-wrap items-end justify-between gap-3">
 				<div>
 					<h3 className="text-sm font-medium text-[#444]">Preview & publish</h3>
 					<p className="mt-1 text-xs text-[#888]">
-						This matches the public article layout. Save the draft or publish when
-						ready.
+						{isLive
+							? 'This article is live. Save changes to update it, or re-publish after editing.'
+							: 'This matches the public article layout. Save the draft or publish when ready.'}
 					</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
 					<Button
 						type="button"
 						variant="secondary"
-						onClick={onSaveDraft}
+						onClick={onSave}
 						disabled={pending}
 					>
-						Save draft
+						{isLive ? 'Save changes' : 'Save draft'}
 					</Button>
 					<Button
 						type="button"
@@ -57,7 +59,7 @@ export default function PreviewStep({
 						disabled={pending}
 						className="border-emerald-800 bg-emerald-700 text-white hover:border-emerald-900 hover:bg-emerald-800"
 					>
-						{post.status === 'published' ? 'Re-publish' : 'Publish'}
+						{isLive ? 'Re-publish' : 'Publish'}
 					</Button>
 				</div>
 			</div>

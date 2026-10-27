@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import { isEmptyBlogBody } from '@/lib/blog/body';
 import { getBlogThumbnailUrl } from '@/lib/blog/thumbnail';
 import type { Json } from '@/lib/supabase/database.types';
 
@@ -19,25 +20,6 @@ type TipTapNode = {
 function asNode(value: Json | undefined): TipTapNode | null {
 	if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
 	return value as TipTapNode;
-}
-
-function isEmptyBody(body: Json): boolean {
-	if (body == null) return true;
-	if (typeof body !== 'object') return true;
-	if (Array.isArray(body)) return body.length === 0;
-	const keys = Object.keys(body);
-	if (keys.length === 0) return true;
-	const doc = body as TipTapNode;
-	if (doc.type === 'doc') {
-		const content = doc.content;
-		if (!content || content.length === 0) return true;
-		const onlyEmptyParagraph =
-			content.length === 1 &&
-			content[0]?.type === 'paragraph' &&
-			(!content[0].content || content[0].content.length === 0);
-		if (onlyEmptyParagraph) return true;
-	}
-	return false;
 }
 
 function sanitizeHref(href: unknown): string | null {
@@ -210,7 +192,7 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
  * Only known nodes/marks are rendered; links restricted to http(s)/mailto.
  */
 export default function BlogBody({ body }: { body: Json }) {
-	if (isEmptyBody(body)) {
+	if (isEmptyBlogBody(body)) {
 		return (
 			<section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
 				<div className="mx-auto max-w-3xl">

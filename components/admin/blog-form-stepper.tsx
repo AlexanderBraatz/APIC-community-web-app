@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react';
 import Link from 'next/link';
+import { FilePenLine } from 'lucide-react';
 import GoogleStep from '@/components/admin/listing-form/steps/google-step';
 import LocationStep from '@/components/admin/listing-form/steps/location-step';
 import StepperNav from '@/components/admin/listing-form/stepper-nav';
@@ -30,13 +31,27 @@ import LocationIntroStep from '@/components/admin/blog-form/steps/location-intro
 import PreviewStep from '@/components/admin/blog-form/steps/preview-step';
 import { Button } from '@/components/ui/button';
 import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle
+} from '@/components/ui/dialog';
+import {
 	clearBlogThumbnail,
 	copyBlogThumbnail,
 	createDraft,
 	publish,
+	turnBackToDraft,
 	updateDraft,
 	uploadBlogImage
 } from '@/lib/blog/admin-actions';
+import {
+	blogPublishBlockersMessage,
+	getBlogPublishBlockers,
+	type BlogPublishBlocker
+} from '@/lib/blog/body';
 import {
 	BLOG_IMAGE_TOO_LARGE_MESSAGE,
 	compressBlogImage,
@@ -106,6 +121,9 @@ export default function BlogFormStepper({
 	>('idle');
 	const [successTitle, setSuccessTitle] = useState<string | null>(null);
 	const [successHref, setSuccessHref] = useState('/blog');
+	const [publishBlockers, setPublishBlockers] = useState<
+		BlogPublishBlocker[] | null
+	>(null);
 
 	const [currentStep, setCurrentStep] = useState(
 		mode === 'edit' ? STEP_BODY : STEP_HEADER
@@ -526,15 +544,54 @@ export default function BlogFormStepper({
 		});
 	}
 
-	function saveDraftExplicit() {
+	function saveExplicit() {
 		startTransition(async () => {
 			setError(null);
 			setMessage(null);
 			const id = await ensureDraftId();
 			if (!id) return;
 			const ok = await persistDraft(id);
-			if (ok) setMessage('Draft saved.');
+			if (!ok) return;
+			setMessage(
+				status === 'published'
+					? 'Live article updated.'
+					: 'Draft saved.'
+			);
 		});
+	}
+
+	function handleTurnToDraft() {
+		startTransition(async () => {
+			setError(null);
+			setMessage(null);
+			const id = await ensureDraftId();
+			if (!id) return;
+			const draftOk = await persistDraft(id);
+			if (!draftOk) return;
+			const result = await turnBackToDraft(id);
+			if (!result.ok) {
+				setError(result.error);
+				return;
+			}
+			setStatus(result.post.status);
+			setSlug(result.post.slug);
+			setMessage(
+				'Article turned back into a draft. Autosave is on while you edit.'
+			);
+		});
+	}
+
+	function openPublishBlockersDialog(blockers: BlogPublishBlocker[]) {
+		setPublishBlockers(blockers);
+	}
+
+	function goToPublishBlockerStep(blocker: BlogPublishBlocker) {
+		setPublishBlockers(null);
+		setError(null);
+		setMessage(null);
+		setCurrentStep(
+			blocker === 'featured' ? STEP_FEATURED_IMAGE : STEP_BODY
+		);
 	}
 
 	function addLocation() {
@@ -574,16 +631,22 @@ export default function BlogFormStepper({
 					setError(validationError);
 					return;
 				}
-				const id = await ensureDraftId();
-				if (!id) return;
-				const ok = await persistDraft(id);
-				if (!ok) return;
+				if (status !== 'published') {
+					const id = await ensureDraftId();
+					if (!id) return;
+					const ok = await persistDraft(id);
+					if (!ok) return;
+				}
 				setCurrentStep(STEP_FEATURED_IMAGE);
 				return;
 			}
 
 			if (currentStep === STEP_FEATURED_IMAGE) {
-				if (thumbnailUploading || !thumbnailPath) return;
+				if (thumbnailUploading) return;
+				if (!thumbnailPath) {
+					openPublishBlockersDialog(['featured']);
+					return;
+				}
 				setCurrentStep(STEP_LOCATION);
 				return;
 			}
@@ -605,10 +668,12 @@ export default function BlogFormStepper({
 			}
 
 			if (currentStep === STEP_BODY) {
-				const id = postId ?? (await ensureDraftId());
-				if (!id) return;
-				const ok = await persistDraft(id);
-				if (!ok) return;
+				if (status !== 'published') {
+					const id = postId ?? (await ensureDraftId());
+					if (!id) return;
+					const ok = await persistDraft(id);
+					if (!ok) return;
+				}
 				setCurrentStep(STEP_PREVIEW);
 				return;
 			}
@@ -627,13 +692,40 @@ export default function BlogFormStepper({
 	}
 
 	async function runPublish() {
+		const blockers = getBlogPublishBlockers({
+			thumbnailPath,
+			body: toPlainBlogBody(body)
+		});
+		if (blockers.length > 0) {
+			openPublishBlockersDialog(blockers);
+			return;
+		}
+
 		const id = postId ?? (await ensureDraftId());
 		if (!id) return;
 		const draftOk = await persistDraft(id);
 		if (!draftOk) return;
 		await persistLocation(id);
+
+		const afterSaveBlockers = getBlogPublishBlockers({
+			thumbnailPath,
+			body: toPlainBlogBody(body)
+		});
+		if (afterSaveBlockers.length > 0) {
+			openPublishBlockersDialog(afterSaveBlockers);
+			return;
+		}
+
 		const result = await publish(id);
 		if (!result.ok) {
+			const serverBlockers = getBlogPublishBlockers({
+				thumbnailPath,
+				body: toPlainBlogBody(body)
+			});
+			if (serverBlockers.length > 0) {
+				openPublishBlockersDialog(serverBlockers);
+				return;
+			}
 			setError(result.error);
 			return;
 		}
@@ -655,9 +747,11 @@ export default function BlogFormStepper({
 		});
 	}
 
-	// Debounced autosave once a draft id exists (header fields + body).
+	// Debounced autosave for drafts only — published posts need Turn to draft
+	// or an explicit Save before live content changes.
 	useEffect(() => {
 		if (!postId) return;
+		if (status === 'published') return;
 		if (skipAutosaveRef.current) {
 			skipAutosaveRef.current = false;
 			return;
@@ -714,7 +808,8 @@ export default function BlogFormStepper({
 		shortDescription,
 		thumbnailPath,
 		body,
-		postId
+		postId,
+		status
 	]);
 
 	const nextLabel = (() => {
@@ -734,9 +829,20 @@ export default function BlogFormStepper({
 
 	const publishedAtIso =
 		fromDateInputValue(publishedAtLocal) ?? new Date().toISOString();
+	const isLive = status === 'published';
 
 	return (
 		<div className="space-y-6">
+			{isLive ? (
+				<p
+					className="border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950"
+					role="status"
+				>
+					This article is live. Changes are not autosaved. Turn back
+					into Draft to edit safely, or use Save changes / Publish to
+					update the live article.
+				</p>
+			) : null}
 			{error ? (
 				<p
 					className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
@@ -777,6 +883,11 @@ export default function BlogFormStepper({
 							if (index > STEP_HEADER && !postId) {
 								const id = await ensureDraftId();
 								if (!id) return;
+							}
+							if (index > STEP_FEATURED_IMAGE && !thumbnailPath) {
+								openPublishBlockersDialog(['featured']);
+								setCurrentStep(STEP_FEATURED_IMAGE);
+								return;
 							}
 							if (
 								index === STEP_FIND_LOCATION ||
@@ -886,7 +997,7 @@ export default function BlogFormStepper({
 							}}
 							mapLocation={previewMapLocation}
 							pending={pending}
-							onSaveDraft={saveDraftExplicit}
+							onSave={saveExplicit}
 							onPublish={handlePublish}
 						/>
 					) : null}
@@ -899,12 +1010,25 @@ export default function BlogFormStepper({
 						<Button
 							type="button"
 							variant="secondary"
-							onClick={saveDraftExplicit}
+							onClick={saveExplicit}
 							loading={pending && saveStatus === 'saving'}
 							disabled={pending}
 						>
-							Save draft
+							{isLive ? 'Save changes' : 'Save draft'}
 						</Button>
+						{isLive && postId ? (
+							<Button
+								type="button"
+								variant="outline"
+								className="gap-1.5"
+								onClick={handleTurnToDraft}
+								loading={pending}
+								disabled={pending}
+							>
+								<FilePenLine className="size-3.5" aria-hidden />
+								Turn back into Draft
+							</Button>
+						) : null}
 					</div>
 					<div className="flex flex-wrap items-center justify-end gap-3">
 						<Button
@@ -968,6 +1092,62 @@ export default function BlogFormStepper({
 				href={successHref}
 				description="You are being redirected to the published article…"
 			/>
+
+			<Dialog
+				open={publishBlockers !== null}
+				onOpenChange={open => {
+					if (!open) setPublishBlockers(null);
+				}}
+			>
+				<DialogContent className="sm:max-w-md" showCloseButton={false}>
+					<DialogHeader>
+						<DialogTitle>Can&apos;t publish yet</DialogTitle>
+						<DialogDescription>
+							{publishBlockers
+								? blogPublishBlockersMessage(publishBlockers)
+								: ''}
+						</DialogDescription>
+					</DialogHeader>
+					<ul className="list-disc space-y-1 pl-5 text-sm text-[#555]">
+						{publishBlockers?.includes('featured') ? (
+							<li>Featured image is required</li>
+						) : null}
+						{publishBlockers?.includes('body') ? (
+							<li>Article body content is required</li>
+						) : null}
+					</ul>
+					<DialogFooter>
+						<Button
+							type="button"
+							variant="outline"
+							onClick={() => setPublishBlockers(null)}
+						>
+							Cancel
+						</Button>
+						{publishBlockers?.includes('featured') ? (
+							<Button
+								type="button"
+								onClick={() => goToPublishBlockerStep('featured')}
+							>
+								Add featured image
+							</Button>
+						) : null}
+						{publishBlockers?.includes('body') ? (
+							<Button
+								type="button"
+								variant={
+									publishBlockers.includes('featured')
+										? 'secondary'
+										: 'default'
+								}
+								onClick={() => goToPublishBlockerStep('body')}
+							>
+								Add body content
+							</Button>
+						) : null}
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

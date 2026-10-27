@@ -168,6 +168,8 @@ export default function BlogArticleView({
 								postId={post.id}
 								title={post.title.trim() || 'Untitled'}
 								status={post.status}
+								thumbnailPath={post.thumbnail_path}
+								body={post.body}
 							/>
 						</div>
 					) : null}
