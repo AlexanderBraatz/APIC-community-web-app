@@ -37,3 +37,12 @@ export function normalizeBlogBody(body: Json | null | undefined): Json {
 	if (doc.type !== 'doc') return EMPTY_BLOG_BODY;
 	return body;
 }
+
+/**
+ * TipTap/ProseMirror `getJSON()` uses null-prototype `attrs` objects.
+ * Next.js server actions silently drop those, so image `src` never reaches
+ * the DB. Round-trip through JSON to get plain objects before save/state.
+ */
+export function toPlainBlogBody(body: Json): Json {
+	return JSON.parse(JSON.stringify(body)) as Json;
+}

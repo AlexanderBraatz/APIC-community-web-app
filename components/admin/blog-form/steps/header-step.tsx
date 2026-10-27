@@ -30,7 +30,7 @@ export default function HeaderStep({
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Article header</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					Title, byline, date, and intro as they appear on the public article.
+					Title, date, and intro as they appear on the public article.
 				</p>
 			</div>
 
@@ -42,8 +42,7 @@ export default function HeaderStep({
 						id="blog-title"
 						value={title}
 						onChange={e => onTitleChange(e.target.value)}
-						placeholder="Article title"
-						className="w-full border-0 border-b border-[#b8a99a]/40 bg-transparent pb-2 font-heading text-3xl font-normal text-[#333333] outline-none placeholder:text-[#bbbbbb] focus:border-[#805b32] sm:text-4xl"
+						className="w-full border-0 border-b border-[#b8a99a]/40 bg-transparent pb-2 font-heading text-3xl font-normal text-[#333333] outline-none focus:border-[#805b32] sm:text-4xl"
 					/>
 				</div>
 
@@ -54,17 +53,17 @@ export default function HeaderStep({
 							id="blog-author"
 							value={author}
 							onChange={e => onAuthorChange(e.target.value)}
-							className="text-sm text-[#888888]"
+							className="text-sm text-[#444]"
 						/>
 					</div>
 					<div className="min-w-0 flex-1 space-y-2">
 						<Label htmlFor="blog-published-at">Published date</Label>
 						<Input
 							id="blog-published-at"
-							type="datetime-local"
+							type="date"
 							value={publishedAtLocal}
 							onChange={e => onPublishedAtLocalChange(e.target.value)}
-							className="text-sm text-[#888888]"
+							className="text-sm text-[#444]"
 						/>
 					</div>
 				</div>
@@ -76,8 +75,8 @@ export default function HeaderStep({
 						value={shortDescription}
 						onChange={e => onShortDescriptionChange(e.target.value)}
 						rows={4}
-						placeholder="Lead paragraph shown under the byline…"
-						className="min-h-28 resize-y whitespace-pre-line font-sans text-base leading-relaxed text-[#555555] sm:text-lg"
+						placeholder="Lead paragraph shown under the title…"
+						className="min-h-28 resize-y whitespace-pre-line font-sans text-base leading-relaxed text-[#444] sm:text-lg"
 					/>
 				</div>
 			</div>

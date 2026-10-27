@@ -30,6 +30,7 @@ import {
 	friendlyBlogImageUploadError,
 	isBlogImageTooLarge
 } from '@/lib/blog/compress-image';
+import { toPlainBlogBody } from '@/components/admin/blog-form/constants';
 import type { Json } from '@/lib/supabase/database.types';
 
 type BodyStepProps = {
@@ -144,7 +145,8 @@ export default function BodyStep({
 				skipNextUpdateRef.current = false;
 				return;
 			}
-			onBodyChange(current.getJSON() as Json);
+			// Plain-object clone: null-prototype TipTap attrs break server actions.
+			onBodyChange(toPlainBlogBody(current.getJSON() as Json));
 		}
 	});
 

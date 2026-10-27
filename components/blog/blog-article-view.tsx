@@ -156,8 +156,8 @@ export default function BlogArticleView({
 							)}
 						</div>
 					</nav>
-					<div className="flex flex-wrap items-center gap-3">
-						<h1 className="font-heading text-4xl font-normal text-[#333333] sm:text-5xl">
+					<div className="flex min-w-0 flex-wrap items-center gap-3">
+						<h1 className="min-w-0 break-words font-heading text-4xl font-normal text-[#333333] sm:text-5xl">
 							{post.title.trim() || 'Untitled'}
 						</h1>
 						{isAdmin && post.status === 'draft' ? <BlogDraftBadge /> : null}
@@ -191,7 +191,7 @@ export default function BlogArticleView({
 						</p>
 					) : null}
 					{post.short_description ? (
-						<p className="mt-6 whitespace-pre-line font-sans text-lg leading-relaxed text-[#555555]">
+						<p className="mt-6 break-words whitespace-pre-line font-sans text-lg leading-relaxed text-[#555555]">
 							{post.short_description}
 						</p>
 					) : null}

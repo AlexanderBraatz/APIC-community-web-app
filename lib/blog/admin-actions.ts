@@ -331,7 +331,9 @@ export async function updateDraft(
 			}
 		}
 		if (partial.body !== undefined) {
-			patch.body = partial.body;
+			// Ensure plain JSON (TipTap attrs can be null-prototype and get
+			// stripped by the server-action serializer if not cloned client-side).
+			patch.body = JSON.parse(JSON.stringify(partial.body)) as Json;
 		}
 
 		const titleForSlug = patch.title ?? existing.title;

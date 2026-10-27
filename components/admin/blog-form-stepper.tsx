@@ -16,12 +16,13 @@ import {
 	STEP_HEADER,
 	STEP_LOCATION,
 	STEP_PREVIEW,
-	STEP_VERIFY_LOCATION
+	STEP_VERIFY_LOCATION,
+	toPlainBlogBody
 } from '@/components/admin/blog-form/constants';
 import {
-	fromDatetimeLocalValue,
-	toDatetimeLocalValue
-} from '@/components/admin/blog-form/datetime-local';
+	fromDateInputValue,
+	toDateInputValue
+} from '@/components/admin/blog-form/date-input';
 import BodyStep from '@/components/admin/blog-form/steps/body-step';
 import FeaturedImageStep from '@/components/admin/blog-form/steps/featured-image-step';
 import HeaderStep from '@/components/admin/blog-form/steps/header-step';
@@ -81,7 +82,7 @@ function validateHeaderFields(input: {
 	if (!input.title.trim()) return 'Title is required.';
 	if (!input.author.trim()) return 'Author is required.';
 	if (!input.publishedAtLocal.trim()) return 'Published date is required.';
-	if (!fromDatetimeLocalValue(input.publishedAtLocal)) {
+	if (!fromDateInputValue(input.publishedAtLocal)) {
 		return 'Published date is invalid.';
 	}
 	if (!input.shortDescription.trim()) {
@@ -119,7 +120,7 @@ export default function BlogFormStepper({
 	const [title, setTitle] = useState(post?.title ?? '');
 	const [author, setAuthor] = useState(post?.author ?? defaultAuthor);
 	const [publishedAtLocal, setPublishedAtLocal] = useState(() =>
-		toDatetimeLocalValue(post?.published_at ?? new Date().toISOString())
+		toDateInputValue(post?.published_at ?? new Date().toISOString())
 	);
 	const [shortDescription, setShortDescription] = useState(
 		post?.short_description ?? ''
@@ -190,7 +191,7 @@ export default function BlogFormStepper({
 			publishedAt: publishedAtIso,
 			shortDescription: shortDescription.trim(),
 			thumbnailPath: nextThumbnailPath,
-			body: nextBody
+			body: toPlainBlogBody(nextBody)
 		});
 	}
 
@@ -259,7 +260,7 @@ export default function BlogFormStepper({
 		creatingRef.current = true;
 		setSaveStatus('saving');
 
-		const publishedAt = fromDatetimeLocalValue(publishedAtLocal)!;
+		const publishedAt = fromDateInputValue(publishedAtLocal)!;
 		const result = await createDraft({
 			title: title.trim(),
 			author: author.trim(),
@@ -302,7 +303,7 @@ export default function BlogFormStepper({
 			return false;
 		}
 
-		const publishedAt = fromDatetimeLocalValue(publishedAtLocal)!;
+		const publishedAt = fromDateInputValue(publishedAtLocal)!;
 		const snapshot = draftSnapshot(publishedAt);
 		if (snapshot === lastSavedSnapshotRef.current) {
 			setSaveStatus('saved');
@@ -310,13 +311,14 @@ export default function BlogFormStepper({
 		}
 
 		setSaveStatus('saving');
+		const plainBody = toPlainBlogBody(body);
 		const result = await updateDraft(id, {
 			title: title.trim(),
 			author: author.trim(),
 			publishedAt,
 			shortDescription: shortDescription.trim(),
 			thumbnailPath,
-			body
+			body: plainBody
 		});
 
 		if (!result.ok) {
@@ -331,7 +333,7 @@ export default function BlogFormStepper({
 		// Keep client body as source of truth so TipTap does not reset mid-edit.
 		lastSavedSnapshotRef.current = draftSnapshot(
 			result.post.published_at,
-			body
+			plainBody
 		);
 		setSaveStatus('saved');
 		return true;
@@ -421,7 +423,7 @@ export default function BlogFormStepper({
 			}
 			setThumbnailPath(null);
 			lastSavedSnapshotRef.current = draftSnapshot(
-				fromDatetimeLocalValue(publishedAtLocal) ??
+				fromDateInputValue(publishedAtLocal) ??
 					new Date().toISOString(),
 				body,
 				null
@@ -627,7 +629,7 @@ export default function BlogFormStepper({
 		});
 		if (validationError) return;
 
-		const publishedAt = fromDatetimeLocalValue(publishedAtLocal);
+		const publishedAt = fromDateInputValue(publishedAtLocal);
 		if (!publishedAt) return;
 
 		const snapshot = draftSnapshot(publishedAt);
@@ -637,13 +639,14 @@ export default function BlogFormStepper({
 		autosaveTimerRef.current = setTimeout(() => {
 			void (async () => {
 				setSaveStatus('saving');
+				const plainBody = toPlainBlogBody(body);
 				const result = await updateDraft(postId, {
 					title: title.trim(),
 					author: author.trim(),
 					publishedAt,
 					shortDescription: shortDescription.trim(),
 					thumbnailPath,
-					body
+					body: plainBody
 				});
 				if (!result.ok) {
 					setSaveStatus('error');
@@ -652,7 +655,7 @@ export default function BlogFormStepper({
 				setSlug(result.post.slug);
 				lastSavedSnapshotRef.current = draftSnapshot(
 					result.post.published_at,
-					body
+					plainBody
 				);
 				setSaveStatus('saved');
 			})();
@@ -688,44 +691,10 @@ export default function BlogFormStepper({
 	})();
 
 	const publishedAtIso =
-		fromDatetimeLocalValue(publishedAtLocal) ?? new Date().toISOString();
+		fromDateInputValue(publishedAtLocal) ?? new Date().toISOString();
 
 	return (
 		<div className="space-y-6">
-			<div className="flex flex-wrap items-center gap-3 text-sm text-[#666]">
-				<span className="capitalize">{mode}</span>
-				{postId ? (
-					<>
-						<span>
-							· id{' '}
-							<code className="text-xs text-[#444]">{postId}</code>
-						</span>
-						{slug ? (
-							<span>
-								· slug{' '}
-								<code className="text-xs text-[#444]">{slug}</code>
-							</span>
-						) : null}
-						<span>
-							·{' '}
-							<span className="capitalize">{status}</span>
-						</span>
-						<span aria-live="polite">
-							·{' '}
-							{saveStatus === 'saving'
-								? 'Saving…'
-								: saveStatus === 'saved'
-									? 'Saved'
-									: saveStatus === 'error'
-										? 'Save failed'
-										: 'Ready'}
-						</span>
-					</>
-				) : (
-					<span>· Fill the header and continue to create a draft.</span>
-				)}
-			</div>
-
 			{error ? (
 				<p
 					className="border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"

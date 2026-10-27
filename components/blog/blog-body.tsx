@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
+import { getBlogThumbnailUrl } from '@/lib/blog/thumbnail';
 import type { Json } from '@/lib/supabase/database.types';
 
 type TipTapMark = {
@@ -170,8 +171,11 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
 				</li>
 			);
 		case 'image': {
-			const src =
+			const rawSrc =
 				typeof node.attrs?.src === 'string' ? node.attrs.src.trim() : '';
+			const path =
+				typeof node.attrs?.path === 'string' ? node.attrs.path.trim() : '';
+			const src = rawSrc || getBlogThumbnailUrl(path) || '';
 			if (!src) return null;
 			const alt =
 				typeof node.attrs?.alt === 'string' ? node.attrs.alt : '';
@@ -233,7 +237,9 @@ export default function BlogBody({ body }: { body: Json }) {
 
 	return (
 		<section className="bg-white px-4 pb-14 pt-4 sm:px-6 lg:px-8 lg:pb-20">
-			<div className="mx-auto max-w-3xl">{renderNode(root, 'root')}</div>
+			<div className="mx-auto max-w-3xl break-words">
+				{renderNode(root, 'root')}
+			</div>
 		</section>
 	);
 }
