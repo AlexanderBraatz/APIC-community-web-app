@@ -9,7 +9,7 @@ export default async function NewBlogPostPage() {
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-medium text-[#444]">New blog article</h2>
+				<h2 className="text-xl font-medium text-[#444]">New article</h2>
 				<p className="mt-1 text-sm text-[#666]">
 					Step through header, featured image, optional location, and body —
 					then preview and publish. Drafts save as you go.

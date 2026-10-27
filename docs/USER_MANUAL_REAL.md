@@ -61,9 +61,9 @@ Image 2 and mobile image2
 
 Posts
 
-- How to Add a New Blog Post
+- How to Add a New News, Events & Activities Post
 
-1. Click add new blog article
+1. Click add new News, Events & Activities article
 
 Image 1
 
@@ -71,11 +71,11 @@ Image 1
 
 Image 2
 
-3. Click the New blog post , found at the top of the list
+3. Click the new News, Events & Activities post, found at the top of the list
 
 Image 3
 
-- How to Change an Image on a Blog Post
+- How to Change an Image on a News, Events & Activities Post
 
 1. Click on the Image you would like to change.
 
@@ -106,7 +106,7 @@ image6
 
 image7
 
-- How to Edit Text on a Blog Post
+- How to Edit Text on a News, Events & Activities Post
 
 1. Click on any field surrounded by a blue dashed border
 
@@ -128,7 +128,7 @@ Main Block Actions
 
 - How to Add a New Block
 
-1. Click on the Blog Post ID-Number to navigate to the Blog Post overview
+1. Click on the News, Events & Activities post ID-Number to navigate to the post overview
 
 Image1
 
@@ -164,9 +164,9 @@ Image2
 
 Image3
 
-- How to Delete a Blog Post Block
+- How to Delete a News, Events & Activities Post Block
 
-1. Click on the Blog Post ID-Number to navigate to the Blog Post overview
+1. Click on the News, Events & Activities post ID-Number to navigate to the post overview
 
 image1
 
@@ -402,6 +402,6 @@ Website Content
 
 image1
 
-2. Navigate around the website and change text , blocks and images in the same way explained in the Blog section
+2. Navigate around the website and change text , blocks and images in the same way explained in the News, Events & Activities section
 
 Image 2

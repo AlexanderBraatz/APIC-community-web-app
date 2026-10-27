@@ -1,6 +1,6 @@
 # Admin Manual
 
-How to manage recommendations, members, website content, blog posts, and blocks.
+How to manage recommendations, members, website content, News, Events & Activities, and blocks.
 
 ## Table of Contents {#table-of-contents}
 
@@ -13,14 +13,14 @@ How to manage recommendations, members, website content, blog posts, and blocks.
   - [How to Delete a Member](#how-to-delete-a-member)
 - **Website Content**
   - [How to Edit the Website’s Text and Images](#how-to-edit-the-websites-text-and-images)
-- **Posts**
-  - [How to Add a New Blog Post](#how-to-add-a-new-blog-post)
-  - [How to Change an Image on a Blog Post](#how-to-change-an-image-on-a-blog-post)
-  - [How to Edit Text on a Blog Post](#how-to-edit-text-on-a-blog-post)
+- **News, Events & Activities**
+  - [How to Add a New News, Events & Activities Post](#how-to-add-a-new-blog-post)
+  - [How to Change an Image on a News, Events & Activities Post](#how-to-change-an-image-on-a-blog-post)
+  - [How to Edit Text on a News, Events & Activities Post](#how-to-edit-text-on-a-blog-post)
 - **Working with Blocks**
   - [How to Add a New Block](#how-to-add-a-new-block)
   - [How to Move Blocks Around](#how-to-move-blocks-around)
-  - [How to Delete a Blog Post Block](#how-to-delete-a-blog-post-block)
+  - [How to Delete a News, Events & Activities Post Block](#how-to-delete-a-blog-post-block)
 - **Special Blocks**
   - [How to Update the Map Block](#how-to-update-the-map-block)
   - [How to Change the Email Address Connected to an Email Button](#how-to-change-the-email-address-connected-to-an-email-button)
@@ -206,7 +206,7 @@ Invite new members by email, promote members to admin, or remove members.
 
 ### Overview {#overview}
 
-Use Content Admin to edit site pages the same way you edit blog posts — text, blocks, and images.
+Use Content Admin to edit site pages the same way you edit News, Events & Activities posts — text, blocks, and images.
 
 ### How to Edit the Website’s Text and Images {#how-to-edit-the-websites-text-and-images}
 
@@ -214,33 +214,33 @@ Use Content Admin to edit site pages the same way you edit blog posts — text, 
 
 ![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
 
-2. Navigate around the website and change text, blocks, and images in the same way explained in the [Posts](#posts) section.
+2. Navigate around the website and change text, blocks, and images in the same way explained in the [News, Events & Activities](#posts) section.
 
 ![Edit website content](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-2.jpg)
 
 ---
 
-## Posts {#posts}
+## News, Events & Activities {#posts}
 
 ### Overview {#overview}
 
-Create blog posts in TinaCMS, then update images and text on the live preview.
+Create News, Events & Activities posts in TinaCMS, then update images and text on the live preview.
 
-### How to Add a New Blog Post {#how-to-add-a-new-blog-post}
+### How to Add a New News, Events & Activities Post {#how-to-add-a-new-blog-post}
 
-1. Click [**Add new blog article**](/admin#/collections/new/blog).
+1. Click [**Add article**](/members/admin/blog/new).
 
-![Add new blog article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
+![Add new News, Events & Activities article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
 
 2. Click **Save**.
 
-![Save new blog post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-2.jpg)
+![Save new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-2.jpg)
 
-3. Click the new blog post, found at the top of the list.
+3. Click the new News, Events & Activities post, found at the top of the list.
 
-![Open new blog post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
+![Open new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
 
-### How to Change an Image on a Blog Post {#how-to-change-an-image-on-a-blog-post}
+### How to Change an Image on a News, Events & Activities Post {#how-to-change-an-image-on-a-blog-post}
 
 1. Click on the image you would like to change.
 
@@ -271,7 +271,7 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
 
-### How to Edit Text on a Blog Post {#how-to-edit-text-on-a-blog-post}
+### How to Edit Text on a News, Events & Activities Post {#how-to-edit-text-on-a-blog-post}
 
 1. Click on any field surrounded by a blue dashed border.
 
@@ -293,13 +293,13 @@ Create blog posts in TinaCMS, then update images and text on the live preview.
 
 ### Overview {#overview}
 
-Blocks are the building pieces of a blog post (and other pages). Add, reorder, or delete them from the TinaCMS sidebar.
+Blocks are the building pieces of a News, Events & Activities post (and other pages). Add, reorder, or delete them from the TinaCMS sidebar.
 
 ### How to Add a New Block {#how-to-add-a-new-block}
 
-1. Click on the blog post ID number to navigate to the blog post overview.
+1. Click on the News, Events & Activities post ID number to navigate to the post overview.
 
-![Open blog post overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
+![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
 
 2. Click the plus icon to open the blocks selection menu.
 
@@ -333,11 +333,11 @@ Blocks are the building pieces of a blog post (and other pages). Add, reorder, o
 
 ![Block moved](screenshots/screenshotsreal/how-to-move-blocks-around-3.jpg)
 
-### How to Delete a Blog Post Block {#how-to-delete-a-blog-post-block}
+### How to Delete a News, Events & Activities Post Block {#how-to-delete-a-blog-post-block}
 
-1. Click on the blog post ID number to navigate to the blog post overview.
+1. Click on the News, Events & Activities post ID number to navigate to the post overview.
 
-![Open blog post overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
+![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
 
 2. Click the bin icon next to the block you wish to delete.
 
@@ -396,7 +396,7 @@ Update block-specific content such as maps, Email Button addresses, galleries, a
 
 ![Add gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-2.jpg)
 
-4. Click on the newly added image and follow the same steps as in [How to Change an Image on a Blog Post](#how-to-change-an-image-on-a-blog-post) to change it.
+4. Click on the newly added image and follow the same steps as in [How to Change an Image on a News, Events & Activities Post](#how-to-change-an-image-on-a-blog-post) to change it.
 5. Save your changes.
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)

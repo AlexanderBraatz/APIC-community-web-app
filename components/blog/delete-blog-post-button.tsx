@@ -69,8 +69,9 @@ export default function DeleteBlogPostButton({
 					<DialogHeader>
 						<DialogTitle>Delete article?</DialogTitle>
 						<DialogDescription>
-							This removes “{title}” from the blog. It will no longer appear for
-							members or in the admin list. This cannot be undone from the site.
+							This removes “{title}” from News, Events & Activities. It will no
+							longer appear for members or in the admin list. This cannot be
+							undone from the site.
 						</DialogDescription>
 					</DialogHeader>
 					{error ? (

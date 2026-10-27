@@ -153,14 +153,15 @@ export default function BlogIndex({
 												{post.short_description}
 											</p>
 										) : null}
-										<Image
-											src={imageSrc}
-											alt=""
-											className="mt-5 w-full object-cover"
-											width={768}
-											height={576}
-											sizes="(min-width: 860px) 769px, 92.78vw"
-										/>
+										<div className="relative mt-5 aspect-4/3 w-full overflow-hidden bg-[#e8e4dc]">
+											<Image
+												src={imageSrc}
+												alt=""
+												fill
+												className="object-cover"
+												sizes="(min-width: 860px) 769px, 92.78vw"
+											/>
+										</div>
 										<span className="mt-5 flex justify-end">
 											<span
 												className={cn(

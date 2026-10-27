@@ -17,7 +17,7 @@ const quickActions = [
 		href: '/members/admin/listings/new'
 	},
 	{
-		label: 'Add Blog article',
+		label: 'Add Article',
 		href: '/members/admin/blog/new'
 	}
 ] as const;
@@ -84,7 +84,7 @@ export default async function MembersAdminDashboardPage() {
 			value: counts.users
 		},
 		{
-			label: 'Blog posts',
+			label: 'Articles',
 			value: counts.blogPosts
 		},
 		{

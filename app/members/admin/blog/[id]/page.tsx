@@ -21,7 +21,7 @@ export default async function EditBlogPostPage({
 	return (
 		<div className="space-y-6">
 			<div>
-				<h2 className="text-xl font-medium text-[#444]">Edit blog article</h2>
+				<h2 className="text-xl font-medium text-[#444]">Edit article</h2>
 				<p className="mt-1 text-sm text-[#666]">{post.title}</p>
 			</div>
 			<BlogFormStepper

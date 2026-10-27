@@ -1,6 +1,6 @@
 # Admin-Handbuch
 
-So verwalten Sie Empfehlungen, Mitglieder, Website-Inhalte, Blogbeiträge und Blöcke.
+So verwalten Sie Empfehlungen, Mitglieder, Website-Inhalte, News, Events & Activities und Blöcke.
 
 ## Inhaltsverzeichnis {#table-of-contents}
 
@@ -13,14 +13,14 @@ So verwalten Sie Empfehlungen, Mitglieder, Website-Inhalte, Blogbeiträge und Bl
   - [Mitglied löschen](#how-to-delete-a-member)
 - **Website-Inhalte**
   - [Text und Bilder der Website bearbeiten](#how-to-edit-the-websites-text-and-images)
-- **Beiträge**
-  - [Neuen Blogbeitrag hinzufügen](#how-to-add-a-new-blog-post)
-  - [Bild in einem Blogbeitrag ändern](#how-to-change-an-image-on-a-blog-post)
-  - [Text in einem Blogbeitrag bearbeiten](#how-to-edit-text-on-a-blog-post)
+- **News, Events & Activities**
+  - [Neuen News, Events & Activities-Beitrag hinzufügen](#how-to-add-a-new-blog-post)
+  - [Bild in einem News, Events & Activities-Beitrag ändern](#how-to-change-an-image-on-a-blog-post)
+  - [Text in einem News, Events & Activities-Beitrag bearbeiten](#how-to-edit-text-on-a-blog-post)
 - **Mit Blöcken arbeiten**
   - [Neuen Block hinzufügen](#how-to-add-a-new-block)
   - [Blöcke verschieben](#how-to-move-blocks-around)
-  - [Block aus einem Blogbeitrag löschen](#how-to-delete-a-blog-post-block)
+  - [Block aus einem News, Events & Activities-Beitrag löschen](#how-to-delete-a-blog-post-block)
 - **Spezielle Blöcke**
   - [Karten-Block aktualisieren](#how-to-update-the-map-block)
   - [E-Mail-Adresse einer E-Mail-Schaltfläche ändern](#how-to-change-the-email-address-connected-to-an-email-button)
@@ -206,7 +206,7 @@ Laden Sie neue Mitglieder per E-Mail ein, geben Sie Mitgliedern Admin-Rechte ode
 
 ### Übersicht {#overview}
 
-Mit Content Admin können Sie Inhalte auf den Website-Seiten genauso bearbeiten wie Blogbeiträge – einschließlich Texten, Blöcken und Bildern.
+Mit Content Admin können Sie Inhalte auf den Website-Seiten genauso bearbeiten wie News, Events & Activities-Beiträge – einschließlich Texten, Blöcken und Bildern.
 
 ### Text und Bilder der Website bearbeiten {#how-to-edit-the-websites-text-and-images}
 
@@ -214,33 +214,33 @@ Mit Content Admin können Sie Inhalte auf den Website-Seiten genauso bearbeiten 
 
 ![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
 
-2. Navigieren Sie durch die Website und bearbeiten Sie Texte, Blöcke und Bilder wie im Abschnitt [Beiträge](#posts) beschrieben.
+2. Navigieren Sie durch die Website und bearbeiten Sie Texte, Blöcke und Bilder wie im Abschnitt [News, Events & Activities](#posts) beschrieben.
 
 ![Edit website content](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-2.jpg)
 
 ---
 
-## Beiträge {#posts}
+## News, Events & Activities {#posts}
 
 ### Übersicht {#overview}
 
-Erstellen Sie Blogbeiträge in TinaCMS und bearbeiten Sie anschließend Bilder und Texte direkt über die Live-Vorschau.
+Erstellen Sie News, Events & Activities-Beiträge in TinaCMS und bearbeiten Sie anschließend Bilder und Texte direkt über die Live-Vorschau.
 
-### Neuen Blogbeitrag hinzufügen {#how-to-add-a-new-blog-post}
+### Neuen News, Events & Activities-Beitrag hinzufügen {#how-to-add-a-new-blog-post}
 
-1. Klicken Sie auf [**Add new blog article** (Neuen Blogartikel hinzufügen)](/admin#/collections/new/blog).
+1. Klicken Sie auf [**Add article** (Neuen News, Events & Activities-Beitrag hinzufügen)](/members/admin/blog/new).
 
-![Add new blog article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
+![Add new News, Events & Activities article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
 
 2. Klicken Sie auf **Save** (Speichern).
 
-![Save new blog post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-2.jpg)
+![Save new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-2.jpg)
 
-3. Klicken Sie auf den neuen Blogbeitrag oben in der Liste.
+3. Klicken Sie auf den neuen News, Events & Activities-Beitrag oben in der Liste.
 
-![Open new blog post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
+![Open new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
 
-### Bild in einem Blogbeitrag ändern {#how-to-change-an-image-on-a-blog-post}
+### Bild in einem News, Events & Activities-Beitrag ändern {#how-to-change-an-image-on-a-blog-post}
 
 1. Klicken Sie auf das Bild, das Sie ändern möchten.
 
@@ -271,7 +271,7 @@ Erstellen Sie Blogbeiträge in TinaCMS und bearbeiten Sie anschließend Bilder u
 
 ![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
 
-### Text in einem Blogbeitrag bearbeiten {#how-to-edit-text-on-a-blog-post}
+### Text in einem News, Events & Activities-Beitrag bearbeiten {#how-to-edit-text-on-a-blog-post}
 
 1. Klicken Sie auf ein Feld mit blau gestricheltem Rahmen.
 
@@ -293,13 +293,13 @@ Erstellen Sie Blogbeiträge in TinaCMS und bearbeiten Sie anschließend Bilder u
 
 ### Übersicht {#overview}
 
-Blöcke sind die einzelnen Bausteine eines Blogbeitrags und anderer Seiten. Über die TinaCMS-Seitenleiste können Sie Blöcke hinzufügen, neu anordnen oder löschen.
+Blöcke sind die einzelnen Bausteine eines News, Events & Activities-Beitrags und anderer Seiten. Über die TinaCMS-Seitenleiste können Sie Blöcke hinzufügen, neu anordnen oder löschen.
 
 ### Neuen Block hinzufügen {#how-to-add-a-new-block}
 
-1. Klicken Sie auf die ID des Blogbeitrags, um zur Übersicht des Beitrags zu gelangen.
+1. Klicken Sie auf die ID des News, Events & Activities-Beitrags, um zur Übersicht des Beitrags zu gelangen.
 
-![Open blog post overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
+![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
 
 2. Klicken Sie auf das Plus-Symbol, um das Auswahlmenü für Blöcke zu öffnen.
 
@@ -333,11 +333,11 @@ Blöcke sind die einzelnen Bausteine eines Blogbeitrags und anderer Seiten. Übe
 
 ![Block moved](screenshots/screenshotsreal/how-to-move-blocks-around-3.jpg)
 
-### Block aus einem Blogbeitrag löschen {#how-to-delete-a-blog-post-block}
+### Block aus einem News, Events & Activities-Beitrag löschen {#how-to-delete-a-blog-post-block}
 
-1. Klicken Sie auf die ID des Blogbeitrags, um zur Übersicht des Beitrags zu gelangen.
+1. Klicken Sie auf die ID des News, Events & Activities-Beitrags, um zur Übersicht des Beitrags zu gelangen.
 
-![Open blog post overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
+![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
 
 2. Klicken Sie neben dem Block, den Sie löschen möchten, auf das Papierkorb-Symbol.
 
@@ -396,7 +396,7 @@ Bearbeiten Sie blockspezifische Inhalte wie Karten, E-Mail-Adressen der E-Mail-S
 
 ![Add gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-2.jpg)
 
-4. Klicken Sie auf das neu hinzugefügte Bild und folgen Sie den Schritten unter [Bild in einem Blogbeitrag ändern](#how-to-change-an-image-on-a-blog-post).
+4. Klicken Sie auf das neu hinzugefügte Bild und folgen Sie den Schritten unter [Bild in einem News, Events & Activities-Beitrag ändern](#how-to-change-an-image-on-a-blog-post).
 5. Speichern Sie Ihre Änderungen.
 
 ![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)

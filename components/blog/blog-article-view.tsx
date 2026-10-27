@@ -195,15 +195,16 @@ export default function BlogArticleView({
 							{post.short_description}
 						</p>
 					) : null}
-					<Image
-						src={thumbnailSrc}
-						alt=""
-						className="mt-8 w-full object-cover"
-						width={768}
-						height={576}
-						sizes="(min-width: 860px) 769px, 92.78vw"
-						priority={interactiveNav}
-					/>
+					<div className="relative mt-8 aspect-4/3 w-full overflow-hidden bg-[#e8e4dc]">
+						<Image
+							src={thumbnailSrc}
+							alt=""
+							fill
+							className="object-cover"
+							sizes="(min-width: 860px) 769px, 92.78vw"
+							priority={interactiveNav}
+						/>
+					</div>
 				</div>
 			</header>
 
