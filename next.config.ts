@@ -1,6 +1,18 @@
 import type { NextConfig } from 'next';
 import { withSentryConfig } from '@sentry/nextjs/config';
 
+function supabaseStorageHostname(): string | null {
+	const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+	if (!url) return null;
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return null;
+	}
+}
+
+const supabaseHostname = supabaseStorageHostname();
+
 const nextConfig: NextConfig = {
 	/* config options here */
 	// Phone / LAN testing: Next blocks /_next/* from non-localhost hosts unless listed.
@@ -24,7 +36,23 @@ const nextConfig: NextConfig = {
 				protocol: 'https',
 				hostname: 'assets.tina.io',
 				pathname: '/**'
-			}
+			},
+			// Blog images from Supabase Storage (public blog-images bucket).
+			...(supabaseHostname
+				? [
+						{
+							protocol: 'https' as const,
+							hostname: supabaseHostname,
+							pathname: '/storage/v1/object/public/blog-images/**'
+						}
+					]
+				: [
+						{
+							protocol: 'https' as const,
+							hostname: '*.supabase.co',
+							pathname: '/storage/v1/object/public/blog-images/**'
+						}
+					])
 		]
 	},
 	async redirects() {

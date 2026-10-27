@@ -156,6 +156,98 @@ export type Database = {
           },
         ]
       }
+      blog_posts: {
+        Row: {
+          author: string
+          body: Json
+          created_at: string
+          created_by: string | null
+          deleted_at: string | null
+          id: string
+          published_at: string
+          short_description: string
+          slug: string
+          status: string
+          thumbnail_path: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          author: string
+          body?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          published_at: string
+          short_description: string
+          slug: string
+          status?: string
+          thumbnail_path?: string | null
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          author?: string
+          body?: Json
+          created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
+          id?: string
+          published_at?: string
+          short_description?: string
+          slug?: string
+          status?: string
+          thumbnail_path?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blog_posts_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      blog_slug_redirects: {
+        Row: {
+          created_at: string
+          old_slug: string
+          post_id: string
+        }
+        Insert: {
+          created_at?: string
+          old_slug: string
+          post_id: string
+        }
+        Update: {
+          created_at?: string
+          old_slug?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blog_slug_redirects_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "blog_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_tag_assignments: {
         Row: {
           listing_id: string
