@@ -19,7 +19,7 @@ todos:
     status: completed
   - id: stage-6-admin-chrome
     content: "Stage 6: dashboard/overview/post admin actions (add/edit/delete/turn-to-draft) + confirm modal + draft badges"
-    status: pending
+    status: completed
   - id: stage-7-migrate-cutover
     content: "Stage 7: migrate golf post (your content review) then remove Tina blog entirely"
     status: pending

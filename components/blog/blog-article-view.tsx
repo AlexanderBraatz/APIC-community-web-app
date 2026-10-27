@@ -1,8 +1,10 @@
 'use client';
 
 import BlogBody from '@/components/blog/blog-body';
+import BlogDraftBadge from '@/components/blog/blog-draft-badge';
 import BlogMap from '@/components/blog/blocks/map';
 import BlogMapDisplay from '@/components/blog/blog-map-display';
+import BlogPostAdminActions from '@/components/blog/blog-post-admin-actions';
 import { buttonVariants } from '@/components/ui/button';
 import {
 	BLOG_THUMBNAIL_PLACEHOLDER,
@@ -158,14 +160,25 @@ export default function BlogArticleView({
 						<h1 className="font-heading text-4xl font-normal text-[#333333] sm:text-5xl">
 							{post.title.trim() || 'Untitled'}
 						</h1>
-						{isAdmin && post.status === 'draft' ? (
-							<span className="rounded border border-[#c4a574] bg-[#f7f0e4] px-2 py-0.5 font-sans text-xs font-medium uppercase tracking-wide text-[#7A5A32]">
-								Draft
-							</span>
-						) : null}
+						{isAdmin && post.status === 'draft' ? <BlogDraftBadge /> : null}
 					</div>
+					{isAdmin && interactiveNav ? (
+						<div className="mt-5">
+							<BlogPostAdminActions
+								postId={post.id}
+								title={post.title.trim() || 'Untitled'}
+								status={post.status}
+							/>
+						</div>
+					) : null}
 					{metaBits.length > 0 ? (
-						<p className="mt-3 text-sm text-[#888888]">
+						<p
+							className={
+								isAdmin && interactiveNav
+									? 'mt-5 text-sm text-[#888888]'
+									: 'mt-3 text-sm text-[#888888]'
+							}
+						>
 							{post.author ? <span>{post.author}</span> : null}
 							{post.author && post.published_at ? (
 								<span aria-hidden="true"> · </span>

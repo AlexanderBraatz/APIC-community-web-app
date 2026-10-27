@@ -1,5 +1,3 @@
-import { readdir } from 'node:fs/promises';
-import path from 'node:path';
 import { requireAdmin } from '@/lib/admin/require-admin';
 
 export const AUDIT_ACTIONS = [
@@ -99,33 +97,27 @@ async function attachAdminNames(
 	}));
 }
 
-async function countBlogPosts(): Promise<number> {
-	const blogDir = path.join(process.cwd(), 'content/blog');
-	try {
-		const files = await readdir(blogDir);
-		return files.filter(file => /\.md$/i.test(file)).length;
-	} catch {
-		return 0;
-	}
-}
-
 export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
 	const { supabase } = await requireAdmin();
 
-	const [usersRes, listingsRes, calendarRes, blogPosts] = await Promise.all([
+	const [usersRes, listingsRes, calendarRes, blogRes] = await Promise.all([
 		supabase.from('profiles').select('id', { count: 'exact', head: true }),
 		supabase.from('listings').select('id', { count: 'exact', head: true }),
 		supabase.from('attendance').select('id', { count: 'exact', head: true }),
-		countBlogPosts()
+		supabase
+			.from('blog_posts')
+			.select('id', { count: 'exact', head: true })
+			.in('status', ['draft', 'published'])
 	]);
 
 	if (usersRes.error) throw new Error(usersRes.error.message);
 	if (listingsRes.error) throw new Error(listingsRes.error.message);
 	if (calendarRes.error) throw new Error(calendarRes.error.message);
+	if (blogRes.error) throw new Error(blogRes.error.message);
 
 	return {
 		users: usersRes.count ?? 0,
-		blogPosts,
+		blogPosts: blogRes.count ?? 0,
 		listings: listingsRes.count ?? 0,
 		calendarEntries: calendarRes.count ?? 0
 	};
