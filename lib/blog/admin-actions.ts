@@ -533,13 +533,14 @@ export async function uploadBlogImage(
 		if (!ALLOWED_IMAGE_MIME.has(file.type)) {
 			return {
 				ok: false,
-				error: 'Image must be JPEG, PNG, WebP, or GIF.'
+				error: 'Please use a JPEG, PNG, WebP, or GIF image.'
 			};
 		}
 		if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) {
 			return {
 				ok: false,
-				error: 'Image must be between 1 byte and 10 MiB.'
+				error:
+					'This photo is too large to upload. Please choose a smaller image (under about 10 MB) and try again.'
 			};
 		}
 

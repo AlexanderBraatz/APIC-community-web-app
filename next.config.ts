@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
 	// Phone / LAN testing: Next blocks /_next/* from non-localhost hosts unless listed.
 	// Dev-only. Prefer a specific LAN IP over private-range wildcards.
 	allowedDevOrigins: ['192.168.0.115'],
+	experimental: {
+		serverActions: {
+			// Match blog-images / MAX_IMAGE_BYTES (10 MiB). Leave headroom for multipart overhead.
+			bodySizeLimit: '10mb'
+		}
+	},
 	images: {
 		// Allowlist local paths for next/image (manual screenshots + site assets).
 		localPatterns: [

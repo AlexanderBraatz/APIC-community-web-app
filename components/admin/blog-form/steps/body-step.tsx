@@ -24,6 +24,12 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { uploadBlogImage } from '@/lib/blog/admin-actions';
+import {
+	BLOG_IMAGE_TOO_LARGE_MESSAGE,
+	compressBlogImage,
+	friendlyBlogImageUploadError,
+	isBlogImageTooLarge
+} from '@/lib/blog/compress-image';
 import type { Json } from '@/lib/supabase/database.types';
 
 type BodyStepProps = {
@@ -183,13 +189,18 @@ export default function BodyStep({
 		if (!file || !editor) return;
 		setImageUploading(true);
 		try {
+			const compressed = await compressBlogImage(file);
+			if (isBlogImageTooLarge(compressed)) {
+				onError?.(BLOG_IMAGE_TOO_LARGE_MESSAGE);
+				return;
+			}
 			const formData = new FormData();
 			formData.set('postId', postId);
 			formData.set('kind', 'body');
-			formData.set('file', file);
+			formData.set('file', compressed);
 			const uploaded = await uploadBlogImage(formData);
 			if (!uploaded.ok) {
-				onError?.(uploaded.error);
+				onError?.(friendlyBlogImageUploadError(uploaded.error));
 				return;
 			}
 			editor
@@ -199,11 +210,15 @@ export default function BodyStep({
 					type: 'image',
 					attrs: {
 						src: uploaded.publicUrl,
-						alt: file.name,
+						alt: compressed.name,
 						path: uploaded.path
 					}
 				})
 				.run();
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			onError?.(friendlyBlogImageUploadError(message));
 		} finally {
 			setImageUploading(false);
 			if (fileInputRef.current) fileInputRef.current.value = '';

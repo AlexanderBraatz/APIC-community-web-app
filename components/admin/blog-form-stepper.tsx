@@ -33,6 +33,12 @@ import {
 	uploadBlogImage
 } from '@/lib/blog/admin-actions';
 import {
+	BLOG_IMAGE_TOO_LARGE_MESSAGE,
+	compressBlogImage,
+	friendlyBlogImageUploadError,
+	isBlogImageTooLarge
+} from '@/lib/blog/compress-image';
+import {
 	deleteBlogMapLocation,
 	upsertBlogMapLocation,
 	type BlogMapLocation
@@ -327,13 +333,18 @@ export default function BlogFormStepper({
 		setThumbnailUploading(true);
 		setPendingThumbnailFile(null);
 		try {
+			const compressed = await compressBlogImage(file);
+			if (isBlogImageTooLarge(compressed)) {
+				setError(BLOG_IMAGE_TOO_LARGE_MESSAGE);
+				return;
+			}
 			const formData = new FormData();
 			formData.set('postId', id);
 			formData.set('kind', 'thumbnail');
-			formData.set('file', file);
+			formData.set('file', compressed);
 			const uploaded = await uploadBlogImage(formData);
 			if (!uploaded.ok) {
-				setError(uploaded.error);
+				setError(friendlyBlogImageUploadError(uploaded.error));
 				return;
 			}
 			const updated = await updateDraft(id, {
@@ -348,6 +359,10 @@ export default function BlogFormStepper({
 				updated.post.published_at
 			);
 			setMessage('Featured image uploaded.');
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			setError(friendlyBlogImageUploadError(message));
 		} finally {
 			setThumbnailUploading(false);
 		}
@@ -357,7 +372,12 @@ export default function BlogFormStepper({
 		if (!file) return;
 		setError(null);
 		if (!postId) {
-			setPendingThumbnailFile(file);
+			const compressed = await compressBlogImage(file);
+			if (isBlogImageTooLarge(compressed)) {
+				setError(BLOG_IMAGE_TOO_LARGE_MESSAGE);
+				return;
+			}
+			setPendingThumbnailFile(compressed);
 			setMessage(
 				'Image selected — it will upload after the draft is created.'
 			);

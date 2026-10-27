@@ -1,6 +1,9 @@
 'use client';
 
+import { useRef } from 'react';
 import Image from 'next/image';
+import { Upload } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -38,6 +41,7 @@ export default function HeaderStep({
 	onShortDescriptionChange,
 	onThumbnailFile
 }: HeaderStepProps) {
+	const fileInputRef = useRef<HTMLInputElement>(null);
 	const previewSrc =
 		getBlogThumbnailUrl(thumbnailPath) ?? BLOG_THUMBNAIL_PLACEHOLDER;
 
@@ -108,22 +112,29 @@ export default function HeaderStep({
 								: null}
 						</p>
 					</div>
-					<Input
+					<input
+						ref={fileInputRef}
 						id="blog-thumbnail"
 						type="file"
 						accept="image/jpeg,image/png,image/webp,image/gif"
-						disabled={thumbnailUploading}
+						className="sr-only"
+						tabIndex={-1}
 						onChange={e => {
 							const file = e.target.files?.[0] ?? null;
 							onThumbnailFile(file);
 							e.target.value = '';
 						}}
 					/>
-					{thumbnailUploading ? (
-						<p className="text-xs text-[#666]" role="status">
-							Uploading…
-						</p>
-					) : null}
+					<Button
+						type="button"
+						variant="secondary"
+						loading={thumbnailUploading}
+						disabled={thumbnailUploading}
+						onClick={() => fileInputRef.current?.click()}
+					>
+						<Upload data-icon="inline-start" />
+						Upload
+					</Button>
 					<div className="relative mt-2 aspect-4/3 w-full max-w-md overflow-hidden bg-[#e8e4dc]">
 						<Image
 							src={previewSrc}
