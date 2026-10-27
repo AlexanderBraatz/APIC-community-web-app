@@ -8,11 +8,16 @@ import {
 } from '@/lib/blog/map-location-actions';
 import { isBlogMapPostId } from '@/lib/blog/map-post-id';
 
-export default function BlogMap(props: { postId?: string | null }) {
+export default function BlogMap(props: {
+	postId?: string | null;
+	/** Shown in the map pin tooltip instead of the address. */
+	title?: string | null;
+}) {
 	const postId =
 		typeof props.postId === 'string' && isBlogMapPostId(props.postId)
 			? props.postId.trim()
 			: null;
+	const title = props.title?.trim() || null;
 
 	const [location, setLocation] = useState<BlogMapLocation | null>(null);
 	const [loadState, setLoadState] = useState<'loading' | 'ready' | 'error'>(
@@ -70,7 +75,7 @@ export default function BlogMap(props: { postId?: string | null }) {
 	return (
 		<section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
 			<div className="mx-auto max-w-3xl">
-				<BlogMapDisplay location={location} />
+				<BlogMapDisplay location={location} title={title} />
 			</div>
 		</section>
 	);

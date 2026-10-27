@@ -285,7 +285,6 @@ export default function BlogFormStepper({
 			normalizeBlogBody(result.post.body)
 		);
 		setSaveStatus('saved');
-		setMessage('Draft created.');
 
 		return result.id;
 	}

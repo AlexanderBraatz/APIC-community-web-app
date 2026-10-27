@@ -135,8 +135,8 @@ export default function BlogIndex({
 										href={`/blog/${post.slug}`}
 										className="group block"
 									>
-										<div className="flex flex-wrap items-center gap-2.5">
-											<h2 className="font-heading text-2xl font-normal text-[#333333] transition-colors group-hover:text-[#5D4325] sm:text-3xl">
+										<div className="flex min-w-0 flex-wrap items-center gap-2.5">
+											<h2 className="min-w-0 break-words font-heading text-2xl font-normal text-[#333333] transition-colors group-hover:text-[#5D4325] sm:text-3xl">
 												{post.title}
 											</h2>
 											{isAdmin && post.status === 'draft' ? (
@@ -149,7 +149,7 @@ export default function BlogIndex({
 											</p>
 										) : null}
 										{post.short_description ? (
-											<p className="mt-3 font-sans text-base leading-relaxed text-[#555555]">
+											<p className="mt-3 break-words font-sans text-base leading-relaxed text-[#555555]">
 												{post.short_description}
 											</p>
 										) : null}

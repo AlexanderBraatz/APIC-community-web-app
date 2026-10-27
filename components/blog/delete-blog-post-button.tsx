@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Trash2 } from 'lucide-react';
 import { softDelete } from '@/lib/blog/admin-actions';
-import RedirectSuccessDialog from '@/components/admin/redirect-success-dialog';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -25,8 +25,8 @@ export default function DeleteBlogPostButton({
 	size?: 'sm' | 'default' | 'icon-sm';
 	redirectHref?: string;
 }) {
+	const router = useRouter();
 	const [open, setOpen] = useState(false);
-	const [successOpen, setSuccessOpen] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [pending, startTransition] = useTransition();
 
@@ -39,7 +39,8 @@ export default function DeleteBlogPostButton({
 				return;
 			}
 			setOpen(false);
-			setSuccessOpen(true);
+			router.push(redirectHref);
+			router.refresh();
 		});
 	}
 
@@ -97,12 +98,6 @@ export default function DeleteBlogPostButton({
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-			<RedirectSuccessDialog
-				open={successOpen}
-				title="Article deleted"
-				href={redirectHref}
-				description="You are being redirected back to the blog…"
-			/>
 		</>
 	);
 }

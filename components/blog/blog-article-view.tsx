@@ -207,11 +207,16 @@ export default function BlogArticleView({
 				</div>
 			</header>
 
-			{mapMode === 'fetch' ? <BlogMap postId={post.id} /> : null}
+			{mapMode === 'fetch' ? (
+				<BlogMap postId={post.id} title={post.title} />
+			) : null}
 			{mapMode === 'static' && mapLocation ? (
 				<section className="bg-white px-4 py-10 sm:px-6 lg:px-8">
 					<div className="mx-auto max-w-3xl">
-						<BlogMapDisplay location={mapLocation} />
+						<BlogMapDisplay
+							location={mapLocation}
+							title={post.title}
+						/>
 					</div>
 				</section>
 			) : null}

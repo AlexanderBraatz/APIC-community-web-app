@@ -19,9 +19,10 @@ function legendText(location: BlogMapLocation): string {
 	return `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`;
 }
 
-function toMapListing(location: BlogMapLocation): Listing {
+function toMapListing(location: BlogMapLocation, title?: string | null): Listing {
+	const name = title?.trim() || location.address?.trim() || 'Location';
 	return {
-		name: location.address?.trim() || 'Location',
+		name,
 		type: null,
 		address: location.address,
 		contacts: [],
@@ -40,15 +41,18 @@ function toMapListing(location: BlogMapLocation): Listing {
  */
 export default function BlogMapDisplay({
 	location,
+	title,
 	footerExtra
 }: {
 	location: BlogMapLocation;
+	/** Pin tooltip label; falls back to address when omitted. */
+	title?: string | null;
 	footerExtra?: ReactNode;
 }) {
 	return (
 		<div className="overflow-hidden rounded-3xl border border-[#968778]">
 			<LocationsMap
-				locations={[toMapListing(location)]}
+				locations={[toMapListing(location, title)]}
 				showTooltipsByDefault
 				className="aspect-[1.618/1] rounded-none border-0 lg:aspect-[1.618/1] lg:h-auto"
 			/>
