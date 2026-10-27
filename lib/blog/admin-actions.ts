@@ -1,5 +1,6 @@
 'use server';
 
+import { createHash } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/admin/require-admin';
 import {
@@ -622,5 +623,276 @@ export async function uploadBlogImage(
 		return { ok: true, path, publicUrl };
 	} catch (error) {
 		return fail(error, 'Upload failed.');
+	}
+}
+
+export type PreviousBlogThumbnail = {
+	path: string;
+	publicUrl: string;
+};
+
+const PREVIOUS_THUMBNAIL_LIMIT = 36;
+/** Fetch extra path candidates so content-hash dedupe can still fill the grid. */
+const PREVIOUS_THUMBNAIL_CANDIDATE_LIMIT = 200;
+const PREVIOUS_THUMBNAIL_HASH_CONCURRENCY = 6;
+
+type AdminSupabase = Awaited<ReturnType<typeof requireAdmin>>['supabase'];
+
+async function hashBlogImageBytes(
+	supabase: AdminSupabase,
+	path: string
+): Promise<string | null> {
+	const { data, error } = await supabase.storage
+		.from(BLOG_IMAGES_BUCKET)
+		.download(path);
+	if (error || !data) return null;
+	const buffer = Buffer.from(await data.arrayBuffer());
+	if (buffer.length === 0) return null;
+	return createHash('sha256').update(buffer).digest('hex');
+}
+
+/**
+ * Past featured images for the gallery (newest first).
+ * Copy-on-select creates distinct storage paths for the same bytes, so we
+ * dedupe by content hash and keep only the most recent use of each image.
+ * Includes drafts and soft-deleted posts; files usually remain.
+ */
+export async function listPreviousBlogThumbnails(): Promise<
+	BlogActionResult<{ items: PreviousBlogThumbnail[] }>
+> {
+	try {
+		const { supabase } = await requireAdmin();
+
+		const { data, error } = await supabase
+			.from('blog_posts')
+			.select('thumbnail_path, updated_at, published_at')
+			.not('thumbnail_path', 'is', null)
+			.order('updated_at', { ascending: false })
+			.limit(PREVIOUS_THUMBNAIL_CANDIDATE_LIMIT);
+
+		if (error) {
+			return { ok: false, error: error.message };
+		}
+
+		const candidatePaths: string[] = [];
+		const seenPaths = new Set<string>();
+		for (const row of data ?? []) {
+			const path = row.thumbnail_path?.trim();
+			if (!path || seenPaths.has(path)) continue;
+			seenPaths.add(path);
+			candidatePaths.push(path);
+		}
+
+		const seenHashes = new Set<string>();
+		const items: PreviousBlogThumbnail[] = [];
+
+		for (
+			let i = 0;
+			i < candidatePaths.length && items.length < PREVIOUS_THUMBNAIL_LIMIT;
+			i += PREVIOUS_THUMBNAIL_HASH_CONCURRENCY
+		) {
+			const batch = candidatePaths.slice(
+				i,
+				i + PREVIOUS_THUMBNAIL_HASH_CONCURRENCY
+			);
+			const hashes = await Promise.all(
+				batch.map(path => hashBlogImageBytes(supabase, path))
+			);
+
+			for (let j = 0; j < batch.length; j++) {
+				if (items.length >= PREVIOUS_THUMBNAIL_LIMIT) break;
+				const path = batch[j]!;
+				const hash = hashes[j];
+				if (!hash || seenHashes.has(hash)) continue;
+				const publicUrl = getBlogThumbnailUrl(path);
+				if (!publicUrl) continue;
+				seenHashes.add(hash);
+				items.push({ path, publicUrl });
+			}
+		}
+
+		return { ok: true, items };
+	} catch (error) {
+		return fail(error, 'Could not load previous featured images.');
+	}
+}
+
+function thumbnailBasename(path: string): string {
+	return sanitizeUploadFilename(path.split('/').pop() || 'image.jpg');
+}
+
+function withUniqueSuffix(filename: string): string {
+	const suffix = Math.random().toString(36).slice(2, 8);
+	const dot = filename.lastIndexOf('.');
+	if (dot <= 0) return `${filename}-${suffix}`;
+	return `${filename.slice(0, dot)}-${suffix}${filename.slice(dot)}`;
+}
+
+async function copyStorageObject(
+	supabase: Awaited<ReturnType<typeof requireAdmin>>['supabase'],
+	sourcePath: string,
+	destPath: string
+): Promise<string | null> {
+	const { error: copyError } = await supabase.storage
+		.from(BLOG_IMAGES_BUCKET)
+		.copy(sourcePath, destPath);
+
+	if (!copyError) return null;
+
+	const { data: blob, error: downloadError } = await supabase.storage
+		.from(BLOG_IMAGES_BUCKET)
+		.download(sourcePath);
+
+	if (downloadError || !blob) {
+		return (
+			downloadError?.message ||
+			copyError.message ||
+			'Could not copy featured image.'
+		);
+	}
+
+	const buffer = Buffer.from(await blob.arrayBuffer());
+	const contentType =
+		blob.type && blob.type.startsWith('image/')
+			? blob.type
+			: 'image/jpeg';
+
+	const { error: uploadError } = await supabase.storage
+		.from(BLOG_IMAGES_BUCKET)
+		.upload(destPath, buffer, {
+			contentType,
+			upsert: false
+		});
+
+	if (uploadError) {
+		return uploadError.message;
+	}
+
+	return null;
+}
+
+/**
+ * Copy a previous featured image into `{postId}/thumbnail/...` and set
+ * `thumbnail_path`. Does not delete the source object. Removes this post’s
+ * previous thumbnail object when replacing.
+ */
+export async function copyBlogThumbnail(input: {
+	postId: string;
+	sourcePath: string;
+}): Promise<BlogActionResult<{ path: string; publicUrl: string }>> {
+	try {
+		const { supabase, user } = await requireAdmin();
+		const postId = input.postId?.trim();
+		const sourcePath = input.sourcePath?.trim();
+
+		if (!postId) return { ok: false, error: 'Post id is required.' };
+		if (!sourcePath) {
+			return { ok: false, error: 'Source image path is required.' };
+		}
+
+		const existing = await loadVisiblePost(supabase, postId);
+		if (!existing) {
+			return { ok: false, error: 'Post not found or deleted.' };
+		}
+
+		if (existing.thumbnail_path?.trim() === sourcePath) {
+			const publicUrl = getBlogThumbnailUrl(sourcePath);
+			if (!publicUrl) {
+				return {
+					ok: false,
+					error: 'Could not build public URL for featured image.'
+				};
+			}
+			return { ok: true, path: sourcePath, publicUrl };
+		}
+
+		const { data: sourceRows, error: sourceError } = await supabase
+			.from('blog_posts')
+			.select('id')
+			.eq('thumbnail_path', sourcePath)
+			.limit(1);
+
+		if (sourceError) {
+			return { ok: false, error: sourceError.message };
+		}
+		if (!sourceRows?.length) {
+			return {
+				ok: false,
+				error: 'That image is not available to reuse.'
+			};
+		}
+
+		const basename = thumbnailBasename(sourcePath);
+		let destPath = `${postId}/thumbnail/${basename}`;
+
+		// File already lives under this post — just point at it.
+		if (destPath === sourcePath) {
+			const oldPath = existing.thumbnail_path?.trim() || null;
+			const { error: updateError } = await supabase
+				.from('blog_posts')
+				.update({
+					thumbnail_path: destPath,
+					updated_by: user.id
+				})
+				.eq('id', postId);
+
+			if (updateError) {
+				return { ok: false, error: updateError.message };
+			}
+
+			if (oldPath && oldPath !== destPath) {
+				await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([oldPath]);
+			}
+
+			const publicUrl = getBlogThumbnailUrl(destPath);
+			if (!publicUrl) {
+				return {
+					ok: false,
+					error: 'Could not build public URL for featured image.'
+				};
+			}
+			revalidateBlogPaths(existing.slug);
+			return { ok: true, path: destPath, publicUrl };
+		}
+
+		let copyErr = await copyStorageObject(supabase, sourcePath, destPath);
+		if (copyErr) {
+			destPath = `${postId}/thumbnail/${withUniqueSuffix(basename)}`;
+			copyErr = await copyStorageObject(supabase, sourcePath, destPath);
+		}
+		if (copyErr) {
+			return { ok: false, error: copyErr };
+		}
+
+		const oldPath = existing.thumbnail_path?.trim() || null;
+		const { error: updateError } = await supabase
+			.from('blog_posts')
+			.update({
+				thumbnail_path: destPath,
+				updated_by: user.id
+			})
+			.eq('id', postId);
+
+		if (updateError) {
+			await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([destPath]);
+			return { ok: false, error: updateError.message };
+		}
+
+		if (oldPath && oldPath !== destPath) {
+			await supabase.storage.from(BLOG_IMAGES_BUCKET).remove([oldPath]);
+		}
+
+		const publicUrl = getBlogThumbnailUrl(destPath);
+		if (!publicUrl) {
+			return {
+				ok: false,
+				error: 'Could not build public URL for featured image.'
+			};
+		}
+
+		revalidateBlogPaths(existing.slug);
+		return { ok: true, path: destPath, publicUrl };
+	} catch (error) {
+		return fail(error, 'Could not copy featured image.');
 	}
 }

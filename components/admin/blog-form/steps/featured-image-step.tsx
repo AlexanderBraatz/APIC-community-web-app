@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ArrowLeftRight, Upload } from 'lucide-react';
+import { ArrowLeftRight, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
 	FileUpload,
@@ -15,6 +15,10 @@ import {
 	FileUploadTrigger,
 	type FileUploadProps
 } from '@/components/ui/file-upload';
+import {
+	listPreviousBlogThumbnails,
+	type PreviousBlogThumbnail
+} from '@/lib/blog/admin-actions';
 import { BLOG_IMAGE_MAX_BYTES } from '@/lib/blog/compress-image';
 import { getBlogThumbnailUrl } from '@/lib/blog/thumbnail';
 
@@ -22,6 +26,7 @@ type FeaturedImageStepProps = {
 	thumbnailPath: string | null;
 	thumbnailUploading: boolean;
 	onThumbnailFile: (file: File) => Promise<boolean>;
+	onSelectPrevious: (path: string) => Promise<boolean>;
 	onClear: () => void | Promise<void>;
 	onReject: (message: string) => void;
 };
@@ -32,13 +37,37 @@ export default function FeaturedImageStep({
 	thumbnailPath,
 	thumbnailUploading,
 	onThumbnailFile,
+	onSelectPrevious,
 	onClear,
 	onReject
 }: FeaturedImageStepProps) {
 	const [files, setFiles] = useState<File[]>([]);
+	const [previousItems, setPreviousItems] = useState<PreviousBlogThumbnail[]>(
+		[]
+	);
+	const [galleryLoaded, setGalleryLoaded] = useState(false);
 	const hasSavedImage = Boolean(thumbnailPath);
 	const showExistingRow = hasSavedImage && files.length === 0;
 	const existingSrc = getBlogThumbnailUrl(thumbnailPath);
+
+	useEffect(() => {
+		let cancelled = false;
+		void (async () => {
+			const result = await listPreviousBlogThumbnails();
+			if (cancelled) return;
+			if (result.ok) {
+				setPreviousItems(result.items);
+			}
+			setGalleryLoaded(true);
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const galleryItems = previousItems.filter(
+		item => item.path !== thumbnailPath
+	);
 
 	const onUpload: NonNullable<FileUploadProps['onUpload']> = useCallback(
 		async (accepted, { onProgress, onSuccess, onError }) => {
@@ -89,6 +118,12 @@ export default function FeaturedImageStep({
 	async function handleClearSelection() {
 		setFiles([]);
 		await onClear();
+	}
+
+	async function handleSelectPrevious(path: string) {
+		if (thumbnailUploading) return;
+		setFiles([]);
+		await onSelectPrevious(path);
 	}
 
 	return (
@@ -213,6 +248,56 @@ export default function FeaturedImageStep({
 					</FileUpload>
 				)}
 			</div>
+
+			{!galleryLoaded || galleryItems.length > 0 ? (
+				<div className="space-y-3">
+					<h4 className="text-sm font-medium text-[#444]">
+						Or select one of the images you have used before
+					</h4>
+					{!galleryLoaded ? (
+						<ul
+							aria-busy="true"
+							aria-label="Loading previous images"
+							className="grid w-full grid-cols-2 gap-2 xl:grid-cols-4 xl:gap-3"
+						>
+							{Array.from({ length: 4 }, (_, index) => (
+								<li key={index} className="min-w-0 overflow-hidden">
+									<div className="relative flex aspect-4/3 w-full items-center justify-center overflow-hidden rounded-[2px] border border-[#b8a99a]/40 bg-[#e8e4dc]">
+										<Loader2
+											className="size-6 animate-spin text-[#805b32]"
+											aria-hidden
+										/>
+									</div>
+								</li>
+							))}
+						</ul>
+					) : (
+						<ul className="grid w-full grid-cols-2 gap-2 xl:grid-cols-4 xl:gap-3">
+							{galleryItems.map(item => (
+								<li key={item.path} className="min-w-0 overflow-hidden">
+									<button
+										type="button"
+										disabled={thumbnailUploading}
+										aria-label="Use this featured image"
+										onClick={() => {
+											void handleSelectPrevious(item.path);
+										}}
+										className="relative block aspect-4/3 w-full overflow-hidden rounded-[2px] border border-[#b8a99a]/40 bg-[#e8e4dc] outline-none transition hover:border-[#805b32]/60 focus-visible:ring-2 focus-visible:ring-[#805b32]/40 disabled:opacity-50"
+									>
+										<Image
+											src={item.publicUrl}
+											alt=""
+											fill
+											className="object-cover"
+											sizes="(min-width: 1280px) 12rem, 50vw"
+										/>
+									</button>
+								</li>
+							))}
+						</ul>
+					)}
+				</div>
+			) : null}
 		</section>
 	);
 }

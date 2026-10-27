@@ -31,6 +31,7 @@ import PreviewStep from '@/components/admin/blog-form/steps/preview-step';
 import { Button } from '@/components/ui/button';
 import {
 	clearBlogThumbnail,
+	copyBlogThumbnail,
 	createDraft,
 	publish,
 	updateDraft,
@@ -400,6 +401,48 @@ export default function BlogFormStepper({
 		return uploadThumbnailForPost(id, file, uploadGen);
 	}
 
+	async function handleSelectPreviousThumbnail(
+		sourcePath: string
+	): Promise<boolean> {
+		setError(null);
+		setMessage(null);
+		const uploadGen = ++thumbnailUploadGenRef.current;
+		const id = postId ?? (await ensureDraftId());
+		if (!id) return false;
+		if (uploadGen !== thumbnailUploadGenRef.current) return false;
+
+		setThumbnailUploading(true);
+		try {
+			const copied = await copyBlogThumbnail({
+				postId: id,
+				sourcePath
+			});
+			if (!copied.ok) {
+				setError(copied.error);
+				return false;
+			}
+			if (uploadGen !== thumbnailUploadGenRef.current) {
+				return false;
+			}
+			setThumbnailPath(copied.path);
+			lastSavedSnapshotRef.current = draftSnapshot(
+				fromDateInputValue(publishedAtLocal) ??
+					new Date().toISOString(),
+				body,
+				copied.path
+			);
+			setMessage('Featured image selected.');
+			return true;
+		} catch (error) {
+			const message =
+				error instanceof Error ? error.message : String(error);
+			setError(message);
+			return false;
+		} finally {
+			setThumbnailUploading(false);
+		}
+	}
+
 	async function handleClearThumbnail() {
 		thumbnailUploadGenRef.current += 1;
 		setError(null);
@@ -765,6 +808,7 @@ export default function BlogFormStepper({
 							thumbnailPath={thumbnailPath}
 							thumbnailUploading={thumbnailUploading}
 							onThumbnailFile={handleThumbnailFile}
+							onSelectPrevious={handleSelectPreviousThumbnail}
 							onClear={handleClearThumbnail}
 							onReject={message => {
 								setError(message);

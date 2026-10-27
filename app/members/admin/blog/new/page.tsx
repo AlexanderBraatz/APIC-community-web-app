@@ -11,7 +11,8 @@ export default async function NewBlogPostPage() {
 			<div>
 				<h2 className="text-xl font-medium text-[#444]">New blog article</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Header and location now; body editor arrives in Stage 5.
+					Step through header, featured image, optional location, and body —
+					then preview and publish. Drafts save as you go.
 				</p>
 			</div>
 			<BlogFormStepper
