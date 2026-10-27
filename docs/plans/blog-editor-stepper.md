@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: stage-3-crud
     content: "Stage 3: server actions for draft/publish/unpublish/soft-delete, slug sync, image upload"
-    status: pending
+    status: completed
   - id: stage-4-header-location
     content: "Stage 4: BlogFormStepper steps 1–2 (header + location) with draft create/autosave; admin create/edit routes"
     status: pending

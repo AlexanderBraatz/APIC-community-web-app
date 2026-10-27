@@ -1,8 +1,9 @@
-const BLOG_IMAGES_BUCKET = 'blog-images';
+export const BLOG_IMAGES_BUCKET = 'blog-images';
 
 /**
- * Resolve a public URL for a storage path in the `blog-images` bucket.
- * Returns null when path is missing or `NEXT_PUBLIC_SUPABASE_URL` is unset.
+ * Resolve a public URL for a storage path in the `blog-images` bucket
+ * (thumbnail or body image). Returns null when path is missing or
+ * `NEXT_PUBLIC_SUPABASE_URL` is unset.
  */
 export function getBlogThumbnailUrl(
 	thumbnailPath: string | null | undefined
