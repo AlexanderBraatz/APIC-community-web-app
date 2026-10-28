@@ -13,7 +13,6 @@ import {
 } from '@/lib/docs/manual-help-targets';
 import {
 	dismissHelpFabHint,
-	HELP_FAB_HINT_CLEARED_EVENT,
 	isHelpFabHintDismissed,
 	isHelpFabHintRoute
 } from '@/lib/docs/help-fab-hint';
@@ -42,7 +41,7 @@ export function HelpFab({
 }: HelpFabProps) {
 	const pathname = usePathname();
 	const [expanded, setExpanded] = useState(false);
-	/** Bumps when sessionStorage dismiss flag is written or cleared so render re-reads it. */
+	/** Bumps when localStorage dismiss flag is written so render re-reads it. */
 	const [hintStorageEpoch, setHintStorageEpoch] = useState(0);
 	const rootRef = useRef<HTMLDivElement>(null);
 	const canReport = isSentryConfigured();
@@ -122,20 +121,9 @@ export function HelpFab({
 		setMounted(true);
 	}, []);
 
-	useEffect(() => {
-		function onHintCleared() {
-			setHintStorageEpoch(n => n + 1);
-		}
-
-		window.addEventListener(HELP_FAB_HINT_CLEARED_EVENT, onHintCleared);
-		return () => {
-			window.removeEventListener(HELP_FAB_HINT_CLEARED_EVENT, onHintCleared);
-		};
-	}, []);
-
 	if (!mounted) return null;
 
-	// hintStorageEpoch ties re-renders to sessionStorage writes/clears.
+	// hintStorageEpoch ties re-renders to localStorage dismiss writes.
 	const showHint =
 		hintEnabled &&
 		hintStorageEpoch >= 0 &&

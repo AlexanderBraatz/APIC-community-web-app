@@ -38,8 +38,9 @@ export function HelpFabHintForm({ enabled: initialEnabled }: Props) {
 						User manual reminder
 					</Label>
 					<p className="mt-1 text-sm text-[#666]">
-						After you sign in, show a short tip pointing to the help
-						button on the map pages and community calendar.
+						Show a one-time tip pointing to the help button on the
+						map pages and community calendar (until you open it or
+						dismiss it).
 					</p>
 				</div>
 				<button

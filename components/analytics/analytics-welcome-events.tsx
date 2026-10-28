@@ -3,7 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { AnalyticsEvents, useAnalytics } from '@/components/analytics/posthog-provider';
-import { clearHelpFabHintDismissed } from '@/lib/docs/help-fab-hint';
 
 /**
  * Fires one-shot events from query flags set by server redirects
@@ -24,7 +23,6 @@ export function AnalyticsWelcomeEvents() {
 
 		if (welcome === '1' && analyticsEnabled) {
 			handled.current = key;
-			clearHelpFabHintDismissed();
 			if (invite === '1') {
 				track(AnalyticsEvents.INVITE_ACCEPTED);
 			} else {
@@ -40,7 +38,6 @@ export function AnalyticsWelcomeEvents() {
 
 		if (welcome === '1' && !analyticsEnabled) {
 			handled.current = key;
-			clearHelpFabHintDismissed();
 			const params = new URLSearchParams(searchParams.toString());
 			params.delete('welcome');
 			params.delete('invite');

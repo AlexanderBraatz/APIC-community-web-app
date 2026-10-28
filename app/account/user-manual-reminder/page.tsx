@@ -31,9 +31,9 @@ export default async function UserManualReminderPage({
 				User manual reminder
 			</h1>
 			<p className="mt-2 text-sm text-[#666]">
-				Control whether a short tip points to the help button after you
-				sign in. Turn it off if you find it annoying — you can turn it
-				back on anytime.
+				Control whether a one-time tip points to the help button. Turn
+				it off if you find it annoying — you can turn it back on
+				anytime.
 			</p>
 
 			{params.error ? (
