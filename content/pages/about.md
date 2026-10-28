@@ -30,9 +30,8 @@ blocks:
       sections and recommendations of the members' area.
 
 
-      Together we create not just a place to gather, but a community to belong
-      rooted in friendship, enriched by culture, and strengthened by a shared
-      voice.
+      Together we create not just a place to gather, but a community to belong to,
+      rooted in friendship, enriched by local culture, and strengthened by shared interests.
     _template: textSection
   - items:
       - image: /images/apic-member-1.png
