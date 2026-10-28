@@ -724,7 +724,7 @@ export default function ListingsBrowse(props: {
 				{/* Map — sticky under search; full-width cover on mobile */}
 				<div
 					ref={mapShellRef}
-					className="order-1 sticky z-30 h-fit w-full bg-[#eeeae4] px-4 pb-2 pt-0 rounded-b-4xl sm:px-6 md:pb-5 lg:order-2 lg:self-start lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-5"
+					className="order-1 sticky z-30 h-fit w-full bg-[#eeeae4] px-4 pb-2 pt-0 rounded-b-4xl shadow-[0_5px_12px_-3px_color-mix(in_srgb,#3d3018_30%,transparent)] sm:px-6 md:pb-5 lg:order-2 lg:self-start lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-5 lg:shadow-none"
 					style={{ top: searchBarHeight }}
 				>
 					<LocationsMap
