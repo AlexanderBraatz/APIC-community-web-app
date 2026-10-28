@@ -168,10 +168,24 @@ Copy `.env.example` → `.env.local` for local work. Set the same keys on the **
 
 ### TinaCMS / TinaCloud
 
-| Variable                     | Scope           | Purpose                                     |
-| ---------------------------- | --------------- | ------------------------------------------- |
-| `NEXT_PUBLIC_TINA_CLIENT_ID` | Public          | TinaCloud client id                         |
-| `TINA_TOKEN`                 | **Server only** | TinaCloud token (also on Vercel for builds) |
+| Variable                     | Scope           | Purpose                                                                 |
+| ---------------------------- | --------------- | ----------------------------------------------------------------------- |
+| `NEXT_PUBLIC_TINA_CLIENT_ID` | Public          | TinaCloud client id                                                     |
+| `TINA_TOKEN`                 | **Server only** | TinaCloud token (also on Vercel for builds)                             |
+| `CMS_ACCOUNT_EMAIL`          | **Server only** | Shared Content Admin login; injected into the web admin manual          |
+| `CMS_ACCOUNT_PASSWORD`       | **Server only** | Shared Content Admin password; never commit; not baked into manual PDFs |
+
+### Developer contact (admin dashboard)
+
+| Variable                           | Scope           | Purpose                                      |
+| ---------------------------------- | --------------- | -------------------------------------------- |
+| `DEVELOPER_CONTACT_NAME`           | **Server only** | Display name on `/members/admin`             |
+| `DEVELOPER_CONTACT_EMAIL`          | **Server only** | Mailto target                                |
+| `DEVELOPER_CONTACT_WHATSAPP`       | **Server only** | Digits only for `wa.me`                      |
+| `DEVELOPER_CONTACT_WHATSAPP_LABEL` | **Server only** | Human-readable phone label                   |
+| `DEVELOPER_CONTACT_WEBSITE`        | **Server only** | Full website URL                             |
+
+Omit any required `DEVELOPER_CONTACT_*` value to hide the dashboard contact section.
 
 ### PostHog (EU)
 
@@ -253,10 +267,6 @@ Sensitive admin actions write to `admin_audit_log` (invites, role changes, user 
 
 ## 11. Original developer contact
 
-**Alexander Braatz**
-
-- WhatsApp: +44 7394 913192 — https://wa.me/447394913192
-- Email: alex_braatz@icloud.com
-- Website: https://alexanderbraatz.com
+Configured via the `DEVELOPER_CONTACT_*` env vars (see `.env.example` and §7). When set, contact details appear on `/members/admin`.
 
 Data and account access requests should go through the **client**. The original developer can help with technical handoff when reachable.

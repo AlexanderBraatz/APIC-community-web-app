@@ -229,7 +229,11 @@ async function main() {
 	const chromePath = await resolveChrome();
 
 	for (const manual of manuals) {
-		const markdown = await readFile(path.join(docsDir, manual.source), 'utf8');
+		let markdown = await readFile(path.join(docsDir, manual.source), 'utf8');
+		// Never bake live CMS credentials into committed PDFs.
+		markdown = markdown
+			.replaceAll('{{CMS_ACCOUNT_EMAIL}}', 'See the web admin manual')
+			.replaceAll('{{CMS_ACCOUNT_PASSWORD}}', 'See the web admin manual');
 		const bodyHtml = await markdownToPdfHtml(markdown);
 		const html = buildHtml({
 			title: manual.title,

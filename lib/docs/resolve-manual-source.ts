@@ -1,5 +1,6 @@
 import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { injectCmsAccountPlaceholders } from '@/lib/docs/cms-account';
 import {
 	parseManualLanguage,
 	type ManualLanguage
@@ -41,10 +42,15 @@ export async function readManualMarkdown(
 	language: ManualLanguage
 ) {
 	const localized = resolveManualMarkdownPath(kind, language);
-	if (language !== 'en' && (await fileExists(localized))) {
-		return readFile(localized, 'utf8');
+	const markdown =
+		language !== 'en' && (await fileExists(localized))
+			? await readFile(localized, 'utf8')
+			: await readFile(resolveManualMarkdownPath(kind, 'en'), 'utf8');
+
+	if (kind === 'admin') {
+		return injectCmsAccountPlaceholders(markdown);
 	}
-	return readFile(resolveManualMarkdownPath(kind, 'en'), 'utf8');
+	return markdown;
 }
 
 /** Current user's manual language, or `en` when signed out / unset. */

@@ -14,6 +14,7 @@ Come gestire consigli, membri, News, Events & Activities e contenuti del sito.
 - **News, Events & Activities**
   - [Aggiungere un nuovo post di News, Events & Activities](#how-to-add-a-new-blog-post)
 - **Contenuti del sito**
+  - [Account CMS](#cms-account)
   - [Cambiare un’immagine nei contenuti del sito](#how-to-change-an-image-on-a-blog-post)
   - [Modificare il testo nei contenuti del sito](#how-to-edit-text-on-a-blog-post)
   - [Aggiungere un nuovo blocco](#how-to-add-a-new-block)
@@ -269,6 +270,13 @@ Crea post di News, Events & Activities con il modulo articolo.
 ---
 
 ## Contenuti del sito {#website-content}
+
+### Account CMS {#cms-account}
+
+Accedi a Content Admin (Tina) con questo account condiviso.
+
+- Email: `{{CMS_ACCOUNT_EMAIL}}`
+- Password: `{{CMS_ACCOUNT_PASSWORD}}`
 
 ### Panoramica {#overview}
 

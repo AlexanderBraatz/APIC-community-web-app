@@ -14,6 +14,7 @@ How to manage recommendations, members, News, Events & Activities, and website c
 - **News, Events & Activities**
   - [How to Add a New News, Events & Activities Post](#how-to-add-a-new-blog-post)
 - **Website Content**
+  - [CMS account](#cms-account)
   - [How to Change an Image on Website Content](#how-to-change-an-image-on-a-blog-post)
   - [How to Edit Text on Website Content](#how-to-edit-text-on-a-blog-post)
   - [How to Add a New Block](#how-to-add-a-new-block)
@@ -269,6 +270,13 @@ Create News, Events & Activities posts with the article form.
 ---
 
 ## Website Content {#website-content}
+
+### CMS account {#cms-account}
+
+Sign in to Content Admin (Tina) with this shared account.
+
+- Email: `{{CMS_ACCOUNT_EMAIL}}`
+- Password: `{{CMS_ACCOUNT_PASSWORD}}`
 
 ### Overview {#overview}
 

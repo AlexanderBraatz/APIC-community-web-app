@@ -14,6 +14,7 @@ So verwalten Sie Empfehlungen, Mitglieder, News, Events & Activities und Website
 - **News, Events & Activities**
   - [Neuen News, Events & Activities-Beitrag hinzufügen](#how-to-add-a-new-blog-post)
 - **Website-Inhalte**
+  - [CMS-Konto](#cms-account)
   - [Bild auf Website-Inhalten ändern](#how-to-change-an-image-on-a-blog-post)
   - [Text auf Website-Inhalten bearbeiten](#how-to-edit-text-on-a-blog-post)
   - [Neuen Block hinzufügen](#how-to-add-a-new-block)
@@ -269,6 +270,13 @@ Erstellen Sie News, Events & Activities-Beiträge über das Artikelformular.
 ---
 
 ## Website-Inhalte {#website-content}
+
+### CMS-Konto {#cms-account}
+
+Melden Sie sich bei Content Admin (Tina) mit diesem gemeinsamen Konto an.
+
+- E-Mail: `{{CMS_ACCOUNT_EMAIL}}`
+- Passwort: `{{CMS_ACCOUNT_PASSWORD}}`
 
 ### Übersicht {#overview}
 

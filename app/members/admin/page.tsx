@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { getAdminDashboardCounts } from '@/lib/admin/audit-actions';
+import { getDeveloperContact } from '@/lib/developer-contact';
 import { getAuthEmailPreviews } from '@/lib/emails/auth-email-previews';
 import { buttonVariants } from '@/components/ui/button-variants';
 import { cn } from '@/lib/utils';
@@ -73,6 +74,7 @@ function AuthEmailPreviewDetails({
 export default async function MembersAdminDashboardPage() {
 	const counts = await getAdminDashboardCounts();
 	const emailPreviews = getAuthEmailPreviews();
+	const developerContact = getDeveloperContact();
 
 	const invitePreview = emailPreviews.find(p => p.kind === 'invite')!;
 	const joinCodePreview = emailPreviews.find(p => p.kind === 'magic_link')!;
@@ -190,58 +192,60 @@ export default async function MembersAdminDashboardPage() {
 				</div>
 			</section>
 
-			<section>
-				<h3 className="text-lg font-medium text-[#444]">Developer contact</h3>
-				<p className="mt-1 text-sm text-[#666]">
-					Reach the original developer for questions or account/data handoff
-					help.
-				</p>
-				<div className="mt-4 flex flex-col gap-4 border border-[#e5e5e5] p-4 sm:flex-row sm:items-center">
-					<Image
-						src="/images/alexander-braatz.png"
-						alt="Alexander Braatz"
-						width={96}
-						height={96}
-						className="size-24 shrink-0 rounded-full object-cover"
-					/>
-					<div className="min-w-0 text-sm">
-						<p className="font-medium text-[#444]">Alexander Braatz</p>
-						<ul className="mt-2 space-y-1 text-[#666]">
-							<li>
-								WhatsApp:{' '}
-								<a
-									href="https://wa.me/447394913192"
-									className="text-[#805b32] underline"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									+44 7394 913192
-								</a>
-							</li>
-							<li>
-								Email:{' '}
-								<a
-									href="mailto:alex_braatz@icloud.com"
-									className="text-[#805b32] underline"
-								>
-									alex_braatz@icloud.com
-								</a>
-							</li>
-							<li>
-								Website:{' '}
-								<a
-									href="https://alexanderbraatz.com"
-									className="text-[#805b32] underline"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									alexanderbraatz.com
-								</a>
-							</li>
-						</ul>
+			{developerContact ? (
+				<section>
+					<h3 className="text-lg font-medium text-[#444]">Developer contact</h3>
+					<p className="mt-1 text-sm text-[#666]">
+						Reach the original developer for questions or account/data handoff
+						help.
+					</p>
+					<div className="mt-4 flex flex-col gap-4 border border-[#e5e5e5] p-4 sm:flex-row sm:items-center">
+						<Image
+							src="/images/alexander-braatz.png"
+							alt="Alexander Braatz"
+							width={96}
+							height={96}
+							className="size-24 shrink-0 rounded-full object-cover"
+						/>
+						<div className="min-w-0 text-sm">
+							<p className="font-medium text-[#444]">{developerContact.name}</p>
+							<ul className="mt-2 space-y-1 text-[#666]">
+								<li>
+									WhatsApp:{' '}
+									<a
+										href={developerContact.whatsappHref}
+										className="text-[#805b32] underline"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{developerContact.whatsappLabel}
+									</a>
+								</li>
+								<li>
+									Email:{' '}
+									<a
+										href={`mailto:${developerContact.email}`}
+										className="text-[#805b32] underline"
+									>
+										{developerContact.email}
+									</a>
+								</li>
+								<li>
+									Website:{' '}
+									<a
+										href={developerContact.websiteHref}
+										className="text-[#805b32] underline"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										{developerContact.websiteLabel}
+									</a>
+								</li>
+							</ul>
+						</div>
 					</div>
-				</div>
-			</section>
+				</section>
+			) : null}
 
 			<section className="space-y-3">
 				<details className="border border-[#e5e5e5]">
