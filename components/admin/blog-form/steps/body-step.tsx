@@ -163,7 +163,10 @@ export default function BodyStep({
 	const setLink = useCallback(() => {
 		if (!editor) return;
 		const previous = editor.getAttributes('link').href as string | undefined;
-		const url = window.prompt('Link URL (https:// or mailto:)', previous ?? 'https://');
+		const url = window.prompt(
+			'Link URL (https:// or mailto:)',
+			previous ?? 'https://'
+		);
 		if (url === null) return;
 		const trimmed = url.trim();
 		if (!trimmed) {
@@ -218,8 +221,7 @@ export default function BodyStep({
 				})
 				.run();
 		} catch (error) {
-			const message =
-				error instanceof Error ? error.message : String(error);
+			const message = error instanceof Error ? error.message : String(error);
 			onError?.(friendlyBlogImageUploadError(message));
 		} finally {
 			setImageUploading(false);
@@ -241,8 +243,8 @@ export default function BodyStep({
 			<div>
 				<h3 className="text-sm font-medium text-[#444]">Article body</h3>
 				<p className="mt-1 text-xs text-[#888]">
-					Write the article content. Formatting is limited to headings, emphasis,
-					lists, links, and images — matching the public page.
+					Write the article content. Formatting is limited to headings,
+					emphasis, lists, links, and images — matching the public page.
 				</p>
 			</div>
 
@@ -323,16 +325,22 @@ export default function BodyStep({
 					className="mx-1 h-5 w-px bg-[#b8a99a]/50"
 					aria-hidden
 				/>
-				<ToolbarButton
-					label="Insert image"
+				<button
+					type="button"
+					aria-label="Add image"
+					title="Add image"
 					disabled={imageUploading}
 					onClick={() => fileInputRef.current?.click()}
+					className={cn(
+						' inline-flex h-8 items-center gap-1.5 rounded border px-2.5 text-xs font-medium transition-colors',
+						'border-[#805b32]/35 bg-[#805b32] text-white',
+						'hover:bg-[#6a4a28]',
+						'disabled:cursor-not-allowed disabled:opacity-50'
+					)}
 				>
-					<ImageIcon className="size-4" />
-				</ToolbarButton>
-				{imageUploading ? (
-					<span className="ml-2 text-xs text-[#888]">Uploading…</span>
-				) : null}
+					<ImageIcon className="size-4 shrink-0" />
+					{imageUploading ? 'Uploading…' : 'Add image'}
+				</button>
 			</div>
 
 			<input
