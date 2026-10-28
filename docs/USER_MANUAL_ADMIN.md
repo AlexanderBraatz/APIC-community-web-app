@@ -15,6 +15,7 @@ How to manage recommendations, members, website content, News, Events & Activiti
   - [How to Edit the Website’s Text and Images](#how-to-edit-the-websites-text-and-images)
 - **News, Events & Activities**
   - [How to Add a New News, Events & Activities Post](#how-to-add-a-new-blog-post)
+  - [How to Add a New News, Events & Activities Post (old)](#how-to-add-a-new-blog-post-old)
   - [How to Change an Image on a News, Events & Activities Post](#how-to-change-an-image-on-a-blog-post)
   - [How to Edit Text on a News, Events & Activities Post](#how-to-edit-text-on-a-blog-post)
 - **Working with Blocks**
@@ -224,9 +225,70 @@ Use Content Admin to edit site pages the same way you edit News, Events & Activi
 
 ### Overview {#overview}
 
-Create News, Events & Activities posts in TinaCMS, then update images and text on the live preview.
+Create News, Events & Activities posts with the article form, then update images and text on the live preview where documented.
 
 ### How to Add a New News, Events & Activities Post {#how-to-add-a-new-blog-post}
+
+1. Add a title and a description / introduction.
+2. Click **Next**.
+
+![Add title and description](screenshots/screenshotsreal/how-to-add-new-artikle-image-1.jpg)
+
+1. Upload a new cover image.
+2. Or select one of the existing cover images.
+
+![Upload or select cover image](screenshots/screenshotsreal/how-to-add-new-artikle-image-2.jpg)
+
+1. Click **Next**.
+
+![Click Next after cover image](screenshots/screenshotsreal/how-to-add-new-artikle-image-3.jpg)
+
+1. Click **Add location**.
+
+![Click Add location](screenshots/screenshotsreal/how-to-add-new-artikle-image-4.jpg)
+
+1. Search for a business or location.
+
+![Search for a business or location](screenshots/screenshotsreal/how-to-add-new-artikle-image-5.jpg)
+
+1. Select the business or location.
+
+![Select the business or location](screenshots/screenshotsreal/how-to-add-new-artikle-image-6.jpg)
+
+1. Verify the location and click **Next**.
+
+![Verify location and click Next](screenshots/screenshotsreal/how-to-add-new-artikle-image-7.jpg)
+
+1. Use the text controls to style the text in the body section of the article.
+
+![Style text in the article body](screenshots/screenshotsreal/how-to-add-new-artikle-image-8.jpg)
+
+1. Click **Add image** to add an image to the body of the article.
+
+![Click Add image](screenshots/screenshotsreal/how-to-add-new-artikle-image-9.jpg)
+
+1. Select the image you want to add from your files.
+
+![Select image from files](screenshots/screenshotsreal/how-to-add-new-artikle-image-10.jpg)
+
+1. Click **Open** to upload that image.
+
+![Click Open to upload image](screenshots/screenshotsreal/how-to-add-new-artikle-image-11.jpg)
+
+1. Click **Next** to continue.
+
+![Click Next to continue](screenshots/screenshotsreal/how-to-add-new-artikle-image-12.jpg)
+
+1. Add further text under the image.
+2. Click **Next** when you are finished editing the article body.
+
+![Add further text and click Next](screenshots/screenshotsreal/how-to-add-new-artikle-image-13.jpg)
+
+1. Click **Publish** to publish the article.
+
+![Click Publish](screenshots/screenshotsreal/how-to-add-new-artikle-image-14.jpg)
+
+### How to Add a New News, Events & Activities Post (old) {#how-to-add-a-new-blog-post-old}
 
 1. Click [**Add article**](/members/admin/blog/new).
 
