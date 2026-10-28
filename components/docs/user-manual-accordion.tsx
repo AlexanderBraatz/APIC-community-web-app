@@ -1,13 +1,11 @@
 'use client';
 
 import {
-	Boxes,
 	Calendar,
 	Globe,
 	Map,
 	MapPin,
 	Newspaper,
-	Sparkles,
 	Users,
 	type LucideIcon
 } from 'lucide-react';
@@ -34,9 +32,7 @@ const MANUAL_SECTION_ICONS: Record<string, LucideIcon> = {
 	recommendations: MapPin,
 	members: Users,
 	'website-content': Globe,
-	posts: Newspaper,
-	'working-with-blocks': Boxes,
-	'special-blocks': Sparkles
+	posts: Newspaper
 };
 
 type UserManualAccordionProps = {

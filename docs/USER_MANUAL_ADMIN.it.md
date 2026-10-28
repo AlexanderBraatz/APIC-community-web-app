@@ -1,6 +1,6 @@
 # Manuale admin
 
-Come gestire consigli, membri, contenuti del sito, News, Events & Activities e blocchi.
+Come gestire consigli, membri, News, Events & Activities e contenuti del sito.
 
 ## Indice {#table-of-contents}
 
@@ -11,22 +11,14 @@ Come gestire consigli, membri, contenuti del sito, News, Events & Activities e b
   - [Aggiungere un nuovo membro](#how-to-add-a-new-member)
   - [Rendere un membro admin](#how-to-promote-a-member-to-admin)
   - [Eliminare un membro](#how-to-delete-a-member)
-- **Contenuti del sito**
-  - [Modificare testi e immagini del sito](#how-to-edit-the-websites-text-and-images)
 - **News, Events & Activities**
   - [Aggiungere un nuovo post di News, Events & Activities](#how-to-add-a-new-blog-post)
-  - [Aggiungere un nuovo post di News, Events & Activities (vecchio)](#how-to-add-a-new-blog-post-old)
-  - [Cambiare un’immagine in un post di News, Events & Activities](#how-to-change-an-image-on-a-blog-post)
-  - [Modificare il testo di un post di News, Events & Activities](#how-to-edit-text-on-a-blog-post)
-- **Gestire i blocchi**
+- **Contenuti del sito**
+  - [Cambiare un’immagine nei contenuti del sito](#how-to-change-an-image-on-a-blog-post)
+  - [Modificare il testo nei contenuti del sito](#how-to-edit-text-on-a-blog-post)
   - [Aggiungere un nuovo blocco](#how-to-add-a-new-block)
   - [Spostare i blocchi](#how-to-move-blocks-around)
-  - [Eliminare un blocco da un post di News, Events & Activities](#how-to-delete-a-blog-post-block)
-- **Blocchi speciali**
-  - [Aggiornare il blocco mappa](#how-to-update-the-map-block)
-  - [Cambiare l’indirizzo email associato a un pulsante Email](#how-to-change-the-email-address-connected-to-an-email-button)
-  - [Aggiungere un’immagine alla galleria](#how-to-add-an-image-to-the-image-gallery)
-  - [Cambiare un video](#how-to-change-a-video)
+  - [Eliminare un blocco](#how-to-delete-a-blog-post-block)
 
 ---
 
@@ -203,31 +195,17 @@ Invita nuovi membri via email, assegna i permessi di admin ai membri oppure rimu
 
 ---
 
-## Contenuti del sito {#website-content}
-
-### Panoramica {#overview}
-
-Usa Content Admin per modificare le pagine del sito come faresti con i post di News, Events & Activities, inclusi testi, blocchi e immagini.
-
-### Modificare testi e immagini del sito {#how-to-edit-the-websites-text-and-images}
-
-1. Fai clic su [**Content Admin**](/admin#/~/place).
-
-![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
-
-2. Naviga nel sito e modifica testi, blocchi e immagini seguendo la stessa procedura descritta nella sezione [News, Events & Activities](#posts).
-
-![Edit website content](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-2.jpg)
-
----
-
 ## News, Events & Activities {#posts}
 
 ### Panoramica {#overview}
 
-Crea post di News, Events & Activities con il modulo articolo, quindi modifica immagini e testi dall’anteprima live dove documentato.
+Crea post di News, Events & Activities con il modulo articolo.
 
 ### Aggiungere un nuovo post di News, Events & Activities {#how-to-add-a-new-blog-post}
+
+1. Fai clic su [**Add article** (Aggiungi nuovo articolo di News, Events & Activities)](/members/admin/blog/new).
+
+![Add new News, Events & Activities article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
 
 1. Aggiungi un titolo e una descrizione / introduzione.
 2. Fai clic su **Next** (Avanti).
@@ -288,80 +266,74 @@ Crea post di News, Events & Activities con il modulo articolo, quindi modifica i
 
 ![Click Publish](screenshots/screenshotsreal/how-to-add-new-artikle-image-14.jpg)
 
-### Aggiungere un nuovo post di News, Events & Activities (vecchio) {#how-to-add-a-new-blog-post-old}
-
-1. Fai clic su [**Add article** (Aggiungi nuovo articolo di News, Events & Activities)](/members/admin/blog/new).
-
-![Add new News, Events & Activities article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
-
-2. Fai clic su **Save** (Salva).
-
-![Save new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-2.jpg)
-
-3. Fai clic sul nuovo post di News, Events & Activities, che trovi in cima all’elenco.
-
-![Open new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
-
-### Cambiare un’immagine in un post di News, Events & Activities {#how-to-change-an-image-on-a-blog-post}
-
-1. Fai clic sull’immagine che vuoi cambiare.
-
-![Select image on page](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-1.jpg)
-
-2. Fai clic sull’immagine corrispondente nell’editor di TinaCMS.
-
-![Select image in editor](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-2.jpg)
-
-3. Fai clic su **Upload** (Carica).
-
-![Click Upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-3.jpg)
-
-4. Seleziona l’immagine che vuoi caricare. (Questo passaggio può apparire leggermente diverso a seconda del dispositivo.)
-
-![Select file to upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-4.jpg)
-
-5. Fai clic su **Open** (Apri).
-
-![Click Open](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-5.jpg)
-
-6. Fai clic su **Insert** (Inserisci).
-
-![Click Insert](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-6.jpg)
-
-7. Aggiungi una didascalia.
-8. Salva le modifiche.
-
-![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
-
-### Modificare il testo di un post di News, Events & Activities {#how-to-edit-text-on-a-blog-post}
-
-1. Fai clic su un campo con il bordo blu tratteggiato.
-
-![Click dashed field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-1.jpg)
-
-2. Si aprirà il campo corrispondente nel modulo sulla sinistra.
-
-![Connected input field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-2.jpg)
-
-3. Modifica il testo nel campo. Le modifiche appariranno contemporaneamente nell’anteprima del sito.
-
-![Live text update](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-3.jpg)
-
-4. Salva le modifiche per pubblicarle sul sito.
-
 ---
 
-## Gestire i blocchi {#working-with-blocks}
+## Contenuti del sito {#website-content}
 
 ### Panoramica {#overview}
 
-I blocchi sono gli elementi che compongono un post di News, Events & Activities e le altre pagine del sito. Puoi aggiungerli, riordinarli o eliminarli dalla barra laterale di TinaCMS.
+Usa Content Admin per modificare testi, immagini e blocchi sulle pagine del sito.
+
+### Cambiare un’immagine nei contenuti del sito {#how-to-change-an-image-on-a-blog-post}
+
+1. Fai clic su [**Content Admin**](/admin#/~/place).
+
+![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
+
+2. Fai clic sull’immagine che vuoi cambiare.
+
+![Select image on page](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-1.jpg)
+
+3. Fai clic sull’immagine corrispondente nell’editor di TinaCMS.
+
+![Select image in editor](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-2.jpg)
+
+4. Fai clic su **Upload** (Carica).
+
+![Click Upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-3.jpg)
+
+5. Seleziona l’immagine che vuoi caricare. (Questo passaggio può apparire leggermente diverso a seconda del dispositivo.)
+
+![Select file to upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-4.jpg)
+
+6. Fai clic su **Open** (Apri).
+
+![Click Open](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-5.jpg)
+
+7. Fai clic su **Insert** (Inserisci).
+
+![Click Insert](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-6.jpg)
+
+8. Aggiungi una didascalia.
+9. Salva le modifiche.
+
+![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
+
+### Modificare il testo nei contenuti del sito {#how-to-edit-text-on-a-blog-post}
+
+1. Fai clic su [**Content Admin**](/admin#/~/place).
+
+![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
+
+2. Fai clic su un campo con il bordo blu tratteggiato.
+
+![Click dashed field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-1.jpg)
+
+3. Si aprirà il campo corrispondente nel modulo sulla sinistra.
+
+![Connected input field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-2.jpg)
+
+4. Modifica il testo nel campo. Le modifiche appariranno contemporaneamente nell’anteprima del sito.
+
+![Live text update](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-3.jpg)
+
+5. Salva le modifiche per pubblicarle sul sito.
 
 ### Aggiungere un nuovo blocco {#how-to-add-a-new-block}
 
-1. Fai clic sull’ID del post di News, Events & Activities per aprire la panoramica del post.
+1. In Content Admin, apri la panoramica della pagina che vuoi modificare.
 
-![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
+![Open page overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
 
 2. Fai clic sull’icona + per aprire il menu di selezione dei blocchi.
 
@@ -375,7 +347,7 @@ I blocchi sono gli elementi che compongono un post di News, Events & Activities 
 
 ![New block on page](screenshots/screenshotsreal/how-to-add-a-new-block-4.jpg)
 
-5. Modifica il testo o gli altri contenuti del blocco. (Per informazioni sui diversi tipi di blocco, consulta la sezione [Blocchi speciali](#special-blocks).)
+5. Modifica il testo o gli altri contenuti del blocco.
 6. Salva le modifiche.
 
 ![Update block and save](screenshots/screenshotsreal/how-to-add-a-new-block-5.jpg)
@@ -390,16 +362,16 @@ I blocchi sono gli elementi che compongono un post di News, Events & Activities 
 
 ![Drag block](screenshots/screenshotsreal/how-to-move-blocks-around-2.jpg)
 
-3. Rilascia il pulsante del mouse. Il blocco verrà visualizzato nella nuova posizione sia nella barra laterale sia nell’anteprima del sito.
+3. Rilascia il pulsante del mouse. Il blocco verrà visualizzato nella nuova posizione sia nella barra laterale di TinaCMS sia nell’anteprima del sito.
 4. Salva le modifiche.
 
 ![Block moved](screenshots/screenshotsreal/how-to-move-blocks-around-3.jpg)
 
-### Eliminare un blocco da un post di News, Events & Activities {#how-to-delete-a-blog-post-block}
+### Eliminare un blocco {#how-to-delete-a-blog-post-block}
 
-1. Fai clic sull’ID del post di News, Events & Activities per aprire la panoramica del post.
+1. In Content Admin, apri la panoramica della pagina che vuoi modificare.
 
-![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
+![Open page overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
 
 2. Fai clic sull’icona del cestino accanto al blocco che vuoi eliminare.
 
@@ -409,63 +381,3 @@ I blocchi sono gli elementi che compongono un post di News, Events & Activities 
 4. Salva le modifiche.
 
 ![Block removed](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-3.png)
-
----
-
-## Blocchi speciali {#special-blocks}
-
-### Panoramica {#overview}
-
-Modifica i contenuti specifici dei diversi blocchi, come mappe, indirizzi email dei pulsanti Email, gallerie di immagini e video.
-
-### Aggiornare il blocco mappa {#how-to-update-the-map-block}
-
-1. Fai clic su **Set Location** (Imposta posizione).
-
-![Set Location](screenshots/screenshotsreal/how-to-update-the-map-block-1.jpg)
-
-2. Digita il nome dell’attività.
-
-![Type business name](screenshots/screenshotsreal/how-to-update-the-map-block-2.jpg)
-
-3. Seleziona la posizione corretta tra i risultati suggeriti.
-
-![Select location](screenshots/screenshotsreal/how-to-update-the-map-block-3.jpg)
-
-4. Salva la posizione nel modulo della mappa. Non è necessario salvarla anche nell’editor di TinaCMS.
-
-![Save location on map form](screenshots/screenshotsreal/how-to-update-the-map-block-4.jpg)
-
-5. La mappa mostra ora la nuova posizione.
-
-![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
-
-### Cambiare l’indirizzo email associato a un pulsante Email {#how-to-change-the-email-address-connected-to-an-email-button}
-
-1. Modifica l’indirizzo email, lasciando invariato il prefisso `mailto:`.
-2. Salva le modifiche.
-
-![Change Email Button email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
-
-### Aggiungere un’immagine alla galleria {#how-to-add-an-image-to-the-image-gallery}
-
-1. Fai clic su una delle immagini della galleria per aprirla nell’editor di TinaCMS.
-2. Fai clic su **Image Gallery** (Galleria immagini) per tornare alla panoramica del blocco.
-
-![Open image gallery overview](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-1.jpg)
-
-3. Fai clic sul pulsante + per aggiungere un’altra immagine.
-
-![Add gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-2.jpg)
-
-4. Fai clic sull’immagine appena aggiunta e segui gli stessi passaggi descritti in [Cambiare un’immagine in un post di News, Events & Activities](#how-to-change-an-image-on-a-blog-post).
-5. Salva le modifiche.
-
-![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
-
-### Cambiare un video {#how-to-change-a-video}
-
-1. Sostituisci il link esistente con quello del video che vuoi mostrare.
-2. Salva le modifiche.
-
-![Change video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)

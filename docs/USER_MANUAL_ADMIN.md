@@ -1,6 +1,6 @@
 # Admin Manual
 
-How to manage recommendations, members, website content, News, Events & Activities, and blocks.
+How to manage recommendations, members, News, Events & Activities, and website content.
 
 ## Table of Contents {#table-of-contents}
 
@@ -11,22 +11,14 @@ How to manage recommendations, members, website content, News, Events & Activiti
   - [How to Add a New Member](#how-to-add-a-new-member)
   - [How to Promote a Member to Admin](#how-to-promote-a-member-to-admin)
   - [How to Delete a Member](#how-to-delete-a-member)
-- **Website Content**
-  - [How to Edit the Website’s Text and Images](#how-to-edit-the-websites-text-and-images)
 - **News, Events & Activities**
   - [How to Add a New News, Events & Activities Post](#how-to-add-a-new-blog-post)
-  - [How to Add a New News, Events & Activities Post (old)](#how-to-add-a-new-blog-post-old)
-  - [How to Change an Image on a News, Events & Activities Post](#how-to-change-an-image-on-a-blog-post)
-  - [How to Edit Text on a News, Events & Activities Post](#how-to-edit-text-on-a-blog-post)
-- **Working with Blocks**
+- **Website Content**
+  - [How to Change an Image on Website Content](#how-to-change-an-image-on-a-blog-post)
+  - [How to Edit Text on Website Content](#how-to-edit-text-on-a-blog-post)
   - [How to Add a New Block](#how-to-add-a-new-block)
   - [How to Move Blocks Around](#how-to-move-blocks-around)
-  - [How to Delete a News, Events & Activities Post Block](#how-to-delete-a-blog-post-block)
-- **Special Blocks**
-  - [How to Update the Map Block](#how-to-update-the-map-block)
-  - [How to Change the Email Address Connected to an Email Button](#how-to-change-the-email-address-connected-to-an-email-button)
-  - [How to Add an Image to the Image Gallery](#how-to-add-an-image-to-the-image-gallery)
-  - [How to change a video](#how-to-change-a-video)
+  - [How to Delete a Block](#how-to-delete-a-blog-post-block)
 
 ---
 
@@ -203,31 +195,17 @@ Invite new members by email, promote members to admin, or remove members.
 
 ---
 
-## Website Content {#website-content}
-
-### Overview {#overview}
-
-Use Content Admin to edit site pages the same way you edit News, Events & Activities posts — text, blocks, and images.
-
-### How to Edit the Website’s Text and Images {#how-to-edit-the-websites-text-and-images}
-
-1. Click [**Content Admin**](/admin#/~/place).
-
-![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
-
-2. Navigate around the website and change text, blocks, and images in the same way explained in the [News, Events & Activities](#posts) section.
-
-![Edit website content](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-2.jpg)
-
----
-
 ## News, Events & Activities {#posts}
 
 ### Overview {#overview}
 
-Create News, Events & Activities posts with the article form, then update images and text on the live preview where documented.
+Create News, Events & Activities posts with the article form.
 
 ### How to Add a New News, Events & Activities Post {#how-to-add-a-new-blog-post}
+
+1. Click [**Add article**](/members/admin/blog/new).
+
+![Add new News, Events & Activities article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
 
 1. Add a title and a description / introduction.
 2. Click **Next**.
@@ -288,80 +266,74 @@ Create News, Events & Activities posts with the article form, then update images
 
 ![Click Publish](screenshots/screenshotsreal/how-to-add-new-artikle-image-14.jpg)
 
-### How to Add a New News, Events & Activities Post (old) {#how-to-add-a-new-blog-post-old}
-
-1. Click [**Add article**](/members/admin/blog/new).
-
-![Add new News, Events & Activities article](screenshots/screenshotsreal/how-to-add-a-new-blog-post-1.jpg)
-
-2. Click **Save**.
-
-![Save new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-2.jpg)
-
-3. Click the new News, Events & Activities post, found at the top of the list.
-
-![Open new News, Events & Activities post](screenshots/screenshotsreal/how-to-add-a-new-blog-post-3.jpg)
-
-### How to Change an Image on a News, Events & Activities Post {#how-to-change-an-image-on-a-blog-post}
-
-1. Click on the image you would like to change.
-
-![Select image on page](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-1.jpg)
-
-2. Click on the image in the TinaCMS editor.
-
-![Select image in editor](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-2.jpg)
-
-3. Click **Upload**.
-
-![Click Upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-3.jpg)
-
-4. Select the image you would like to upload. (This step may look different on your device.)
-
-![Select file to upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-4.jpg)
-
-5. Click **Open**.
-
-![Click Open](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-5.jpg)
-
-6. Click **Insert**.
-
-![Click Insert](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-6.jpg)
-
-7. Add a caption.
-8. Save your changes.
-
-![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
-
-### How to Edit Text on a News, Events & Activities Post {#how-to-edit-text-on-a-blog-post}
-
-1. Click on any field surrounded by a blue dashed border.
-
-![Click dashed field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-1.jpg)
-
-2. This will open the connected input field in the form on the left.
-
-![Connected input field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-2.jpg)
-
-3. Change the text in the input field and watch the text displayed on the website change at the same time.
-
-![Live text update](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-3.jpg)
-
-4. Save your changes to publish them onto the website.
-
 ---
 
-## Working with Blocks {#working-with-blocks}
+## Website Content {#website-content}
 
 ### Overview {#overview}
 
-Blocks are the building pieces of a News, Events & Activities post (and other pages). Add, reorder, or delete them from the TinaCMS sidebar.
+Use Content Admin to edit text, images, and blocks on website pages.
+
+### How to Change an Image on Website Content {#how-to-change-an-image-on-a-blog-post}
+
+1. Click [**Content Admin**](/admin#/~/place).
+
+![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
+
+2. Click on the image you would like to change.
+
+![Select image on page](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-1.jpg)
+
+3. Click on the image in the TinaCMS editor.
+
+![Select image in editor](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-2.jpg)
+
+4. Click **Upload**.
+
+![Click Upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-3.jpg)
+
+5. Select the image you would like to upload. (This step may look different on your device.)
+
+![Select file to upload](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-4.jpg)
+
+6. Click **Open**.
+
+![Click Open](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-5.jpg)
+
+7. Click **Insert**.
+
+![Click Insert](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-6.jpg)
+
+8. Add a caption.
+9. Save your changes.
+
+![Caption and save](screenshots/screenshotsreal/how-to-change-an-image-on-a-blog-post-7.jpg)
+
+### How to Edit Text on Website Content {#how-to-edit-text-on-a-blog-post}
+
+1. Click [**Content Admin**](/admin#/~/place).
+
+![Content Admin](screenshots/screenshotsreal/how-to-edit-the-websites-text-and-images-1.jpg)
+
+2. Click on any field surrounded by a blue dashed border.
+
+![Click dashed field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-1.jpg)
+
+3. This will open the connected input field in the form on the left.
+
+![Connected input field](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-2.jpg)
+
+4. Change the text in the input field and watch the text displayed on the website change at the same time.
+
+![Live text update](screenshots/screenshotsreal/how-to-edit-text-on-a-blog-post-3.jpg)
+
+5. Save your changes to publish them onto the website.
 
 ### How to Add a New Block {#how-to-add-a-new-block}
 
-1. Click on the News, Events & Activities post ID number to navigate to the post overview.
+1. In Content Admin, open the page overview for the page you want to edit.
 
-![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
+![Open page overview](screenshots/screenshotsreal/how-to-add-a-new-block-1.jpg)
 
 2. Click the plus icon to open the blocks selection menu.
 
@@ -375,7 +347,7 @@ Blocks are the building pieces of a News, Events & Activities post (and other pa
 
 ![New block on page](screenshots/screenshotsreal/how-to-add-a-new-block-4.jpg)
 
-5. Update the text or other content of the block. (For details on how to update different blocks, see the [Special Blocks](#special-blocks) section.)
+5. Update the text or other content of the block.
 6. Save your changes.
 
 ![Update block and save](screenshots/screenshotsreal/how-to-add-a-new-block-5.jpg)
@@ -390,16 +362,16 @@ Blocks are the building pieces of a News, Events & Activities post (and other pa
 
 ![Drag block](screenshots/screenshotsreal/how-to-move-blocks-around-2.jpg)
 
-3. Release the mouse and see that the block has moved on the left and on the website.
+3. Release the mouse and see that the block has moved in the TinaCMS sidebar and on the website.
 4. Save your changes.
 
 ![Block moved](screenshots/screenshotsreal/how-to-move-blocks-around-3.jpg)
 
-### How to Delete a News, Events & Activities Post Block {#how-to-delete-a-blog-post-block}
+### How to Delete a Block {#how-to-delete-a-blog-post-block}
 
-1. Click on the News, Events & Activities post ID number to navigate to the post overview.
+1. In Content Admin, open the page overview for the page you want to edit.
 
-![Open News, Events & Activities post overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
+![Open page overview](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-1.jpg)
 
 2. Click the bin icon next to the block you wish to delete.
 
@@ -409,63 +381,3 @@ Blocks are the building pieces of a News, Events & Activities post (and other pa
 4. Save your changes.
 
 ![Block removed](screenshots/screenshotsreal/how-to-delete-a-blog-post-block-3.png)
-
----
-
-## Special Blocks {#special-blocks}
-
-### Overview {#overview}
-
-Update block-specific content such as maps, Email Button addresses, galleries, and videos.
-
-### How to Update the Map Block {#how-to-update-the-map-block}
-
-1. Click the **Set Location** button.
-
-![Set Location](screenshots/screenshotsreal/how-to-update-the-map-block-1.jpg)
-
-2. Type the name of the business.
-
-![Type business name](screenshots/screenshotsreal/how-to-update-the-map-block-2.jpg)
-
-3. Select the right location from the suggested businesses.
-
-![Select location](screenshots/screenshotsreal/how-to-update-the-map-block-3.jpg)
-
-4. Save the location on the map form (there is no need to save in the TinaCMS editor).
-
-![Save location on map form](screenshots/screenshotsreal/how-to-update-the-map-block-4.jpg)
-
-5. Observe that the map now shows the new location.
-
-![Map updated](screenshots/screenshotsreal/how-to-update-the-map-block-5.jpg)
-
-### How to Change the Email Address Connected to an Email Button {#how-to-change-the-email-address-connected-to-an-email-button}
-
-1. Change the email address but keep the `mailto:` prefix.
-2. Save your changes.
-
-![Change Email Button email](screenshots/screenshotsreal/how-to-change-the-email-address-connected-to-a-cta-button-1.jpg)
-
-### How to Add an Image to the Image Gallery {#how-to-add-an-image-to-the-image-gallery}
-
-1. Click on one of the images in the image gallery to open that image in the TinaCMS editor.
-2. Click **Image Gallery** to get to the block overview.
-
-![Open image gallery overview](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-1.jpg)
-
-3. Click the plus button to add another image.
-
-![Add gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-2.jpg)
-
-4. Click on the newly added image and follow the same steps as in [How to Change an Image on a News, Events & Activities Post](#how-to-change-an-image-on-a-blog-post) to change it.
-5. Save your changes.
-
-![New gallery image](screenshots/screenshotsreal/how-to-add-an-image-to-the-image-gallery-3.jpg)
-
-### How to change a video {#how-to-change-a-video}
-
-1. Change the link to the link of the video you want to show.
-2. Save your changes.
-
-![Change video](screenshots/screenshotsreal/how-to-change-a-embedded-video-1.jpg)
