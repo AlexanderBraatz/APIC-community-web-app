@@ -7,6 +7,7 @@ import {
 	limitResetOtpByClient,
 	limitResetOtpRequest
 } from '@/lib/admin/rate-limit';
+import { resolveInviteFlowStep } from '@/lib/invitations/onboarding';
 import { getRequestOrigin } from '@/lib/site-url';
 import { createClient } from '@/lib/supabase/server';
 
@@ -106,6 +107,19 @@ export async function updatePassword(formData: FormData) {
 	}
 
 	const supabase = await createClient();
+	const {
+		data: { user }
+	} = await supabase.auth.getUser();
+
+	// Invitees set their password in the join wizard. A recovery code still
+	// signs them in, then the proxy and this action send them back there.
+	if (user) {
+		const step = await resolveInviteFlowStep(user);
+		if (step !== 'done') {
+			redirect('/accept-invite');
+		}
+	}
+
 	const { error } = await supabase.auth.updateUser({ password });
 
 	if (error) {

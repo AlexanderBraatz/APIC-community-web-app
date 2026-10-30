@@ -14,13 +14,16 @@ const PROTECTED_PREFIXES = [
 
 const AUTH_ONLY_WHEN_SIGNED_OUT = ['/sign-in', '/forgot-password'] as const;
 
-/** Routes allowed while authenticated but before invite onboarding is done. */
+/**
+ * Routes allowed while authenticated but before invite onboarding is done.
+ * Password setup for invitees stays on `/accept-invite`, so `/reset-password`
+ * is not included.
+ */
 const PRIVACY_ONBOARDING_ALLOWLIST = [
 	'/accept-invite',
 	'/terms',
 	'/privacy',
 	'/legal',
-	'/reset-password',
 	'/sign-out'
 ] as const;
 
