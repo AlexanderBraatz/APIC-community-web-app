@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import SentryTestButton from '@/components/admin/sentry-test-button';
 import { PdfFileIcon } from '@/components/icons/pdf-file-icon';
 import { getAdminDashboardCounts } from '@/lib/admin/audit-actions';
 import { getDeveloperContact } from '@/lib/developer-contact';
@@ -285,6 +286,8 @@ export default async function MembersAdminDashboardPage() {
 					html={recoveryPreview.html}
 				/>
 			</section>
+
+			<SentryTestButton />
 		</div>
 	);
 }
