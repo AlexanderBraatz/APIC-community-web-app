@@ -1,5 +1,6 @@
 import BlogPost from '@/components/blog/blog-post';
 import { getBlogPostBySlug, listBlogPosts } from '@/lib/blog/queries';
+import { captureNotFoundPage } from '@/lib/sentry/capture';
 import { notFound, redirect } from 'next/navigation';
 
 export default async function BlogPostPage({
@@ -11,6 +12,7 @@ export default async function BlogPostPage({
 	const result = await getBlogPostBySlug(slug);
 
 	if (result.kind === 'not_found') {
+		captureNotFoundPage(`/blog/${slug}`);
 		notFound();
 	}
 

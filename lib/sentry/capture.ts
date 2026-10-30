@@ -17,3 +17,22 @@ export function captureServerActionException(
 		}
 	});
 }
+
+/**
+ * Report a public 404 so ops can spot broken links / mistyped URLs.
+ * Uses warning (not error) so bot probes don't trip high-severity Slack alerts;
+ * filter Issues by tag `area:not_found`.
+ */
+export function captureNotFoundPage(pathname: string) {
+	const path = pathname.startsWith('/') ? pathname : `/${pathname}`;
+	Sentry.captureMessage(`Page not found: ${path}`, {
+		level: 'warning',
+		tags: {
+			area: 'not_found'
+		},
+		fingerprint: ['not_found', path],
+		extra: {
+			pathname: path
+		}
+	});
+}
