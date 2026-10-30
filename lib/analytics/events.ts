@@ -1,6 +1,7 @@
 /** Canonical PostHog event names for APIC product analytics. */
 export const AnalyticsEvents = {
-	PAGE_VIEW: 'page_view',
+	/** System event — required for PostHog Web Analytics (not a custom name). */
+	PAGE_VIEW: '$pageview',
 	LOGIN_SUCCESS: 'login_success',
 	INVITE_ACCEPTED: 'invite_accepted',
 	CALENDAR_VIEWED: 'calendar_viewed',

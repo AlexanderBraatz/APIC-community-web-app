@@ -58,7 +58,7 @@ export default async function SignInPage({ searchParams }: PageProps) {
 
 			<p className="mt-6 text-sm">
 				<Link href="/accept-invite" className="text-[#805b32] underline">
-					Have an invitation? Enter your code
+					Don&apos;t have an account yet? Check if you have been invited.
 				</Link>
 			</p>
 			<p className="mt-3 text-sm">

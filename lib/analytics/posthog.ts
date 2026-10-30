@@ -44,8 +44,10 @@ export function initPostHog(): typeof posthog | null {
 		posthog.init(key, {
 			api_host: getPostHogHost(),
 			person_profiles: 'identified_only',
+			// Manual $pageview on App Router navigations (see trackPageView).
 			capture_pageview: false,
-			capture_pageleave: false,
+			// Needed for bounce rate / time on page in Web Analytics.
+			capture_pageleave: true,
 			autocapture: false,
 			persistence: 'localStorage+cookie',
 			opt_out_capturing_by_default: true,
@@ -143,5 +145,10 @@ export function trackEvent(
 }
 
 export function trackPageView(path: string) {
-	trackEvent('page_view', { path });
+	const currentUrl =
+		typeof window !== 'undefined'
+			? window.location.href
+			: path;
+	// Web Analytics only reads the system $pageview event (with $ prefix).
+	trackEvent('$pageview', { $current_url: currentUrl });
 }

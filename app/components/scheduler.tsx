@@ -86,7 +86,7 @@ const defaultDays = new DayPilot.Duration(
 const ROW_HEADER_WIDTH_DESKTOP = 180;
 const ROW_HEADER_WIDTH_MOBILE_MIN = 0;
 const ROW_HEADER_WIDTH_MOBILE_MAX = 180;
-const ROW_HEADER_WIDTH_MOBILE_DEFAULT = ROW_HEADER_WIDTH_MOBILE_MAX;
+const ROW_HEADER_WIDTH_MOBILE_DEFAULT = 80;
 /** Below this width, the header control shows “Show names”; at/above, “Hide names”. */
 const ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW = 40;
 /** Keep the resize handle fully on-screen when the name column is closed. */
@@ -629,7 +629,7 @@ const Scheduler = ({
 		setQuery('');
 		setActiveSuggestionIndex(0);
 		if (isNarrow) {
-			setMobileRowHeaderWidth(ROW_HEADER_WIDTH_MOBILE_MAX);
+			setMobileRowHeaderWidth(ROW_HEADER_WIDTH_MOBILE_DEFAULT);
 		}
 	};
 
@@ -1121,7 +1121,7 @@ const Scheduler = ({
 										setMobileRowHeaderWidth(
 											rowHeaderWidth <
 												ROW_HEADER_WIDTH_MOBILE_SHOW_NAMES_BELOW
-												? ROW_HEADER_WIDTH_MOBILE_MAX
+												? ROW_HEADER_WIDTH_MOBILE_DEFAULT
 												: ROW_HEADER_WIDTH_MOBILE_MIN
 										);
 									}}

@@ -140,56 +140,6 @@ export async function updateLanguage(formData: FormData) {
 	accountRedirect({ message: 'Language updated.' });
 }
 
-function userManualReminderRedirect(opts: { error?: string }): never {
-	const params = new URLSearchParams();
-	if (opts.error) params.set('error', opts.error);
-	const qs = params.toString();
-	redirect(
-		qs
-			? `/account/user-manual-reminder?${qs}`
-			: '/account/user-manual-reminder'
-	);
-}
-
-export async function updateHelpFabHintEnabled(formData: FormData) {
-	const raw = String(formData.get('help_fab_hint_enabled') ?? '');
-	const enabled = raw === 'true';
-
-	if (raw !== 'true' && raw !== 'false') {
-		userManualReminderRedirect({
-			error: 'Choose a user manual reminder preference.'
-		});
-	}
-
-	const supabase = await createClient();
-	const {
-		data: { user },
-		error: userError
-	} = await supabase.auth.getUser();
-
-	if (userError || !user) {
-		redirect('/sign-in?next=/account/user-manual-reminder');
-	}
-
-	const { error } = await supabase
-		.from('profiles')
-		.update({ help_fab_hint_enabled: enabled })
-		.eq('id', user.id);
-
-	if (error) {
-		userManualReminderRedirect({ error: error.message });
-	}
-
-	revalidatePath('/', 'layout');
-	revalidatePath('/account');
-	revalidatePath('/account/user-manual-reminder');
-	accountRedirect({
-		message: enabled
-			? 'User manual reminder turned on.'
-			: 'User manual reminder turned off permanently.'
-	});
-}
-
 function changePasswordRedirect(opts: {
 	error?: string;
 }): never {

@@ -157,23 +157,6 @@ export default async function AccountPage({ searchParams }: PageProps) {
 
 			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
 				<h2 className="text-lg font-medium text-[#444]">
-					User manual reminder
-				</h2>
-				<p className="text-sm text-[#666]">
-					You can turn the post-sign-in help tip on or off at any time.
-					Continue when you want to change it — the control is only
-					shown on the next page.
-				</p>
-				<Link
-					href="/account/user-manual-reminder"
-					className={cn(buttonVariants({ variant: 'outline' }), 'w-full')}
-				>
-					Manage user manual reminder
-				</Link>
-			</section>
-
-			<section className="mt-10 space-y-4 border-t border-[#e5e5e5] pt-6">
-				<h2 className="text-lg font-medium text-[#444]">
 					Privacy &amp; analytics
 				</h2>
 				<p className="text-sm text-[#666]">
