@@ -41,6 +41,7 @@ export async function loadSchedulerData(): Promise<{
 		supabase
 			.from('profiles')
 			.select('id, full_name, avatar_url, event_bar_color')
+			.eq('onboarding_step', 'done')
 			.order('full_name', { ascending: true }),
 		supabase
 			.from('attendance')
@@ -72,9 +73,14 @@ export async function loadSchedulerData(): Promise<{
 			? prefs.font_size
 			: 'medium';
 
+	const finishedProfiles = (profiles ?? []) as ProfileResource[];
+	const finishedIds = new Set(finishedProfiles.map(profile => profile.id));
+
 	return {
-		profiles: (profiles ?? []) as ProfileResource[],
-		attendance: (attendance ?? []) as AttendanceRow[],
+		profiles: finishedProfiles,
+		attendance: ((attendance ?? []) as AttendanceRow[]).filter(row =>
+			finishedIds.has(row.user_id)
+		),
 		preferences: {
 			fontSize,
 			pinnedMemberIds: prefs?.pinned_member_ids ?? []

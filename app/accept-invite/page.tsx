@@ -174,6 +174,7 @@ export default async function AcceptInvitePage({
 		const { data: members } = await supabase
 			.from('profiles')
 			.select('id, full_name')
+			.eq('onboarding_step', 'done')
 			.order('full_name', { ascending: true });
 
 		return (

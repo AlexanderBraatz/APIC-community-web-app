@@ -101,7 +101,10 @@ export async function getAdminDashboardCounts(): Promise<AdminDashboardCounts> {
 	const { supabase } = await requireAdmin();
 
 	const [usersRes, listingsRes, calendarRes, blogRes] = await Promise.all([
-		supabase.from('profiles').select('id', { count: 'exact', head: true }),
+		supabase
+			.from('profiles')
+			.select('id', { count: 'exact', head: true })
+			.eq('onboarding_step', 'done'),
 		supabase.from('listings').select('id', { count: 'exact', head: true }),
 		supabase.from('attendance').select('id', { count: 'exact', head: true }),
 		supabase

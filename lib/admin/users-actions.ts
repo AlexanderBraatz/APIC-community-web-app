@@ -56,6 +56,7 @@ export async function listAdminUsers(opts?: {
 	const { data: profiles, error } = await supabase
 		.from('profiles')
 		.select('id, full_name, role, created_at')
+		.eq('onboarding_step', 'done')
 		.order('full_name', { ascending: true });
 	if (error) {
 		throw new Error(error.message);
