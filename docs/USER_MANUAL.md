@@ -86,7 +86,7 @@ Related links on the sign-in page:
 
 ### Overview
 
-An invited owner opens the invitation email, clicks **Set up your account**, confirms on the join page, sets a password, then completes a short onboarding (privacy, shown name, colour, favorites) to join. There is no public signup. Invitation links expire after 24 hours. If the link does not work, request a one-time code on `/accept-invite` instead.
+An invited owner opens the invitation email, clicks **Set up your account**, confirms on the join page, sets a password, then completes a short onboarding (privacy, shown name, colour, favorites) to join. There is no public signup. Invitation links expire after 1 hour. If the link does not work, request a one-time code on `/accept-invite` instead.
 
 **Before you start:** An admin must already have invited your email address.
 
@@ -164,7 +164,7 @@ If the code is invalid or expired, use **Back**, then **Request a code** again a
 
 ### Overview
 
-If you already have an account, request a one-time code by email, enter it on the reset pages, and choose a new password. Codes expire after 24 hours; if a code expires, return to **Reset password** and click **Request a code** again. Your new password must be different from your current one.
+If you already have an account, request a one-time code by email, enter it on the reset pages, and choose a new password. Codes expire after 1 hour; if a code expires, return to **Reset password** and click **Request a code** again. Your new password must be different from your current one.
 
 ### Steps
 

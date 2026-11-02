@@ -73,8 +73,8 @@ export default async function AdminInvitationsPage({
 			<section>
 				<h2 className="text-xl font-medium text-[#444]">Invite a member</h2>
 				<p className="mt-1 text-sm text-[#666]">
-					Adds the email to the allowlist and sends an invitation link (valid up
-					to 24 hours). They stay on the allowlist until they finish joining, so
+					Adds the email to the allowlist and sends an invitation link (valid for
+					1 hour). They stay on the allowlist until they finish joining, so
 					you can resend the invitation if they stop mid-way and lose the email.
 					If their link fails, they can request a one-time code themselves.
 				</p>

@@ -50,7 +50,7 @@ export function ForgotPasswordRequestForm({
 			<h1 className="font-heading text-3xl text-[#805b32]">Reset password</h1>
 			<p className="mt-3 text-sm text-[#666]">
 				Enter your email and we will send a one-time code if an account exists.
-				Codes expire after 24 hours.
+				Codes expire after 1 hour.
 			</p>
 
 			{error ? (

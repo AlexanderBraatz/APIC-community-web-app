@@ -54,7 +54,7 @@ export function AcceptInviteRequestForm({
 				If your invitation link expired or did not work, enter the email you
 				were invited with and we will send a one-time code. You can then use
 				this code to verify your email and begin setting up your account. Only
-				approved emails can receive a code.
+				approved emails can receive a code. Codes expire after 1 hour.
 			</p>
 
 			{error ? (

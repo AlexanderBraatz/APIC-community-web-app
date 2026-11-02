@@ -232,8 +232,8 @@ secure_password_change = false
 max_frequency = "1s"
 # Number of characters used in the email OTP.
 otp_length = 8
-# Number of seconds before the email OTP expires (max 86400 / 24h for invite codes).
-otp_expiry = 86400
+# Number of seconds before the email OTP expires (1 hour; also governs invite links).
+otp_expiry = 3600
 
 # Use a production-ready SMTP server
 # [auth.email.smtp]
