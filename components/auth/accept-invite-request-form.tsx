@@ -47,11 +47,14 @@ export function AcceptInviteRequestForm({
 
 	return (
 		<main className="mx-auto flex w-full max-w-md min-h-dvh flex-1 flex-col justify-start px-4 pt-8 pb-16">
-			<h1 className="font-heading text-3xl text-[#805b32]">Request a code</h1>
+			<h1 className="font-heading text-3xl text-[#805b32]">
+				Verify your email to set up your account
+			</h1>
 			<p className="mt-3 text-sm text-[#666]">
-				If your invitation link expired or did not work, enter the email you were
-				invited with and we will send a one-time code. Codes expire after 24
-				hours — only approved emails can receive a code.
+				If your invitation link expired or did not work, enter the email you
+				were invited with and we will send a one-time code. You can then use
+				this code to verify your email and begin setting up your account. Only
+				approved emails can receive a code.
 			</p>
 
 			{error ? (
@@ -63,7 +66,10 @@ export function AcceptInviteRequestForm({
 				</p>
 			) : null}
 
-			<form action={onRequestCode} className="mt-8 space-y-4">
+			<form
+				action={onRequestCode}
+				className="mt-8 space-y-4"
+			>
 				<div className="space-y-2">
 					<Label htmlFor="email">Email</Label>
 					<Input
@@ -76,13 +82,19 @@ export function AcceptInviteRequestForm({
 						onChange={event => setEmail(event.target.value)}
 					/>
 				</div>
-				<SubmitButton className="w-full" disabled={pending}>
-					{pending ? 'Sending…' : 'Request a code'}
+				<SubmitButton
+					className="w-full"
+					disabled={pending}
+				>
+					{pending ? 'Sending…' : 'Request a code to verify your email '}
 				</SubmitButton>
 			</form>
 
 			<p className="mt-8 text-sm">
-				<Link href="/sign-in" className="text-[#805b32] underline">
+				<Link
+					href="/sign-in"
+					className="text-[#805b32] underline"
+				>
 					Already set a password? Sign in
 				</Link>
 			</p>

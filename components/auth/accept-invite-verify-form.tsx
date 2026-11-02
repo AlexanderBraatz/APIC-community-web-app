@@ -20,7 +20,7 @@ export function AcceptInviteVerifyForm({
 	const [error, setError] = useState('');
 	const [info] = useState(
 		initialSent
-			? 'A one-time code is on its way. Check your inbox, then enter the code below.'
+			? 'A one-time code is on its way. Check your inbox, then enter the code below. It may take a minute to arrive. Check spam if you don’t see it.'
 			: ''
 	);
 	const [pending, startTransition] = useTransition();
@@ -83,7 +83,10 @@ export function AcceptInviteVerifyForm({
 				</p>
 			) : null}
 
-			<form action={onVerify} className="mt-8 space-y-4">
+			<form
+				action={onVerify}
+				className="mt-8 space-y-4"
+			>
 				<div className="space-y-2">
 					<Label htmlFor="token">One-time code</Label>
 					<div className="flex justify-center">
@@ -105,13 +108,19 @@ export function AcceptInviteVerifyForm({
 						/>
 					</div>
 				</div>
-				<SubmitButton className="w-full" disabled={pending}>
-					{pending ? 'Verifying…' : 'Continue'}
+				<SubmitButton
+					className="w-full"
+					disabled={pending}
+				>
+					{pending ? 'Verifying…' : ' Verify and Continue'}
 				</SubmitButton>
 			</form>
 
 			<p className="mt-8 text-sm">
-				<Link href={backHref} className="text-[#805b32] underline">
+				<Link
+					href={backHref}
+					className="text-[#805b32] underline"
+				>
 					Back
 				</Link>
 			</p>
