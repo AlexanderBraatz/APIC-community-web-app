@@ -12,7 +12,7 @@ const NAV_ITEMS = [
 	{ label: 'Attendance Calendar', href: '/community-calendar' },
 	{ label: 'Food & Dining', href: '/food-dining' },
 	{ label: 'Services & Maintenance', href: '/services-maintenance' },
-	{ label: 'Health & Wellness', href: '/health-wellness' },
+	{ label: 'Sports, Health & Wellness', href: '/health-wellness' },
 	{ label: 'Shop & Market', href: '/shop-market' },
 	{ label: 'News, Events & Activities', href: '/blog' },
 	{ label: 'About Us', href: '/about' }
