@@ -21,11 +21,11 @@ blocks:
         image: /images/apic-craft-hero.webp
         link: /services-maintenance
         buttonLabel: Services & Maintenance
-      - title: Health & Wellness
-        description: Health and wellness places and practitioners near Castelfalfi.
+      - title: 'Sports, Health & Wellness'
+        description: Sports, health, and wellness places and practitioners near Castelfalfi.
         image: /images/apic-health-hero.webp
         link: /health-wellness
-        buttonLabel: Health & Wellness
+        buttonLabel: 'Sports, Health & Wellness'
       - title: Shop & Market
         description: Shops, markets, and local producers recommended by fellow members.
         image: /images/apic-shop-hero.webp

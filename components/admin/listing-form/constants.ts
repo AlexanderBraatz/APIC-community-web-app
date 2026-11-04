@@ -29,7 +29,7 @@ export const STEP_INSPECT = 10;
 export const CATEGORY_LABELS: Record<CategorySlug, string> = {
 	'food-dining': 'Food & Dining',
 	'services-maintenance': 'Services & Maintenance',
-	'health-wellness': 'Health & Wellness',
+	'health-wellness': 'Sports, Health & Wellness',
 	'shop-market': 'Shop & Market'
 };
 

@@ -72,7 +72,7 @@ As an **admin**, I want to create, edit, and delete any member’s attendance (i
 ## Local listings & map
 
 ### US-14 — Browse trusted local places
-As a **signed-in member**, I want to browse curated listings by category (Food & Dining, Services & Maintenance, Health & Wellness, Shop & Market) so that I can find useful places around Castelfalfi and Tuscany.
+As a **signed-in member**, I want to browse curated listings by category (Food & Dining, Services & Maintenance, Sports, Health & Wellness, Shop & Market) so that I can find useful places around Castelfalfi and Tuscany.
 
 ### US-15 — Search and filter listings
 As a **signed-in member**, I want to search by name, type, and keywords and filter with keyword chips so that I can quickly narrow down recommendations.

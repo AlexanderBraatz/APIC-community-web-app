@@ -13,7 +13,7 @@ import type { AdminListing } from '@/lib/listings/types';
 const CATEGORY_LABELS: Record<string, string> = {
 	'food-dining': 'Food & Dining',
 	'services-maintenance': 'Services & Maintenance',
-	'health-wellness': 'Health & Wellness',
+	'health-wellness': 'Sports, Health & Wellness',
 	'shop-market': 'Shop & Market'
 };
 

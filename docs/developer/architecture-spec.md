@@ -362,7 +362,7 @@ Enum / check constraint must use existing slugs:
 | ---------------------- | ---------------------- |
 | `food-dining`          | Food & Dining          |
 | `services-maintenance` | Services & Maintenance |
-| `health-wellness`      | Health & Wellness      |
+| `health-wellness`      | Sports, Health & Wellness |
 | `shop-market`          | Shop & Market          |
 
 Matches routes: `/food-dining`, `/services-maintenance`, `/health-wellness`, `/shop-market`.

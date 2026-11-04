@@ -14,7 +14,7 @@ The interface is in English. Member and admin handbooks are also available in Ge
 Anyone can open the site without an account.
 
 - **Home page** with a full-width hero (background video, or a still image), a feature grid, and a closing banner with a contact button.
-- **Four local category pages:** Food & Dining, Services & Maintenance, Health & Wellness, and Shop & Market. Each has its own hero and introduction. The full directory and map sit on these pages and open after sign-in, with a clear “sign in to browse” prompt for visitors.
+- **Four local category pages:** Food & Dining, Services & Maintenance, Sports, Health & Wellness, and Shop & Market. Each has its own hero and introduction. The full directory and map sit on these pages and open after sign-in, with a clear “sign in to browse” prompt for visitors.
 - **Legal pages:** Legal information, Privacy Policy, and Terms & Conditions, linked from the footer.
 - **Header navigation** across the main sections, with the current page marked.
 - **Sign in** from the header. There is no public registration link.
