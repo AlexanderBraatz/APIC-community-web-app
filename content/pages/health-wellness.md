@@ -1,11 +1,12 @@
 ---
-title: Health & Wellness
+title: 'Sports, Health & Wellness'
 blocks:
-  - heading: Health & Wellness
-    subtitle: Medical & Wellness
+  - heading: 'Sports, Health & Wellness'
+    subtitle: 'Golf, Medical & Spa'
     backgroundImage: /images/apic-health-hero.webp
     _template: heroBanner
   - heading: Health & Wellness
     subtitle: Medical & Wellness
     _template: locationsMap
 ---
+
