@@ -20,7 +20,10 @@ import {
 	type PreviousBlogThumbnail
 } from '@/lib/blog/admin-actions';
 import { BLOG_IMAGE_MAX_BYTES } from '@/lib/blog/compress-image';
-import { getBlogThumbnailUrl } from '@/lib/blog/thumbnail';
+import {
+	getBlogThumbnailUrl,
+	isBlogImageRouteSrc
+} from '@/lib/blog/thumbnail';
 
 type FeaturedImageStepProps = {
 	thumbnailPath: string | null;
@@ -145,6 +148,7 @@ export default function FeaturedImageStep({
 								fill
 								className="object-cover"
 								sizes="(min-width: 640px) 40rem, 100vw"
+								unoptimized={isBlogImageRouteSrc(existingSrc)}
 							/>
 						</div>
 						<div className="flex w-full items-center gap-2">
@@ -290,6 +294,7 @@ export default function FeaturedImageStep({
 											fill
 											className="object-cover"
 											sizes="(min-width: 1280px) 12rem, 50vw"
+											unoptimized={isBlogImageRouteSrc(item.publicUrl)}
 										/>
 									</button>
 								</li>

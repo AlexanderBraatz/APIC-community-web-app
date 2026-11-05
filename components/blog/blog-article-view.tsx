@@ -8,7 +8,8 @@ import BlogPostAdminActions from '@/components/blog/blog-post-admin-actions';
 import { buttonVariants } from '@/components/ui/button';
 import {
 	BLOG_THUMBNAIL_PLACEHOLDER,
-	getBlogThumbnailUrl
+	getBlogThumbnailUrl,
+	isBlogImageRouteSrc
 } from '@/lib/blog/thumbnail';
 import type { BlogMapLocation } from '@/lib/blog/map-location-actions';
 import type { BlogNeighbor, BlogPost as BlogPostData } from '@/lib/blog/types';
@@ -205,6 +206,7 @@ export default function BlogArticleView({
 							className="object-cover"
 							sizes="(min-width: 860px) 769px, 92.78vw"
 							priority={interactiveNav}
+							unoptimized={isBlogImageRouteSrc(thumbnailSrc)}
 						/>
 					</div>
 				</div>

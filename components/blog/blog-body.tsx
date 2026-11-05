@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { isEmptyBlogBody } from '@/lib/blog/body';
-import { getBlogThumbnailUrl } from '@/lib/blog/thumbnail';
+import {
+	getBlogThumbnailUrl,
+	isBlogImageRouteSrc
+} from '@/lib/blog/thumbnail';
 import type { Json } from '@/lib/supabase/database.types';
 
 type TipTapMark = {
@@ -173,6 +176,7 @@ function renderNode(node: TipTapNode, key: string): ReactNode {
 						height={512}
 						className="h-auto w-full object-cover"
 						sizes="(min-width: 860px) 769px, 92.78vw"
+						unoptimized={isBlogImageRouteSrc(src)}
 					/>
 				</figure>
 			);

@@ -9,7 +9,8 @@ import BlogPostAdminActions from '@/components/blog/blog-post-admin-actions';
 import { buttonVariants } from '@/components/ui/button';
 import {
 	BLOG_THUMBNAIL_PLACEHOLDER,
-	getBlogThumbnailUrl
+	getBlogThumbnailUrl,
+	isBlogImageRouteSrc
 } from '@/lib/blog/thumbnail';
 import type { BlogPost } from '@/lib/blog/types';
 import { cn } from '@/lib/utils';
@@ -160,6 +161,7 @@ export default function BlogIndex({
 												fill
 												className="object-cover"
 												sizes="(min-width: 860px) 769px, 92.78vw"
+												unoptimized={isBlogImageRouteSrc(imageSrc)}
 											/>
 										</div>
 										<span className="mt-5 flex justify-end">
